@@ -134,7 +134,7 @@ public class ExpectationMaximization1D {
 			// Update of iterations and log likelihood value
 			iterations++;
 			logLikelihoodNew = logLikelihood(points, fout);
-			fout.setLogLikelihod(logLikelihoodNew);
+			fout.setEMLogLikelihod(logLikelihoodNew);
 			
 			// Display
 			//System.out.printf("%2d : %12.6f\n", iterations, logLikelihoodNew);

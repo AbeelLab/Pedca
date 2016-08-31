@@ -136,6 +136,7 @@ public class BregmanSoftClustering {
 			// Iterations and log likelihood update
 			iterations++;
 			logLikelihoodNew = logLikelihood(pointSet, fH);
+			fH.setBSCLogLikelihod(logLikelihoodNew);
 			
 			// Display
 			//System.out.printf("%2d : %12.6f\n", iterations, logLikelihoodNew);

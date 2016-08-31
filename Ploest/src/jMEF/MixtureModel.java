@@ -28,11 +28,15 @@ import java.util.Random;
  */
 public class MixtureModel implements Serializable{
 
+
 	/**
-	 * Constant for serialization.
+	 * EM (Expectation Maximization) logLikelihod.
 	 */
-	private static double logLikelihod ;
-	
+	private static double emLogLikelihod ;
+	/**
+	 * BSC (Bregman Soft Clustering) logLikelihod.
+	 */
+	private static double bscLogLikelihod ;
 	/**
 	 * Constant for serialization.
 	 */
@@ -304,12 +308,19 @@ public class MixtureModel implements Serializable{
 		return kld / points.length;
 	}
 	
-	public double getLogLikelihod(){
-		return logLikelihod;
+	public double getEMLogLikelihod(){
+		return emLogLikelihod;
 	}
 	
-	public void setLogLikelihod(double ll){
-		logLikelihod =ll;
+	public void setEMLogLikelihod(double ll){
+		emLogLikelihod =ll;
+	}
+	public double getBSCLogLikelihod(){
+		return bscLogLikelihod;
+	}
+	
+	public void setBSCLogLikelihod(double ll){
+		bscLogLikelihod =ll;
 	}
 	
 }

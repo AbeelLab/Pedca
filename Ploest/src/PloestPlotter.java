@@ -20,6 +20,7 @@ import DataFitter.DattaFiter;
 import jMEF.PVector;
 
 public class PloestPlotter {
+	static final int MAX_NB_MIXTURES=10;
 	Map<String,ContigData> contigsList;
 	PVector[] fitPoints;
 	static int maxX=0;
@@ -30,13 +31,32 @@ public class PloestPlotter {
 		System.out.println("maxWindows:"+maxWindows);
 		contigsList=contList;
 		maxY=350;
+		double aic;
+		double bic;
+		double[]aicsEM=new double[MAX_NB_MIXTURES+1];//each EM (Expectation Maximization) AIC value is stored in its corresponding k(number of mixtures) index
+		double[]bicsEM=new double[MAX_NB_MIXTURES+1];//same for EM BIC values
+		double[]aicsBSC=new double[MAX_NB_MIXTURES+1];//each BSC (Bregman Soft Clustering)AIC value is stored in its corresponding k(number of mixtures) index
+		double[]bicsBSC=new double[MAX_NB_MIXTURES+1];//same for BSC BIC values
 		try{
 		displayScatterPlot();
 		createFitterDataset() ;
 		DattaFiter df;
-		for (int k=1;k<10;k++){//fit to different number k of mixtures
+		for (int k=1;k<MAX_NB_MIXTURES;k++){//fit to different number k of mixtures
 			df=new DattaFiter (fitPoints,k );
-			System.out.println(" k:"+k+" loglikelihood:"+df.getGaussLogLikelihood());
+			//get EM LogLikelihoods and estimate BIC and AIC values
+			aic=-2*(df.getEMLogLikelihood())+(2*k);
+			bic=-0.5*(df.getEMLogLikelihood())+(k*Math.log(totalDataPoints));
+			aicsEM[k]=aic;
+			bicsEM[k]=bic;
+			//get BSC LogLikelihoods and estimate BIC and AIC values
+			aic=-2*(df.getBSCLogLikelihood())+(2*k);
+			bic=-0.5*(df.getBSCLogLikelihood())+(k*Math.log(totalDataPoints));
+			aicsBSC[k]=aic;
+			bicsBSC[k]=bic;	
+		}
+		for (int k=1;k<MAX_NB_MIXTURES;k++){//printout results
+			System.out.println(" k:"+k+" EM aic:"+aicsEM[k]+" EM bic:"+bicsEM[k]);
+			System.out.println("    BSC aic:"+aicsBSC[k]+" BS bic:"+bicsBSC[k]);
 		}
 	
 		}catch (Exception e){

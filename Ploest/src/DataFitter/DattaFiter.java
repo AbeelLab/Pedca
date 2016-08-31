@@ -14,7 +14,10 @@ import jMEF.UnivariateGaussian;
 
 public class DattaFiter {
 
-	double gaussLogLikelihood;//logLikelihood of this gauss mix model
+	double emLogLikelihood;//EM logLikelihood of this gauss mix model
+	double bscLogLikelihood;//BSC logLikelihood of this gauss mix model
+	MixtureModel mmc;// Expectation Maximization Mixture Model
+	MixtureModel mmef;//Bregman soft clustering Mixture Model
 	/**
 	 * Main function.
 	 * @param args
@@ -34,10 +37,10 @@ public class DattaFiter {
 
 	
 		// Classical EM
-		MixtureModel mmc;
+		
 		mmc = ExpectationMaximization1D.initialize(clusters);
 		mmc = ExpectationMaximization1D.run(points, mmc);
-		gaussLogLikelihood=mmc.getLogLikelihod();
+		emLogLikelihood=mmc.getEMLogLikelihod();
 		//System.out.println("Mixure model estimated using classical EM \n" + mmc + "\n");
 		
 		
@@ -45,12 +48,17 @@ public class DattaFiter {
 		MixtureModel mmef;
 		mmef = BregmanSoftClustering.initialize(clusters, new UnivariateGaussian());
 		mmef = BregmanSoftClustering.run(points, mmef);
+		bscLogLikelihood=mmc.getBSCLogLikelihod();
 		//System.out.println("Mixure model estimated using Bregman soft clustering \n" + mmef + "\n");
 
 	}
 
-	public double getGaussLogLikelihood(){
-		return gaussLogLikelihood;
+	public double getEMLogLikelihood(){
+		return emLogLikelihood;
+	}
+	
+	public double getBSCLogLikelihood(){
+		return bscLogLikelihood;
 	}
 	
 }

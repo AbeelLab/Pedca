@@ -19,5 +19,6 @@
 	<classpathentry kind="lib" path="C:/Users/Mel/jfreechart-1.0.19/lib/swtgraphics2d.jar"/>
 	<classpathentry kind="lib" path="C:/Users/Mel/jfreechart-1.0.19/jfreechart-1.0.19-demo.jar"/>
 	<classpathentry kind="lib" path="C:/Users/Mel/commons-math3-3.6.1/commons-math3-3.6.1.jar"/>
+	<classpathentry kind="lib" path="C:/Users/Mel/jMEF/jMEF.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

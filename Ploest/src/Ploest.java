@@ -2,6 +2,8 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.UnsupportedEncodingException;
+
+import DataFitter.DattaFiter;
 public class Ploest {
 	static String projectName="PloestProject";
 	static String inputFile ="C://Users//Mel//Documents//BIOINFORMATICS//DELFT_Research//Data//SimulatedReads//sim200bp.sam";
@@ -10,7 +12,9 @@ public class Ploest {
 	static int windowLength=1000;
 	static File currentFolder;
 	public static void main(String[] args) {
-		// TODO Auto-generated method stub
+		//FitGaussian fg=new FitGaussian("C:\\Users\\Mel\\Documents\\BIOINFORMATICS\\DELFT_Research\\Data\\SimulatedReads\\PloEst\\PloEst200\\points.txt");
+		//return;
+		//*
 		if (args.length > 0) {
 			//-help
 			if ((args[0]).equals("-h") || (args[0]).equals("-help") || (args[0]).equals("help") || (args[0]).equals("help")){
@@ -75,8 +79,9 @@ public class Ploest {
 		System.out.println(
 				"java  -jar  findMultiKmers.jar ecoliMKmersRunUntilEnd C:\\<Pathway to input file>\\Ecoli.fasta  C:\\<Pathway to output folder> -m 3 -k -e -r 8 5 ");
 
-
 		System.exit(1);
+		
+		//*/
 	}
 
 }

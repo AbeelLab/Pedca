@@ -15,15 +15,19 @@ import java.util.*;
 
 import org.jfree.data.xy.XYDataset;
 
+import jMEF.PVector;
+
 public class SamParser {
 	int nbSeq;// nb of sequences in the FileHeader
 	Map<String, ContigData> contigsList;// Map of ContigDatas(value) and their
 										// name (key)
 	int[] readCounts;
-
+	//List<Integer> points=new ArrayList<Integer>();
+	
 	int windowLength = 1000;
 	List<String> contArrList;
 	int maxWindows;
+	
 
 	public SamParser(String inputFile, String outputfile)
 			throws FileNotFoundException, UnsupportedEncodingException {
@@ -93,9 +97,9 @@ public class SamParser {
 
 			for (int w = 0; w < currentContig.windPos.length; w++) {//store all readCounts of every window position 
 				readCounts[currentContig.windPos[w]] += 1;
-
 			}
 		}
+		//System.out.println("Points size:"+points.size());
 
 		PrintWriter writer = new PrintWriter(Ploest.outputFile + "//" + Ploest.projectName+ "//readCounts.txt", "UTF-8");
 		for (int r = 0; r < readCounts.length; r++) {
@@ -116,15 +120,16 @@ public class SamParser {
 		for (int i = 0; i < contArrList.size(); i++) {
 			try {
 				ContigData currentContig = contigsList.get(contArrList.get(i));
-				currentMax=currentContig.windPos(windowLength);
+				currentMax=currentContig.windPos(windowLength);				
 				if (currentMax>maxWindows)maxWindows= currentMax;
 			} catch (FileNotFoundException | UnsupportedEncodingException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
+			//totalDataPoints+=maxWindows+1;
 		}
 		readCounts = new int[(int)Math.ceil(maxWindows*1.05)];
-		//System.out.println("Y Range of readCounts (maxWindows):"+maxWindows);
+		//System.out.println("totalDataPoints:"+totalDataPoints);
 		
 		 
 	}

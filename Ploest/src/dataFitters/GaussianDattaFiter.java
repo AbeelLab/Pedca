@@ -1,4 +1,4 @@
-package DataFitter;
+package dataFitters;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -12,7 +12,7 @@ import jMEF.MixtureModel;
 import jMEF.PVector;
 import jMEF.UnivariateGaussian;
 
-public class DattaFiter {
+public class GaussianDattaFiter {
 
 	double emLogLikelihood;//EM logLikelihood of this gauss mix model
 	double bscLogLikelihood;//BSC logLikelihood of this gauss mix model
@@ -22,14 +22,14 @@ public class DattaFiter {
 	 * Main function.
 	 * @param args
 	 */
-	public DattaFiter (PVector[] points,int n ) {//fit the datapoints to a mixture of n gaussians 
+	public GaussianDattaFiter (PVector[] points,int n ) {//fit the datapoints to a mixture of n gaussians 
 
 		// Display
 		String title = "";
 		title += "+---------------------------------------------+\n";
 		title += "| EM Gauss Fitter | (with K-means verification)\n";
 		title += "+---------------------------------------------+\n";
-		System.out.print(title);
+		//System.out.print(title);
 
 		// Variables
 
@@ -61,4 +61,11 @@ public class DattaFiter {
 		return bscLogLikelihood;
 	}
 	
+	public MixtureModel getEMmodel(){
+		return mmc;
+	}
+	
+	public MixtureModel getBSCModel(){
+		return mmef;
+	}
 }

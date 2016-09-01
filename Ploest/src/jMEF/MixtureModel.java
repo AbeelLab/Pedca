@@ -77,6 +77,14 @@ public class MixtureModel implements Serializable{
 		this.param  = new Parameter[n];
 	}
 
+	//A compact one line print of the parameters
+	public String printParams(){
+		String out="";
+		for (int m=0;m<size;m++){
+			out+="{elem:"+(m+1)+" w:"+weight[m]+"; mu/sig:"+param[m]+"}";
+		}
+		return out;
+	}
 	
 	/**
 	 * Computes the density value \f$ f(x) \f$ of a mixture model.

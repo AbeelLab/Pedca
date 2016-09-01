@@ -16,7 +16,8 @@ import org.jfree.data.xy.XYDataset;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
 
-import DataFitter.DattaFiter;
+import dataFitters.*;
+import jMEF.MixtureModel;
 import jMEF.PVector;
 
 public class PloestPlotter {
@@ -31,39 +32,86 @@ public class PloestPlotter {
 		System.out.println("maxWindows:"+maxWindows);
 		contigsList=contList;
 		maxY=350;
+				try{
+		displayScatterPlot();
+		createFitterDataset() ;
+		fitGaussianMixtureModel();
+		//fitPoissonMixtureModel();//DOESN'T WORK NEEDS FIXING
+		}catch (Exception e){
+        	
+        }
+	}
+	
+	public void fitGaussianMixtureModel(){
 		double aic;
 		double bic;
 		double[]aicsEM=new double[MAX_NB_MIXTURES+1];//each EM (Expectation Maximization) AIC value is stored in its corresponding k(number of mixtures) index
 		double[]bicsEM=new double[MAX_NB_MIXTURES+1];//same for EM BIC values
 		double[]aicsBSC=new double[MAX_NB_MIXTURES+1];//each BSC (Bregman Soft Clustering)AIC value is stored in its corresponding k(number of mixtures) index
 		double[]bicsBSC=new double[MAX_NB_MIXTURES+1];//same for BSC BIC values
-		try{
-		displayScatterPlot();
-		createFitterDataset() ;
-		DattaFiter df;
-		for (int k=1;k<MAX_NB_MIXTURES;k++){//fit to different number k of mixtures
-			df=new DattaFiter (fitPoints,k );
-			//get EM LogLikelihoods and estimate BIC and AIC values
-			aic=-2*(df.getEMLogLikelihood())+(2*k);
-			bic=-0.5*(df.getEMLogLikelihood())+(k*Math.log(totalDataPoints));
-			aicsEM[k]=aic;
-			bicsEM[k]=bic;
-			//get BSC LogLikelihoods and estimate BIC and AIC values
-			aic=-2*(df.getBSCLogLikelihood())+(2*k);
-			bic=-0.5*(df.getBSCLogLikelihood())+(k*Math.log(totalDataPoints));
-			aicsBSC[k]=aic;
-			bicsBSC[k]=bic;	
+		MixtureModel[]emMMs=new MixtureModel[MAX_NB_MIXTURES+1];//contains the result of the EM fit for each of the mixtures
+		MixtureModel[]bscMMs=new MixtureModel[MAX_NB_MIXTURES+1];//contains the result of the BSC fit for each of the mixtures
+		GaussianDattaFiter df;
+		int NbOfRuns=10;
+		for (int r=0;r<NbOfRuns;r++){
+			for (int k=1;k<MAX_NB_MIXTURES;k++){//fit to different number k of mixtures
+				df=new GaussianDattaFiter (fitPoints,k );
+				emMMs[k]=df.getEMmodel();//store EM fit values
+				bscMMs[k]=df.getBSCModel();//same for BSC
+				//get EM LogLikelihoods and estimate BIC and AIC values
+				aic=-2*(df.getEMLogLikelihood())+(2*(k*3));//k+3 are the free parameters: k=number of models +3(weight,mu and sigma)
+				bic=-0.5*(df.getEMLogLikelihood())+((k*3)*Math.log(totalDataPoints));
+				aicsEM[k]=aic;
+				bicsEM[k]=bic;
+				//get BSC LogLikelihoods and estimate BIC and AIC values
+				aic=-2*(df.getBSCLogLikelihood())+(2*(k*3));
+				bic=-0.5*(df.getBSCLogLikelihood())+((k*3)*Math.log(totalDataPoints));
+				aicsBSC[k]=aic;
+				bicsBSC[k]=bic;	
+			}
+			for (int k=1;k<MAX_NB_MIXTURES;k++){//printout results
+				System.out.println(" k:"+k+" EM aic:"+aicsEM[k]+" EM bic:"+bicsEM[k]);
+				if(!Double.isNaN(aicsEM[k])){
+					System.out.print(" Mixture model(with EM):"+emMMs[k].printParams());
+				}
+				System.out.println();
+				System.out.println("    BSC aic:"+aicsBSC[k]+" BS bic:"+bicsBSC[k]+" Mixture model(with BSC):"+bscMMs[k]);
+			}
+			System.out.println("----------------------------------------");
 		}
-		for (int k=1;k<MAX_NB_MIXTURES;k++){//printout results
-			System.out.println(" k:"+k+" EM aic:"+aicsEM[k]+" EM bic:"+bicsEM[k]);
-			System.out.println("    BSC aic:"+aicsBSC[k]+" BS bic:"+bicsBSC[k]);
-		}
-	
-		}catch (Exception e){
-        	
-        }
 	}
 	
+	public void fitPoissonMixtureModel(){
+		double aic;
+		double bic;
+
+		double[]aicsBSC=new double[MAX_NB_MIXTURES+1];//each BSC (Bregman Soft Clustering)AIC value is stored in its corresponding k(number of mixtures) index
+		double[]bicsBSC=new double[MAX_NB_MIXTURES+1];//same for BSC BIC values
+		MixtureModel[]bscMMs=new MixtureModel[MAX_NB_MIXTURES+1];//contains the result of the BSC fit for each of the mixtures
+		PoissonDataFitter df;
+		int NbOfRuns=10;
+		for (int r=0;r<NbOfRuns;r++){
+			for (int k=1;k<MAX_NB_MIXTURES;k++){//fit to different number k of mixtures
+				df=new PoissonDataFitter (fitPoints,k );
+
+				bscMMs[k]=df.getBSCModel();//same for BSC
+				//get BSC LogLikelihoods and estimate BIC and AIC values
+				aic=-2*(df.getBSCLogLikelihood())+(2*(k*3));
+				bic=-0.5*(df.getBSCLogLikelihood())+((k*3)*Math.log(totalDataPoints));
+				aicsBSC[k]=aic;
+				bicsBSC[k]=bic;	
+			}
+			for (int k=1;k<MAX_NB_MIXTURES;k++){//printout results
+				System.out.println(" k:"+k+" BSC aic:"+aicsBSC[k]+" BSC bic:"+bicsBSC[k]);
+				if(!Double.isNaN(aicsBSC[k])){
+					System.out.print(" Mixture model(with BSC) PARAMS:"+bscMMs[k].printParams());
+				}
+				System.out.println();
+				//System.out.println("    BSC aic:"+aicsBSC[k]+" BS bic:"+bicsBSC[k]+" Mixture model PARAMS:"+bscMMs[k]);
+			}
+			System.out.println("----------------------------------------");
+		}
+	}
 	
 	public void displayScatterPlot() throws IOException{
 		List<String> contArrList = new ArrayList<String>(contigsList.keySet());

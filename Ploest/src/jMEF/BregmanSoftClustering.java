@@ -25,7 +25,7 @@ public class BregmanSoftClustering {
 	/**
 	 * Maximum number of iterations permitted.
 	 */
-	private static int MAX_ITERATIONS = 30;
+	private static int MAX_ITERATIONS = 70;
 
 	
 	/**
@@ -95,7 +95,7 @@ public class BregmanSoftClustering {
 		
 		// Initial log likelihood
 		double logLikelihoodNew       = logLikelihood(pointSet, fH);
-		double logLikelihoodThreshold = Math.abs(logLikelihoodNew) * 0.01;
+		double logLikelihoodThreshold = Math.abs(logLikelihoodNew) * 0.001;
 		double logLikelihoodOld;
 		
 		// Display

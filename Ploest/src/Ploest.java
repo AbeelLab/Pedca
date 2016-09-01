@@ -3,7 +3,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.UnsupportedEncodingException;
 
-import DataFitter.DattaFiter;
+import dataFitters.GaussianDattaFiter;
 public class Ploest {
 	static String projectName="PloestProject";
 	static String inputFile ="C://Users//Mel//Documents//BIOINFORMATICS//DELFT_Research//Data//SimulatedReads//sim200bp.sam";

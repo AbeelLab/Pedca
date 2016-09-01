@@ -4,7 +4,7 @@ import java.util.Scanner;
 
 import org.jfree.data.xy.XYDataset;
 
-import DataFitter.DattaFiter;
+import dataFitters.GaussianDattaFiter;
 import jMEF.PVector;
 
 public class FitGaussian {

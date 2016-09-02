@@ -45,10 +45,10 @@ public class GaussianDattaFiter {
 		
 		
 		// Bregman soft clustering
-		MixtureModel mmef;
+		//MixtureModel mmef;
 		mmef = BregmanSoftClustering.initialize(clusters, new UnivariateGaussian());
 		mmef = BregmanSoftClustering.run(points, mmef);
-		bscLogLikelihood=mmc.getBSCLogLikelihod();
+		bscLogLikelihood=mmef.getBSCLogLikelihod();
 		//System.out.println("Mixure model estimated using Bregman soft clustering \n" + mmef + "\n");
 
 	}

@@ -10,7 +10,7 @@ public class ExpectationMaximization1D {
 	/**
 	 * Maximum number of iterations permitted.
 	 */
-	private static int MAX_ITERATIONS = 70;
+	private static int MAX_ITERATIONS = 30;
 
 	
 	/**
@@ -78,7 +78,7 @@ public class ExpectationMaximization1D {
 		
 		// Initial log likelihood
 		double logLikelihoodNew       = logLikelihood(points, fout);
-		double logLikelihoodThreshold = Math.abs(logLikelihoodNew) * 0.001;
+		double logLikelihoodThreshold = Math.abs(logLikelihoodNew) * 0.01;
 		double logLikelihoodOld;
 		
 		// Display

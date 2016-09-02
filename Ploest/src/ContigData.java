@@ -10,6 +10,8 @@ public class ContigData {
 	int[] windPos;
 	int windLength;
 	int maxWindows;
+	static int COV_RATE=10;//rate by which is divided the average coverage of each sliding window 
+						  //the bigger, the more detailed will be the readsDistribution bar chart
 	
 
 	public ContigData(String name, int length) {
@@ -41,7 +43,7 @@ public class ContigData {
 				wsum += startPos[stIndex++];		
 			}
 			
-			windPos[wdIndex++] =(wsum /(windLength/10));// relative average of coverage over
+			windPos[wdIndex++] =(wsum /(windLength/COV_RATE));// relative average of coverage over
 													// the range of the window;
 			if (windPos[(wdIndex-1)]>max)max=windPos[(wdIndex-1)];
 			

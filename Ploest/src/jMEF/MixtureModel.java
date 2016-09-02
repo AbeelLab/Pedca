@@ -63,7 +63,7 @@ public class MixtureModel implements Serializable{
 	/**
 	 * Array containing the parameters of the mixture components.
 	 */
-	public Parameter[]        param; 
+	public Parameter[]   param; 
 
 
 	/**
@@ -78,11 +78,17 @@ public class MixtureModel implements Serializable{
 	}
 
 	//A compact one line print of the parameters
-	public String printParams(){
+	public String printParams(){		
 		String out="";
-		for (int m=0;m<size;m++){
-			out+="{elem:"+(m+1)+" w:"+weight[m]+"; mu/sig:"+param[m]+"}";
+		out="w=[";
+		for (int m=0;m<size;m++){			
+			out+=" "+weight[m];
 		}
+		out+=" ]\nmuSigma=[" ;
+		for (int m=0;m<size;m++){			
+			out+=param[m]+ ";";
+		}
+		out+=" ]";
 		return out;
 	}
 	

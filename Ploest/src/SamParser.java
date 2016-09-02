@@ -24,7 +24,7 @@ public class SamParser {
 	int[] readCounts;
 	//List<Integer> points=new ArrayList<Integer>();
 	
-	int windowLength = 1000;
+	int windowLength ;
 	List<String> contArrList;
 	int maxWindows;
 	
@@ -81,13 +81,21 @@ public class SamParser {
 		writer.close();
 		windowSlideContigList();
 		PloestPlotter plotter = new PloestPlotter(contigsList,maxWindows);
-		
+		barchartWithFit();
 		//FitGaussian fitGauss=new FitGaussian(plotter.data);
 		// printContigList();
 
 	}
 
 	
+
+	private void barchartWithFit() {
+		BarChart barchart = new BarChart(readCounts);
+		
+		
+	}
+
+
 
 	public void windowSlideContigList() throws FileNotFoundException, UnsupportedEncodingException {
 		findMaxWindows();
@@ -108,7 +116,7 @@ public class SamParser {
 		writer.println();
 		writer.close();
 
-		BarChart barchart = new BarChart(readCounts);
+		
 	}
 
 	//to correctly range the y axis of readCounts

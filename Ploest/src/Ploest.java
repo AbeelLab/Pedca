@@ -9,7 +9,7 @@ public class Ploest {
 	static String inputFile ="C://Users//Mel//Documents//BIOINFORMATICS//DELFT_Research//Data//SimulatedReads//sim200bp.sam";
 	static String outputFile ="C://Users//Mel//Documents//BIOINFORMATICS//DELFT_Research//Data//SimulatedReads//PloEst";
 	
-	static int windowLength=1000;
+	static int windowLength=500;
 	static File currentFolder;
 	public static void main(String[] args) {
 		//FitGaussian fg=new FitGaussian("C:\\Users\\Mel\\Documents\\BIOINFORMATICS\\DELFT_Research\\Data\\SimulatedReads\\PloEst\\PloEst200\\points.txt");

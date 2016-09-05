@@ -21,7 +21,7 @@ public class SamParser {
 	int nbSeq;// nb of sequences in the FileHeader
 	Map<String, ContigData> contigsList;// Map of ContigDatas(value) and their
 										// name (key)
-	int[] readCounts;
+	static int[] readCounts;
 	//List<Integer> points=new ArrayList<Integer>();
 	
 	int windowLength ;
@@ -90,7 +90,7 @@ public class SamParser {
 	
 
 	private void barchartWithFit() {
-		BarChart barchart = new BarChart(readCounts);
+		//BarChart barchart = new BarChart(readCounts);
 		
 		
 	}
@@ -137,7 +137,7 @@ public class SamParser {
 			//totalDataPoints+=maxWindows+1;
 		}
 		readCounts = new int[(int)Math.ceil(maxWindows*1.05)];
-		//System.out.println("totalDataPoints:"+totalDataPoints);
+		System.out.println("readCounts SIZE:"+readCounts.length);
 		
 		 
 	}

@@ -12,7 +12,7 @@ import jMEF.MixtureModel;
 import jMEF.PVector;
 import jMEF.UnivariateGaussian;
 
-public class GaussianDattaFiter {
+public class GaussianDataFitter {
 
 	double emLogLikelihood;//EM logLikelihood of this gauss mix model
 	double bscLogLikelihood;//BSC logLikelihood of this gauss mix model
@@ -22,7 +22,7 @@ public class GaussianDattaFiter {
 	 * Main function.
 	 * @param args
 	 */
-	public GaussianDattaFiter (PVector[] points,int n ) {//fit the datapoints to a mixture of n gaussians 
+	public GaussianDataFitter (PVector[] points,int n ) {//fit the datapoints to a mixture of n gaussians 
 
 		// Display
 		String title = "";

@@ -23,11 +23,13 @@ import jMEF.PVector;
 public class PloestPlotter {
 	static final int MAX_NB_MIXTURES=10;
 	Map<String,ContigData> contigsList;
+
 	PVector[] fitPoints;
 	JFreeChart chart;
 	static int maxX=0;
 	static int maxY=0;
 	static int totalDataPoints=0;//total number of input datapoints (coverage for all windows)
+	GaussianMixturePDF gmPDF;
 
 
 	public PloestPlotter(Map<String,ContigData> contList,int maxWindows) {
@@ -53,11 +55,11 @@ public class PloestPlotter {
 		double[]bicsBSC=new double[MAX_NB_MIXTURES+1];//same for BSC BIC values
 		MixtureModel[]emMMs=new MixtureModel[MAX_NB_MIXTURES+1];//contains the result of the EM fit for each of the mixtures
 		MixtureModel[]bscMMs=new MixtureModel[MAX_NB_MIXTURES+1];//contains the result of the BSC fit for each of the mixtures
-		GaussianDattaFiter df;
-		int NbOfRuns=10;
+		GaussianDataFitter df;
+		int NbOfRuns=1;
 		for (int r=0;r<NbOfRuns;r++){
 			for (int k=1;k<MAX_NB_MIXTURES;k++){//fit to different number k of mixtures
-				df=new GaussianDattaFiter (fitPoints,k );
+				df=new GaussianDataFitter (fitPoints,k );
 				emMMs[k]=df.getEMmodel();//store EM fit values
 				bscMMs[k]=df.getBSCModel();//same for BSC
 				//get EM LogLikelihoods and estimate BIC and AIC values
@@ -89,6 +91,10 @@ public class PloestPlotter {
 			System.out.println("--------Run:"+r+" ----------------");
 			int indofmin=findIndexOfMin(bicsBSC);
 			System.out.println(indofmin+" MM  BSC params:"+bscMMs[indofmin].printParams());
+			//new BarChart(bscMMs[indofmin],r);
+			if (r==0){
+				gmPDF=new GaussianMixturePDF(bscMMs[indofmin],0.0,(double)SamParser.readCounts.length,0.1);
+			}
 			
 			System.out.println("----------------------------------------");
 			

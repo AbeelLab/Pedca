@@ -85,8 +85,14 @@ public class MixtureModel implements Serializable{
 			out+=" "+weight[m];
 		}
 		out+=" ]\nmuSigma=[" ;
-		for (int m=0;m<size;m++){			
-			out+=param[m]+ ";";
+		
+		for (int m=0;m<size;m++){//for each component  ((jMEF.PVector)mm.param[0]).array[0]
+			for (int p=0;p<param[m].getDimension();p++){//each components parameters
+				out +=((jMEF.PVector)param[m]).array[p]+" ";
+			}
+			out+="//";
+				
+				
 		}
 		out+=" ]";
 		return out;

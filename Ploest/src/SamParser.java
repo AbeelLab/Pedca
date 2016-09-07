@@ -107,16 +107,38 @@ public class SamParser {
 
 	public void windowSlideContigList() throws FileNotFoundException, UnsupportedEncodingException {
 		findMaxWindows();
+		int totalSumOfReads=0;
 		for (int i = 0; i < contArrList.size(); i++) {//for each contig
-
 			ContigData currentContig = contigsList.get(contArrList.get(i));
-
 			for (int w = 0; w < currentContig.windPos.length; w++) {//store all readCounts of every window position 
 				readCounts[currentContig.windPos[w]] += 1;
 			}
 		}
-		//System.out.println("Points size:"+points.size());
-
+		/*
+		//CLEAN READ COUNTS with non significant presence (outliers)
+		//first clean in readCounts
+		for (int r = 0; r < readCounts.length; r++) {
+			totalSumOfReads+=readCounts[r];
+		}
+	
+		for (int r = 0; r < readCounts.length; r++) {
+			if(((double)readCounts[r])/totalSumOfReads<0.0035){
+				readCounts[r]=0;
+			}
+		}
+		//next clean in contigsList
+		for (int i = 0; i < contArrList.size(); i++) {//for each contig
+			ContigData currentContig = contigsList.get(contArrList.get(i));//get the contig from contigsList
+			for (int w = 0; w < currentContig.windPos.length; w++) {//check all readCounts of every window position 
+				if(readCounts[currentContig.windPos[w]]==0){
+					currentContig.windPos[w]=0;					
+				}
+			}
+			contigsList.replace(currentContig.contigName, currentContig);
+				
+		}
+	
+		*/
 		PrintWriter writer = new PrintWriter(Ploest.outputFile + "//" + Ploest.projectName+ "//readCounts.txt", "UTF-8");
 		for (int r = 0; r < readCounts.length; r++) {
 			writer.print(r + " " + readCounts[r] + "; ");

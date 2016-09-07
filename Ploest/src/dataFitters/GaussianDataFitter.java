@@ -50,7 +50,7 @@ public class GaussianDataFitter {
 		mmef = BregmanSoftClustering.run(points, mmef);
 		bscLogLikelihood=mmef.getBSCLogLikelihod();
 		//System.out.println("Mixure model estimated using Bregman soft clustering \n" + mmef + "\n");
-		System.out.println("-------- -----GaussianDataFitter-------- end----------");
+
 	}
 
 	public double getEMLogLikelihood(){

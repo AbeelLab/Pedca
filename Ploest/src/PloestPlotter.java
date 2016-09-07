@@ -194,7 +194,7 @@ public class PloestPlotter {
 
 	private  void createFitterDataset() {
 		fitPoints=new PVector[totalDataPoints];
-		int sumOfValues=0;
+		//double sumOfValues=0;
 		int ind=0;
 		List<String> contArrList = new ArrayList<String>(contigsList.keySet());
 
@@ -203,20 +203,9 @@ public class PloestPlotter {
 			for (int i = 0; i < (contigD.windPos.length); i++) {//for each window position
 				PVector curVec=new PVector(1);
 				curVec.array[0]=contigD.windPos[i];//coverage per window position
-				sumOfValues+=contigD.windPos[i];//add to the total of all values (used by cleaning marginal values)
 				fitPoints[ind++]=curVec;               
 			}
 		}
-		/*CLEAN MARGINAL VALUES
-		System.out.println("-------- -----CLEAN MARGINAL VALUES-------- ----------");
-		for (int fp=0;fp<fitPoints.length;fp++){
-			if ((fitPoints[fp].array[0]/sumOfValues)<0.005){
-				System.out.println("fitPoint:"+fitPoints[fp].array[0]+"/"+sumOfValues);
-				fitPoints[fp].array[0]=0.0;
-			}
-		}
-		System.out.println("-------- -----CLEAN MARGINAL fin-------- ----------");
-*/
 	}
 
 	

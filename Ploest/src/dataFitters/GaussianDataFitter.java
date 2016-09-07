@@ -22,7 +22,7 @@ public class GaussianDataFitter {
 	 * Main function.
 	 * @param args
 	 */
-	public GaussianDataFitter (PVector[] points,int n ) {//fit the datapoints to a mixture of n gaussians 
+	public GaussianDataFitter (PVector[] points,int n) {//fit the datapoints to a mixture of n gaussians 
 
 		// Display
 		String title = "";
@@ -50,7 +50,7 @@ public class GaussianDataFitter {
 		mmef = BregmanSoftClustering.run(points, mmef);
 		bscLogLikelihood=mmef.getBSCLogLikelihod();
 		//System.out.println("Mixure model estimated using Bregman soft clustering \n" + mmef + "\n");
-
+		System.out.println("-------- -----GaussianDataFitter-------- end----------");
 	}
 
 	public double getEMLogLikelihood(){

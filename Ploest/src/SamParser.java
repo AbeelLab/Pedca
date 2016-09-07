@@ -27,6 +27,7 @@ public class SamParser {
 	int windowLength ;
 	List<String> contArrList;
 	int maxWindows;
+	PloestPlotter plotter;//ploidy estimation  plott and pdf gaussian fit data
 	
 
 	public SamParser(String inputFile, String outputfile)
@@ -81,7 +82,8 @@ public class SamParser {
 		writer.close();
 		windowSlideContigList();
 		PloestPlotter plotter = new PloestPlotter(contigsList,maxWindows);
-		barchartWithFit();
+		
+		barchartWithFit(plotter);
 		//FitGaussian fitGauss=new FitGaussian(plotter.data);
 		// printContigList();
 
@@ -89,8 +91,14 @@ public class SamParser {
 
 	
 
-	private void barchartWithFit() {
-		//BarChart barchart = new BarChart(readCounts);
+	private void barchartWithFit(PloestPlotter plotter ) {
+		BarChart barchart = new BarChart(readCounts);
+		//System.out.println("plotter.gmPDF size:"+plotter.gmPDF.length);
+		for (int r=0;r<plotter.gmPDF.length;r++){
+			//System.out.println("r:"+r);
+			barchart.BarChartWithFit(plotter.gmPDF[r],r);
+		}
+		
 		
 		
 	}

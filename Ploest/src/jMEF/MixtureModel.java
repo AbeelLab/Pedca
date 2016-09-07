@@ -78,7 +78,8 @@ public class MixtureModel implements Serializable{
 	}
 
 	//A compact one line print of the parameters
-	public String printParams(){		
+	public String printParams(){
+		
 		String out="";
 		out="w=[";
 		for (int m=0;m<size;m++){			

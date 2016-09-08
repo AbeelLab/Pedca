@@ -30,7 +30,7 @@ public class PloestPlotter {
 	static int maxY=0;
 	static int totalDataPoints=0;//total number of input datapoints (coverage for all windows)
 	GaussianMixturePDF[] gmPDF;//Y points of the gaussian fit
-
+	static int finalNumberOfMixtures;
 
 	public PloestPlotter(Map<String,ContigData> contList,int maxWindows) {
 		System.out.println("maxWindows:"+maxWindows);
@@ -58,15 +58,16 @@ public class PloestPlotter {
 		MixtureModel[]emMMs=new MixtureModel[MAX_NB_MIXTURES+1];//contains the result of the EM fit for each of the mixtures
 		MixtureModel[]bscMMs=new MixtureModel[MAX_NB_MIXTURES+1];//contains the result of the BSC fit for each of the mixtures
 		GaussianDataFitter df;
-		int NbOfRuns=100;
+		int NbOfRuns=1000;
 		int indofmin;
-		int[] bestGuess=new int[MAX_NB_MIXTURES];//best guess with bic model evaluation
+		int[] bestBSCGuess=new int[MAX_NB_MIXTURES];//best BSC guess with bic model evaluation
+		int[] bestEMGuess=new int[MAX_NB_MIXTURES];//best BSC guess with EM model evaluation
 		int[] correctedResults=new int[MAX_NB_MIXTURES];//best guess with bic model evaluation + min points evaluation
 		gmPDF=new GaussianMixturePDF[NbOfRuns];
 		for (int r=0;r<NbOfRuns;r++){
 			System.out.println("-------- -----fitGaussianMixtureModel-------- NbOfRuns:"+r+"----------");
 			for (int k=1;k<MAX_NB_MIXTURES;k++){//fit to different number k of mixtures
-				df=new GaussianDataFitter (fitPoints,k );
+				df=new GaussianDataFitter (fitPoints,k );//fits a gauss mixture(by EM and BSC) to the 
 				
 				emMMs[k]=df.getEMmodel();//store EM fit values
 				bscMMs[k]=df.getBSCModel();//same for BSC
@@ -81,42 +82,36 @@ public class PloestPlotter {
 				aicsBSC[k]=aic;
 				bicsBSC[k]=bic;	
 			}
-			/*PRINT RESULTS TO CONSOLE
-			for (int k=1;k<MAX_NB_MIXTURES;k++){//printout results
-
-
-				if(!Double.isNaN(aicsEM[k])){
-					System.out.println(" k:"+k+"    EM aic:"+aicsEM[k]+" EM bic:"+bicsEM[k]);
-				}
-
-				if(!Double.isNaN(bicsBSC[k])){
-					System.out.println(" k:"+k+"    BSC aic:"+aicsBSC[k]+" BS bic:"+bicsBSC[k]);
-				}
-
-			}
-			 */
-			System.out.println("--------Run:"+r+" ----------------");
+			//System.out.println("--------Run:"+r+" ----------------");
 			indofmin=findIndexOfMin(bicsBSC);//find index of gaussian mixture with min BIC value
-			bestGuess[indofmin]++;
-			System.out.println(indofmin+" MM  BSC params:"+bscMMs[indofmin].printParams());	
+			bestBSCGuess[indofmin]++;//System.out.println(indofmin+" MM  BSC params:"+bscMMs[indofmin].printParams());	
+			indofmin=findIndexOfMin(bicsEM);//find index of gaussian mixture with min EM value
+			bestEMGuess[indofmin]++;
 			gmPDF[r]=new GaussianMixturePDF(bscMMs[indofmin],0.0,(double)SamParser.readCounts.length,0.1);
-	
-			//significantMinsInPDF( gmPDF[r]);
-
-			
 			int k=significantMinsInPDF( gmPDF[r]);
+			/*
 			System.out.println("------RESULT:"+k+" mixtures ----------");
-			df=new GaussianDataFitter (fitPoints,k );
-			System.out.println(k+" MM   params:"+	df.getBSCModel().printParams());
+			if (k>1){
+				df=new GaussianDataFitter (fitPoints,k );	
+				System.out.println(k+" MM   params:"+	df.getBSCModel().printParams());				
+			}else{
+				System.out.println("-------- Not ENOUGH MIXTURES ----------");
+			}
+							
+			*/
 			correctedResults[k]++;
-			System.out.println("-------- ------------------ ----------");
-			System.out.println("-------- ------------------ ----------");
-			//*/
 		}
-		System.out.println("-------- -----best Guess-------- ----------");
+		//PRINT BEST GUESSES AND CoRRECTED RESULTS
+		System.out.println("-------- -----best Guess BSC-------- ----------");
 		System.out.print("[");
-		for (int b=0;b<bestGuess.length;b++){
-			System.out.print(" "+bestGuess[b]);
+		for (int b=0;b<bestBSCGuess.length;b++){
+			System.out.print(" "+bestBSCGuess[b]);
+		}
+		System.out.println(" ];");
+		System.out.println("-------- -----best Guess EM-------- ----------");
+		System.out.print("[");
+		for (int b=0;b<bestEMGuess.length;b++){
+			System.out.print(" "+bestEMGuess[b]);
 		}
 		System.out.println(" ];");
 		System.out.println("-------- -----best correctedResults-------- ----------");
@@ -125,8 +120,28 @@ public class PloestPlotter {
 			System.out.print(" "+correctedResults[b]);
 		}
 		System.out.println(" ];");
+		//*/
+		int finalNumberOfMixtures=indexOfMode(correctedResults);
+		System.out.println("-------- -----FINAL RESULT--------"+finalNumberOfMixtures+" ----------");
+		
+		df=new GaussianDataFitter (fitPoints,finalNumberOfMixtures );
+		System.out.println(finalNumberOfMixtures+" MM   params:"+	df.getBSCModel().printParams());
+		SamParser.barchart.BarChartWithFit(new GaussianMixturePDF(df.getBSCModel(),0.0,(double)SamParser.readCounts.length,0.1),finalNumberOfMixtures);
+
 	}
 
+	public int indexOfMode(int[] vector){//finds the index of the most represented result in this vector
+		double max=vector[0] ;
+		int maxIndex=0;
+		for (int ktr = 0; ktr < vector.length; ktr++) {
+			if (vector[ktr] > max) {
+				maxIndex=ktr;
+				max=vector[ktr] ;
+			}
+		}
+		return maxIndex;
+	}
+	
 	public void displayScatterPlot() throws IOException{
 		List<String> contArrList = new ArrayList<String>(contigsList.keySet());
 		for (int c=0;c<contigsList.size();c++){//for each contig
@@ -156,7 +171,7 @@ public class PloestPlotter {
 		        frame.pack();
 		        frame.setVisible(true);	
 			 */
-			ChartUtilities.saveChartAsJPEG(new File(Ploest.outputFile + "//" + Ploest.projectName+ "//Chart_Contig_"+contigD.contigName+".jpg"), chart, maxX, maxY);
+			ChartUtilities.saveChartAsJPEG(new File(Ploest.outputFile + "//" + Ploest.projectName+ "//Chart_Contig_"+contigD.contigName+".jpg"), chart, 1000, 600);
 
 		}
 	}
@@ -241,6 +256,9 @@ public class PloestPlotter {
 		
 	}
 	
+	static int getFinalNumberOfMixtures(){
+		return finalNumberOfMixtures;
+	}
 	
 	private int significantMinsInPDF(GaussianMixturePDF gmf) {
 		//MaxMinArrays lists = new MaxMinArrays();
@@ -256,19 +274,26 @@ public class PloestPlotter {
 		int ind=0;
 		while (ind<gmf.yDataPoints.length) {
 			count++;
-			left = mid;
-			mid = right;
-			right = gmf.yDataPoints[ind];
+			if(gmf.yDataPoints[ind]!=right){
+				left = mid;
+				mid = right;
+			}	
+				right = gmf.yDataPoints[ind];
 
-			if (right > mid && mid < left && mid<threshold){
-				yMinList.add(mid);
-				xMinList.add(gmf.xDataPoints[ind]);
-				sigMins++;
-			}
-
+				if (ind!=1 && right > mid && mid < left && mid < threshold) {// we count mins only after index 2 and above threshold
+					yMinList.add(mid);
+					xMinList.add(gmf.xDataPoints[ind]);					
+					sigMins++;
+				}
+			
 			ind++;
-		}		
-		if(sigMins>3){
+		}
+		//add last point as min
+		//System.out.println("Barchar with fit last index:"+(ind-1)+" of size:"+gmf.xDataPoints.length);
+		yMinList.add(mid);
+		xMinList.add(gmf.xDataPoints[ind-1]);					
+		sigMins++;
+		if(sigMins!=3){
 			System.out.println("Mins List x:"+xMinList);
 			System.out.println("Mins List y:"+yMinList);
 		}

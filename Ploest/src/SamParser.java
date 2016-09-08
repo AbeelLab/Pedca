@@ -28,7 +28,7 @@ public class SamParser {
 	List<String> contArrList;
 	int maxWindows;
 	PloestPlotter plotter;//ploidy estimation  plott and pdf gaussian fit data
-	
+	static BarChart barchart;
 
 	public SamParser(String inputFile, String outputfile)
 			throws FileNotFoundException, UnsupportedEncodingException {
@@ -57,7 +57,7 @@ public class SamParser {
 		PrintWriter writer = new PrintWriter(Ploest.outputFile + "//" + Ploest.projectName+ "//"+Ploest.projectName+"SamParsed.txt", "UTF-8");
 		String line = "";
 		int i = 1;
-		System.out.println(contigsList.size()+" Contigs :" + contigsList.keySet());
+		System.out.println(contigsList.size()+" Contigs");
 		String refName = "";// for debugging a bad line in the .sam file
 		int alStart;
 
@@ -81,18 +81,24 @@ public class SamParser {
 		inputSam.close();
 		writer.close();
 		windowSlideContigList();
+		barchart = new BarChart(readCounts);
 		PloestPlotter plotter = new PloestPlotter(contigsList,maxWindows);
 		
 		barchartWithFit(plotter);
-		//FitGaussian fitGauss=new FitGaussian(plotter.data);
+		
+	
 		// printContigList();
 
 	}
 
 	
 
+	
+
+
+
 	private void barchartWithFit(PloestPlotter plotter ) {
-		BarChart barchart = new BarChart(readCounts);
+		//BarChart barchart = new BarChart(readCounts);
 		//System.out.println("plotter.gmPDF size:"+plotter.gmPDF.length);
 		for (int r=0;r<plotter.gmPDF.length;r++){
 			//System.out.println("r:"+r);
@@ -103,42 +109,75 @@ public class SamParser {
 		
 	}
 
+	
+	public void cleanContigList(){//To clean outliers -- TURNED OUT TO BE A BAD iDEA
+		//CLEAN READ COUNTS with non significant presence (outliers)
+		//first clean in readCounts
+		int ctrDELETEME=0;
+		double minThreshold=0.0035;
+		int totalSumOfReads=0;
+		
+		for (int r = 0; r < readCounts.length; r++) {//get total sum of reads
+			totalSumOfReads+=readCounts[r];
+		}
+		int minYCorrectedValue=1;
+		System.out.print("Relative readcounts (!=0) above threshold: ");
+		for (int r = 0; r < readCounts.length; r++) {//check if relative readcounts is above threshold
+			if(readCounts[r]!=0 && ((double)readCounts[r])/totalSumOfReads < minThreshold){//if a read count !=0 is still below threshold
+				System.out.print(" "+r);
+				readCounts[r]=minYCorrectedValue;
+			}
+			readCounts[0]=0;//to avoid a false peak at 0 which tells us nothing about the real read counts distribution
+		}
+		System.out.println();
+		//next clean in contigsList
+		ctrDELETEME=0;
+		int nbOFChangesDELETEME=0;//nb of changed contigs
+		boolean hasChanged=false; 
+		for (int i = 0; i < contArrList.size(); i++) {//for each contig
+			ContigData currentContig = contigsList.get(contArrList.get(i));//get the contig from contigsList
+			for (int w = 0; w < currentContig.windPos.length; w++) {//check all readCounts of every window position 
+				if(readCounts[currentContig.windPos[w]]==minYCorrectedValue){
+					currentContig.windPos[w]=0;//(int) (currentContig.windPos[w]/10);//instead of putting 0 we reduce keeping the proportions, so that the curve mins are respected
+					ctrDELETEME++;
+					hasChanged=true;
+				}
+			}
+			if(hasChanged){
+				contigsList.replace(currentContig.contigName, currentContig);	
+				nbOFChangesDELETEME++;
+			}
+		}
+		System.out.println("Window position with ReadCounts above threshold:"+ctrDELETEME);
+		System.out.println("Contigs Changed inContigList:"+nbOFChangesDELETEME);
+		//WARNING: DELETE THIS. IT IS A TEST: REDO READCOUNTS
+		
+		totalSumOfReads=0;
+		contArrList = new ArrayList<String>(contigsList.keySet());
+		for (int i = 0; i < contArrList.size(); i++) {//for each contig
+			ContigData currentContig = contigsList.get(contArrList.get(i));
+			for (int w = 0; w < currentContig.windPos.length; w++) {//store all readCounts of every window position 
+				readCounts[currentContig.windPos[w]] ++;
+			}
+		}
+		readCounts[0]=0;//to avoid a false peak at 0 which tells us nothing about the real read counts distribution
+	
+	}
 
 
 	public void windowSlideContigList() throws FileNotFoundException, UnsupportedEncodingException {
 		findMaxWindows();
-		int totalSumOfReads=0;
+		
+		
 		for (int i = 0; i < contArrList.size(); i++) {//for each contig
 			ContigData currentContig = contigsList.get(contArrList.get(i));
 			for (int w = 0; w < currentContig.windPos.length; w++) {//store all readCounts of every window position 
 				readCounts[currentContig.windPos[w]] += 1;
 			}
 		}
-		/*
-		//CLEAN READ COUNTS with non significant presence (outliers)
-		//first clean in readCounts
-		for (int r = 0; r < readCounts.length; r++) {
-			totalSumOfReads+=readCounts[r];
-		}
-	
-		for (int r = 0; r < readCounts.length; r++) {
-			if(((double)readCounts[r])/totalSumOfReads<0.0035){
-				readCounts[r]=0;
-			}
-		}
-		//next clean in contigsList
-		for (int i = 0; i < contArrList.size(); i++) {//for each contig
-			ContigData currentContig = contigsList.get(contArrList.get(i));//get the contig from contigsList
-			for (int w = 0; w < currentContig.windPos.length; w++) {//check all readCounts of every window position 
-				if(readCounts[currentContig.windPos[w]]==0){
-					currentContig.windPos[w]=0;					
-				}
-			}
-			contigsList.replace(currentContig.contigName, currentContig);
-				
-		}
-	
-		*/
+		
+		//cleanContigList();//Clean outliers BAD IDEA
+		
 		PrintWriter writer = new PrintWriter(Ploest.outputFile + "//" + Ploest.projectName+ "//readCounts.txt", "UTF-8");
 		for (int r = 0; r < readCounts.length; r++) {
 			writer.print(r + " " + readCounts[r] + "; ");

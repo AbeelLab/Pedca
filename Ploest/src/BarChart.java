@@ -51,54 +51,56 @@ public class BarChart {
 
 	//@SuppressWarnings("deprecation")
 	public void BarChartWithFit (GaussianMixturePDF gaussFit,int r) {
-		if (gaussFit==null)System.out.println("BarChartWithFit gaussFit==null");
-		final XYDataset data1 = createHistDataset(gaussFit) ;//histogram of readCounts
-		final XYItemRenderer renderer1 = new StandardXYItemRenderer();
+		
+		if (gaussFit==null){
+			System.out.println("BarChartWithFit gaussFit==null r:"+r);
+		}else{
+			
+			final XYDataset data1 = createHistDataset(gaussFit) ;//histogram of readCounts
+			final XYItemRenderer renderer1 = new StandardXYItemRenderer();
 
-		final NumberAxis domainAxis = new NumberAxis("ReadsCounts");
-		//domainAxis.setTickMarkPosition(DateTickMarkPosition.MIDDLE);
-		final ValueAxis rangeAxis = new NumberAxis("%Contigs");
-		final XYPlot plot = new XYPlot  (data1, domainAxis, rangeAxis, renderer1);
-
-
-		// add a second dataset and renderer...
-		final XYDataset data2 = createCurveDataset(gaussFit);
-		final XYItemRenderer renderer2 = new StandardXYItemRenderer();
-
-		plot.setDataset(1, data2);
-		plot.setRenderer(1, renderer2);
-
-		plot.setDatasetRenderingOrder(DatasetRenderingOrder.FORWARD);
-
-		// return a new chart containing the overlaid plot...
-		overlaidChart=new JFreeChart("Overlaid Plot Example", JFreeChart.DEFAULT_TITLE_FONT, plot, true);
+			final NumberAxis domainAxis = new NumberAxis("ReadsCounts");
+			//domainAxis.setTickMarkPosition(DateTickMarkPosition.MIDDLE);
+			final ValueAxis rangeAxis = new NumberAxis("%Contigs");
+			final XYPlot plot = new XYPlot  (data1, domainAxis, rangeAxis, renderer1);
 
 
-		try {
-			ChartUtilities.saveChartAsJPEG(new File(Ploest.outputFile + "//" + Ploest.projectName+ "//readsDistributionGaussianFitted"+r+".jpg"), overlaidChart, 1000, 600);
-		} catch (IOException e) {
-			System.err.println("Problem occurred creating chart.");
+			// add a second dataset and renderer...
+			final XYDataset data2 = createCurveDataset(gaussFit);
+			final XYItemRenderer renderer2 = new StandardXYItemRenderer();
+
+			plot.setDataset(1, data2);
+			plot.setRenderer(1, renderer2);
+
+			plot.setDatasetRenderingOrder(DatasetRenderingOrder.FORWARD);
+
+			// return a new chart containing the overlaid plot...
+			overlaidChart=new JFreeChart("Overlaid Plot Example", JFreeChart.DEFAULT_TITLE_FONT, plot, true);
+
+
+			try {
+				ChartUtilities.saveChartAsJPEG(new File(Ploest.outputFile + "//" + Ploest.projectName+ "//readsDistributionGaussianFitted"+r+".jpg"), overlaidChart, 1000, 600);
+			} catch (IOException e) {
+				System.err.println("Problem occurred creating chart.");
+			}
+			//System.out.println("BarChar printed");
 		}
-		//System.out.println("BarChar printed");
 	}
 
 	private XYDataset createHistDataset( GaussianMixturePDF gaussFit) {
 		XYSeriesCollection result = new XYSeriesCollection();
 		XYSeries series = new XYSeries("Reads Counts");
 		//maxX=0;
-		
-		if (gaussFit==null)System.out.println("gaussFit==null");
-		
+
 		double ind=(gaussFit.beg-0.5);
-		
-		//System.out.println(" createHistDataset ; xDataPoints.length:"+gaussFit.xDataPoints.length+" normReadCounts.length:"+normReadCounts.length);
+
 		for (int i = 0; i<normReadCounts.length; i++) {
 			while (ind<i+0.5){
 				//System.out.println("|ind:"+ind+" i:"+i+" x:"+normReadCounts[i]+" y:"+normReadCounts[i]);
 				series.add(ind, normReadCounts[i]);
 				ind+=gaussFit.step;
 			}
-			          
+
 		}
 		result.addSeries(series);
 
@@ -112,7 +114,7 @@ public class BarChart {
 
 
 		for (int i = 0; i<gaussFit.yDataPoints.length; i++) {
-	
+
 			series.add(gaussFit.xDataPoints[i], gaussFit.yDataPoints[i]);
 			//if (x>maxX)maxX=(int) x;           
 		}

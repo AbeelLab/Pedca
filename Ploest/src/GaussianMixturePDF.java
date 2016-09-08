@@ -14,6 +14,7 @@ public class GaussianMixturePDF {
     double maxYvalue=0.0;
     
 	public GaussianMixturePDF(MixtureModel mm,double beg,double end, double step){
+		
 		mus=new double[mm.size];
 		sigmas=new double[mm.size];
 		this.beg=beg;
@@ -45,7 +46,7 @@ public class GaussianMixturePDF {
 			if (currentY>maxYvalue)maxYvalue=currentY;
 			dp+=step;
 		}
-	
+		
 		/*
 		System.out.println();
 		for (int ii=0;ii<yDataPoints.length;ii++){

@@ -58,14 +58,14 @@ public class PloestPlotter {
 		MixtureModel[]emMMs=new MixtureModel[MAX_NB_MIXTURES+1];//contains the result of the EM fit for each of the mixtures
 		MixtureModel[]bscMMs=new MixtureModel[MAX_NB_MIXTURES+1];//contains the result of the BSC fit for each of the mixtures
 		GaussianDataFitter df;
-		int NbOfRuns=1000;
+		int NbOfRuns=100;
 		int indofmin;
 		int[] bestBSCGuess=new int[MAX_NB_MIXTURES];//best BSC guess with bic model evaluation
 		int[] bestEMGuess=new int[MAX_NB_MIXTURES];//best BSC guess with EM model evaluation
 		int[] correctedResults=new int[MAX_NB_MIXTURES];//best guess with bic model evaluation + min points evaluation
 		gmPDF=new GaussianMixturePDF[NbOfRuns];
 		for (int r=0;r<NbOfRuns;r++){
-			System.out.println("-------- -----fitGaussianMixtureModel-------- NbOfRuns:"+r+"----------");
+			System.out.print(" "+r);
 			for (int k=1;k<MAX_NB_MIXTURES;k++){//fit to different number k of mixtures
 				df=new GaussianDataFitter (fitPoints,k );//fits a gauss mixture(by EM and BSC) to the 
 				
@@ -101,19 +101,15 @@ public class PloestPlotter {
 			*/
 			correctedResults[k]++;
 		}
-		//PRINT BEST GUESSES AND CoRRECTED RESULTS
-		System.out.println("-------- -----best Guess BSC-------- ----------");
+		System.out.println();
+		//PRINT BEST GUESSES AND CoRRECTED RESULTS		
+		System.out.println("-------- -----best Guess BSC-------- ----------");//identical results with best guess EM
 		System.out.print("[");
 		for (int b=0;b<bestBSCGuess.length;b++){
 			System.out.print(" "+bestBSCGuess[b]);
 		}
 		System.out.println(" ];");
-		System.out.println("-------- -----best Guess EM-------- ----------");
-		System.out.print("[");
-		for (int b=0;b<bestEMGuess.length;b++){
-			System.out.print(" "+bestEMGuess[b]);
-		}
-		System.out.println(" ];");
+		
 		System.out.println("-------- -----best correctedResults-------- ----------");
 		System.out.print("[");
 		for (int b=0;b<correctedResults.length;b++){
@@ -127,7 +123,7 @@ public class PloestPlotter {
 		df=new GaussianDataFitter (fitPoints,finalNumberOfMixtures );
 		System.out.println(finalNumberOfMixtures+" MM   params:"+	df.getBSCModel().printParams());
 		SamParser.barchart.BarChartWithFit(new GaussianMixturePDF(df.getBSCModel(),0.0,(double)SamParser.readCounts.length,0.1),finalNumberOfMixtures);
-
+		//call RatioFind rt=new RatioFind(ds);
 	}
 
 	public int indexOfMode(int[] vector){//finds the index of the most represented result in this vector

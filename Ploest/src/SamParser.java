@@ -84,7 +84,7 @@ public class SamParser {
 		barchart = new BarChart(readCounts);
 		PloestPlotter plotter = new PloestPlotter(contigsList,maxWindows);
 		
-		barchartWithFit(plotter);
+		//barchartWithFit(plotter);
 		
 	
 		// printContigList();

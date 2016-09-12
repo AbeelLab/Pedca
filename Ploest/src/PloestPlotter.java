@@ -1,3 +1,7 @@
+import java.awt.Color;
+import java.awt.Rectangle;
+import java.awt.Shape;
+import java.awt.geom.Rectangle2D;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -49,7 +53,6 @@ public class PloestPlotter {
 			//findTotalDataPoints();
 			createFitterDataset() ;
 			fitGaussianMixtureModel();
-			System.out.println("PloestPlotter sfsgood");
 			displayPloidyEstimationScatterPlot();
 
 		}catch (Exception e){
@@ -77,14 +80,14 @@ public class PloestPlotter {
 		MixtureModel[]emMMs=new MixtureModel[MAX_NB_MIXTURES+1];//contains the result of the EM fit for each of the mixtures
 		MixtureModel[]bscMMs=new MixtureModel[MAX_NB_MIXTURES+1];//contains the result of the BSC fit for each of the mixtures
 		GaussianDataFitter df;
-		int NbOfRuns=100;
+		int NbOfRuns=10;
 		int indofmin;
 		int[] bestBSCGuess=new int[MAX_NB_MIXTURES];//best BSC guess with bic model evaluation
 		int[] bestEMGuess=new int[MAX_NB_MIXTURES];//best BSC guess with EM model evaluation
 		int[] correctedResults=new int[MAX_NB_MIXTURES];//best guess with bic model evaluation + min points evaluation
 		gmPDF=new GaussianMixturePDF[NbOfRuns];
 		for (int r=0;r<NbOfRuns;r++){
-			System.out.println(" fitGaussianMixtureModel run:"+r);
+		
 			for (int k=1;k<MAX_NB_MIXTURES;k++){//fit to different number k of mixtures
 				df=new GaussianDataFitter (fitPoints,k );//fits a gauss mixture(by EM and BSC) to the 
 				emMMs[k]=df.getEMmodel();//store EM fit values
@@ -100,7 +103,7 @@ public class PloestPlotter {
 				aicsBSC[k]=aic;
 				bicsBSC[k]=bic;	
 			}
-			System.out.println("fitGaussianMixtureModel  2 loop out run:"+r);
+		
 			indofmin=findIndexOfMin(bicsBSC);//find index of gaussian mixture with min BIC value
 			bestBSCGuess[indofmin]++;//System.out.println(indofmin+" MM  BSC params:"+bscMMs[indofmin].printParams());	
 			indofmin=findIndexOfMin(bicsEM);//find index of gaussian mixture with min EM value
@@ -157,18 +160,16 @@ public class PloestPlotter {
 	}
 	
 	public void displayScatterPlot() throws IOException{
-		List<String> contArrList = new ArrayList<String>(contigsList.keySet());
+
+		//contArrList = new ArrayList<String>(contigsList.keySet());
 		for (int c=0;c<contigsList.size();c++){//for each contig
 			ContigData contigD=contigsList.get(contArrList.get(c));
-			final XYDataset data1 = createPlotDataset(contigD);
-			final XYItemRenderer renderer1 = new StandardXYItemRenderer();
-			
 			
 			chart = ChartFactory.createScatterPlot(
 					("Genome Coverage "+contigD.contigName), // chart title
 					"Genome Position (x 1000 bp)", // x axis label
 					"Coverage", // y axis label
-					data1, // XYDataset 
+					createPlotDataset(contigD), // XYDataset 
 					PlotOrientation.VERTICAL,
 					true, // include legend
 					true, // tooltips
@@ -180,10 +181,8 @@ public class PloestPlotter {
 			domain.setRange(0.00, maxX);
 			ValueAxis rangeAxis = xyPlot.getRangeAxis();	
 			rangeAxis.setRange(0.00, maxY);
-			xyPlot.setDataset(0, data1);
-			xyPlot.setRenderer(0, renderer1);
-		
-			ChartUtilities.saveChartAsJPEG(new File(Ploest.outputFile + "//" + Ploest.projectName+ "//Chart_Contig_"+contigD.contigName+".jpg"), chart, 1000, 600);
+	
+			ChartUtilities.saveChartAsJPEG(new File(Ploest.outputFile + "//" + Ploest.projectName+ "//Contig_Coverage_Charts//Chart_Contig_"+contigD.contigName+".jpg"), chart, 1000, 600);
 
 		}
 	}
@@ -192,15 +191,13 @@ public class PloestPlotter {
 		List<String> contArrList = new ArrayList<String>(contigsList.keySet());
 		for (int c=0;c<contigsList.size();c++){//for each contig
 			ContigData contigD=contigsList.get(contArrList.get(c));
-			final XYDataset data1 = createPlotDataset(contigD);
-			final XYItemRenderer renderer1 = new StandardXYItemRenderer();
-			
+			XYDataset data = createPloidyEstimationDataset(contigD);
 			
 			chart = ChartFactory.createScatterPlot(
-					("Genome Coverage "+contigD.contigName), // chart title
+					("Ploidy Estimation "+contigD.contigName), // chart title
 					"Genome Position (x 1000 bp)", // x axis label
 					"Coverage", // y axis label
-					data1, // XYDataset 
+					createPloidyEstimationDataset(contigD) , // XYDataset 
 					PlotOrientation.VERTICAL,
 					true, // include legend
 					true, // tooltips
@@ -211,20 +208,20 @@ public class PloestPlotter {
 			NumberAxis domain = (NumberAxis) xyPlot.getDomainAxis();
 			domain.setRange(0.00, maxX);
 			ValueAxis rangeAxis = xyPlot.getRangeAxis();	
-			rangeAxis.setRange(0.00, maxY);
-			xyPlot.setDataset(0, data1);
-			xyPlot.setRenderer(0, renderer1);
+			rangeAxis.setRange(0.00, MAX_NB_MIXTURES);	
 			
-			// add a second dataset and renderer...
-			final XYDataset data2 = createPoidyEstimationDataset(contigD)  ;
-			final XYItemRenderer renderer2 = new StandardXYItemRenderer();
-			xyPlot.setDataset(1, data2);
-			xyPlot.setRenderer(1, renderer2);
-			xyPlot.setDatasetRenderingOrder(DatasetRenderingOrder.FORWARD);
-			
-			JFreeChart overlaidChart=new JFreeChart("Genome Coverage with Ploidy Estimation", JFreeChart.DEFAULT_TITLE_FONT, xyPlot, true);
+			XYItemRenderer renderer = new StandardXYItemRenderer();
 
-			ChartUtilities.saveChartAsJPEG(new File(Ploest.outputFile + "//" + Ploest.projectName+ "//Ploidy_Estimation_Contig_"+contigD.contigName+".jpg"), overlaidChart, 1000, 600);
+			xyPlot.setDataset(0, data);
+			xyPlot.setRenderer(0, renderer);
+			renderer.setSeriesPaint(0, Color.blue);
+		    double size = 20.0;
+		    double delta = size / 2.0;
+		    Shape shape1 = new Rectangle2D.Double(-delta, -delta, size, size);
+			renderer.setSeriesShape(0,shape1);
+			//JFreeChart overlaidChart=new JFreeChart("Ploidy Estimation", JFreeChart.DEFAULT_TITLE_FONT, xyPlot, true);
+
+			ChartUtilities.saveChartAsJPEG(new File(Ploest.outputFile + "//" + Ploest.projectName+ "//Ploidy_Estimation_Charts//Ploidy_Estimation_Contig_"+contigD.contigName+".jpg"), chart, 1000, 600);
 
 		}
 	}
@@ -242,6 +239,7 @@ public class PloestPlotter {
 	}
 
 	private static XYDataset createPlotDataset(ContigData contigD) {
+
 		XYSeriesCollection result = new XYSeriesCollection();
 		XYSeries series = new XYSeries(contigD.getContigName());
 		maxX=0;
@@ -256,17 +254,14 @@ public class PloestPlotter {
 		}
 		result.addSeries(series);
 		totalDataPoints+=maxX+1;
-		System.out.println("createPlotDataset totalDataPoints total:"+totalDataPoints);
 		return result;
 	}
 
 
 	private  void createFitterDataset() {
 		fitPoints=new PVector[totalDataPoints];
-		//double sumOfValues=0;
 		int ind=0;
-		List<String> contArrList = new ArrayList<String>(contigsList.keySet());
-
+		//contArrList = new ArrayList<String>(contigsList.keySet());
 		for (int c=0;c<contigsList.size();c++){//for each contig
 			ContigData contigD=contigsList.get(contArrList.get(c));
 			for (int i = 0; i < (contigD.windPos.length); i++) {//for each window position
@@ -278,7 +273,7 @@ public class PloestPlotter {
 	}
 
 	
-	private  XYDataset createPoidyEstimationDataset(ContigData contigD) {
+	private  XYDataset createPloidyEstimationDataset(ContigData contigD) {
 		XYSeriesCollection result = new XYSeriesCollection();
 		XYSeries series = new XYSeries(contigD.getContigName());
 
@@ -287,7 +282,7 @@ public class PloestPlotter {
 		//this loop is for ESTIMATED PLOIDY PLOTTING
 		for (int i = 0; i < contigD.windPos.length; i++) {
 			x = i;        
-			y = (double)contigD.windPos[i]/rt.bestScore.getCandidateUnit();
+			y = (double)((int)(contigD.windPos[i]/rt.bestScore.getCandidateUnit()));
 			series.add(x, y);		         
 		}
 		result.addSeries(series);

@@ -24,7 +24,9 @@ public class Ploest {
 				projectName=args[0];
 				inputFile = (args[1]);	
 				outputFile = args[2];
-				currentFolder =	 new File(outputFile + "//" + projectName);
+				currentFolder =	 new File(outputFile + "//" + projectName+ "//Contig_Coverage_Charts//");
+				currentFolder.mkdirs();
+				currentFolder =	 new File(outputFile + "//" + projectName+ "//Ploidy_Estimation_Charts//");
 				currentFolder.mkdirs();
 				if ((args.length>2) && (args[2]).equals("-w"))windowLength=Integer.parseInt(args[3]);
 				

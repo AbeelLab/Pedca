@@ -44,7 +44,7 @@ public class ContigData {
 				wsum += startPos[stIndex++];		
 			}
 			
-			windPos[wdIndex++] =(int) (COV_RATE*(wsum /windLength));// relative average of coverage over
+			windPos[wdIndex++] =(int) (wsum /(windLength/COV_RATE));// relative average of coverage over
 													// the range of the window;
 			if (windPos[(wdIndex-1)]>max)max=windPos[(wdIndex-1)];
 			

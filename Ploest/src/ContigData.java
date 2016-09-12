@@ -10,7 +10,7 @@ public class ContigData {
 	int[] windPos;
 	int windLength;
 	int maxWindows;
-	static int COV_RATE=10;//rate by which is divided the average coverage of each sliding window 
+	static double COV_RATE=10;// ratio by which the average coverage of each sliding window  is mutiplied
 						  //the bigger, the more detailed will be the readsDistribution bar chart
 	
 
@@ -28,11 +28,12 @@ public class ContigData {
 		return contigName;
 	}
 
-	public int windPos(int wl) throws FileNotFoundException, UnsupportedEncodingException {
+	public int windPos(int wl) throws FileNotFoundException, UnsupportedEncodingException {//computes the windPos vector, storing 
+			//at each window position, the number of reads found in that window. Returns the maximum value found at that window
+											
 		int max=0;
 		windLength = wl;
 		windPos = new int[(startPos.length / wl) * 2];
-		//System.out.println(" :windPos.length:"+windPos.length+" (startPos.length-windLength):"+(startPos.length-windLength));
 		int stIndex = 0;// index in startPos array
 		int wdIndex = 0;
 		int wsum = 0;// window sum
@@ -43,7 +44,7 @@ public class ContigData {
 				wsum += startPos[stIndex++];		
 			}
 			
-			windPos[wdIndex++] =(wsum /(windLength/COV_RATE));// relative average of coverage over
+			windPos[wdIndex++] =(int) (COV_RATE*(wsum /windLength));// relative average of coverage over
 													// the range of the window;
 			if (windPos[(wdIndex-1)]>max)max=windPos[(wdIndex-1)];
 			

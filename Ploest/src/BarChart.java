@@ -75,7 +75,7 @@ public class BarChart {
 			plot.setDatasetRenderingOrder(DatasetRenderingOrder.FORWARD);
 
 			// return a new chart containing the overlaid plot...
-			overlaidChart=new JFreeChart("Overlaid Plot Example", JFreeChart.DEFAULT_TITLE_FONT, plot, true);
+			overlaidChart=new JFreeChart("Gauss Mixture Model Fit of Reads Distribution", JFreeChart.DEFAULT_TITLE_FONT, plot, true);
 
 
 			try {

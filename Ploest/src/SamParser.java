@@ -57,7 +57,7 @@ public class SamParser {
 		PrintWriter writer = new PrintWriter(Ploest.outputFile + "//" + Ploest.projectName+ "//"+Ploest.projectName+"SamParsed.txt", "UTF-8");
 		String line = "";
 		int i = 1;
-		System.out.println(contigsList.size()+" Contigs");
+		System.out.println("Analyzing "+contigsList.size()+" contigs");
 		String refName = "";// for debugging a bad line in the .sam file
 		int alStart;
 
@@ -83,12 +83,6 @@ public class SamParser {
 		windowSlideContigList();
 		barchart = new BarChart(readCounts);
 		PloestPlotter plotter = new PloestPlotter(contigsList,maxWindows);
-		
-		//barchartWithFit(plotter);
-		
-	
-		// printContigList();
-
 	}
 
 	
@@ -98,15 +92,9 @@ public class SamParser {
 
 
 	private void barchartWithFit(PloestPlotter plotter ) {
-		//BarChart barchart = new BarChart(readCounts);
-		//System.out.println("plotter.gmPDF size:"+plotter.gmPDF.length);
 		for (int r=0;r<plotter.gmPDF.length;r++){
-			//System.out.println("r:"+r);
 			barchart.BarChartWithFit(plotter.gmPDF[r],r);
-		}
-		
-		
-		
+		}		
 	}
 
 	
@@ -206,15 +194,9 @@ public class SamParser {
 			//totalDataPoints+=maxWindows+1;
 		}
 		readCounts = new int[(int)Math.ceil(maxWindows*1.05)];
-		System.out.println("readCounts SIZE:"+readCounts.length);
-		
-		 
 	}
 	
-	
-	
-	
-	
+
 	public void printContigList() {
 
 		for (int i = 0; i < contArrList.size(); i++) {

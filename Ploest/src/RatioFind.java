@@ -1,3 +1,6 @@
+import java.io.FileNotFoundException;
+import java.io.PrintWriter;
+import java.io.UnsupportedEncodingException;
 import java.math.RoundingMode;
 import java.text.DecimalFormat;
 import java.util.Stack;
@@ -8,17 +11,23 @@ public class RatioFind
 	double[] ds;
 	DecimalFormat df = new DecimalFormat("#.##");
 	CNVscore[] scores;
+	CNVscore bestScore;
+	
+	int consensus;//% of consensus in corrected results (certainty of this prediction)
 
-	public RatioFind(double[] ds){
+	public RatioFind(double[] ds,int consensusPerc){
 		df.setRoundingMode(RoundingMode.CEILING);
-		this.ds=ds;
 		java.util.Arrays.sort(ds);
+		this.ds=ds;
+		consensus = consensusPerc;
 		scores=new CNVscore[(MAX_NB_MIXTURES+1-ds.length)];
 
 		double candUnit=0.0;
 		double product=00;
 		double[] productsVect;
-		for (int i=(MAX_NB_MIXTURES+1-ds.length);i>0;i--){
+		for (int i=(MAX_NB_MIXTURES+1-ds.length);i>0;i--){//TODO: I'would rewrite this section to start evaluating the candidate unit 
+															//from the bigger gaussian, instead of the smallest, which will give a higher 
+															//accuracy estimation of candUnit
 			candUnit=ds[0]/i;
 			productsVect=new double[MAX_NB_MIXTURES];
 
@@ -28,9 +37,9 @@ public class RatioFind
 			}
 			scores[i-1]=nextNearestMeans(productsVect,i);	  
 		}
-		findMinScore(scores);
-
+		bestScore=findMinScore(scores);
 	}
+	
 	private CNVscore nextNearestMeans(double[] productsVect, int ratio) {
 		CNVscore result = null;
 		int[] resultInds=new int[productsVect.length];
@@ -59,12 +68,12 @@ public class RatioFind
 		return result;	
 	}
 
-	private class CNVscore{
+	public class CNVscore{
 		boolean respectsMaxNbOfMixtures=true;//validates this score if CN of secondary ds (d1,d2,etc...) are > 0
-		int ratio;
 		double [] bestMinDistances=new double[ds.length];
 		int [] bestCNVIndexes=new int[ds.length];
 		double score=0.0;
+		final double candidateUnit;
 
 		private CNVscore(int [] cnvi,double [] md,int ratio){
 			//initialize vectors
@@ -76,7 +85,7 @@ public class RatioFind
 
 			bestCNVIndexes[0]=ratio;
 			bestMinDistances[0]=0.0;
-
+			candidateUnit=ds[0]/ratio;
 			computeScore(cnvi,md);
 			/*
 		System.out.print(" cnv[");
@@ -93,6 +102,10 @@ public class RatioFind
 
 		}
 
+		public double getCandidateUnit(){
+			return candidateUnit;
+		}
+		
 		private double findMax(double[] md) {
 			double max=0.0;
 			for(int i=0;i<md.length;i++){
@@ -128,11 +141,11 @@ public class RatioFind
 		public void printScore(){
 			System.out.println("========================");
 			for(int d=0;d<ds.length;d++){
-				System.out.println("d:"+d+" cnv:"+bestCNVIndexes[d]+" dist:"+bestMinDistances[d]);
+				System.out.println("gaussian cluster number:"+d+" Copy number estimation:"+bestCNVIndexes[d]+" Distance error:"+bestMinDistances[d]);
 			}
 			System.out.println();
-			System.out.println("score:"+score);
-			System.out.println("Respects Max Nb Of Mixtures = "+respectsMaxNbOfMixtures);
+			System.out.println("Estimation score:"+score);
+			System.out.println("Maximum Nb Of Mixtures respected = "+respectsMaxNbOfMixtures);
 			System.out.println("========================");
 		}
 	}
@@ -165,6 +178,38 @@ public class RatioFind
 		}
 		return result;
 
+	}
+	
+	public void writeOut() {
+		try {
+			PrintWriter writer = new PrintWriter(Ploest.outputFile + "//" + Ploest.projectName+ "//"+Ploest.projectName+"PloidyEstimation.txt", "UTF-8");
+			
+			
+			writer.println(">FINAL NUMBER OF MIXTURES: "+PloestPlotter.finalNumberOfMixtures+" gaussians\n" );
+			writer.println("\n");
+			
+			for (int g=0;g<PloestPlotter.dfResult.getBSCModel().param.length;g++){
+				writer.println("weight["+g+"]:"+PloestPlotter.gMMweights[g]+" \tmu["+g+"]"+PloestPlotter.gMMmus[g]+"\tsigma["+g+"]:"+PloestPlotter.gMMsigmas[g]);		
+			}
+				
+			writer.println("\n");
+			
+			writer.println("> PLOIDY ESTIMATION :"+ Ploest.projectName);
+			writer.println("> GAUSSIAN CLUSTER NUMBER \tCOPY NUMBER ESTIMATION \t DISTANCE ERROR ");
+			for(int d=0;d<ds.length;d++){
+				writer.println("\t\t"+d+" \t\t\t"+bestScore.bestCNVIndexes[d]+" \t\t\t"+bestScore.bestMinDistances[d]);
+			}
+			writer.println("\n");
+			writer.println("Estimation distance score: "+bestScore.score);
+			writer.println("Estimation consensus: "+consensus+" %");
+			writer.println("Maximum Nb Of Mixtures respected = "+bestScore.respectsMaxNbOfMixtures);
+			writer.close();
+		} catch (FileNotFoundException | UnsupportedEncodingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		
 	}
 
 

@@ -27,6 +27,7 @@ public class SamParser {
 	int windowLength ;
 	List<String> contArrList;
 	int maxWindows;
+	static int maxCoverage;
 	PloestPlotter plotter;//ploidy estimation  plott and pdf gaussian fit data
 	static BarChart barchart;
 
@@ -54,8 +55,8 @@ public class SamParser {
 
 		inputSam.setValidationStringency(ValidationStringency.SILENT);
 		SAMRecordIterator iter = inputSam.iterator();
-		PrintWriter writer = new PrintWriter(Ploest.outputFile + "//" + Ploest.projectName+ "//"+Ploest.projectName+"SamParsed.txt", "UTF-8");
-		String line = "";
+		//PrintWriter writer = new PrintWriter(Ploest.outputFile + "//" + Ploest.projectName+ "//"+Ploest.projectName+"SamParsed.txt", "UTF-8");
+		//String line = "";
 		int i = 1;
 		System.out.println("Analyzing "+contigsList.size()+" contigs");
 		String refName = "";// for debugging a bad line in the .sam file
@@ -66,9 +67,9 @@ public class SamParser {
 			SAMRecord rec = iter.next();
 			refName = rec.getReferenceName();
 			alStart = rec.getAlignmentStart();
-			line = (i + " " + rec.getReadName() + " " + refName + " " + alStart + " " + rec.getAlignmentEnd() + " "
-					+ rec.getReadLength() + " " + rec.getMappingQuality() + " ;");
-			writer.println(line);
+			//line = (i + " " + rec.getReadName() + " " + refName + " " + alStart + " " + rec.getAlignmentEnd() + " "
+		    //			+ rec.getReadLength() + " " + rec.getMappingQuality() + " ;");
+			//writer.println(line);
 
 			try {
 				contigsList.get(refName).setPos(alStart);//storing the starting positions in the corresponing contig
@@ -79,26 +80,21 @@ public class SamParser {
 		}
 		iter.close();
 		inputSam.close();
-		writer.close();
+		//writer.close();
 		windowSlideContigList();
 		barchart = new BarChart(readCounts);
-		PloestPlotter plotter = new PloestPlotter(contigsList,maxWindows);
+		plotter = new PloestPlotter(contigsList,maxWindows);
 	}
 
-	
-
-	
-
-
-
+	/*
 	private void barchartWithFit(PloestPlotter plotter ) {
 		for (int r=0;r<plotter.gmPDF.length;r++){
 			barchart.BarChartWithFit(plotter.gmPDF[r],r);
 		}		
 	}
-
+*/
 	
-	public void cleanContigList(){//To clean outliers -- TURNED OUT TO BE A BAD iDEA
+	public void cleanContigList(){//To clean outliers -- TURNED OUT TO BE A BAD iDEA (could still be useful to show windows with irregular coverage -transforms it to zero in the plot-)
 		//CLEAN READ COUNTS with non significant presence (outliers)
 		//first clean in readCounts
 		int ctrDELETEME=0;
@@ -161,18 +157,21 @@ public class SamParser {
 			ContigData currentContig = contigsList.get(contArrList.get(i));
 			for (int w = 0; w < currentContig.windPos.length; w++) {//store all readCounts of every window position 
 				readCounts[currentContig.windPos[w]] += 1;
+				if(currentContig.windPos[w]>maxCoverage)maxCoverage=currentContig.windPos[w];
 			}
 		}
 		
 		//cleanContigList();//Clean outliers BAD IDEA
 		
+		
+		 //PRINT OUT readCounts
 		PrintWriter writer = new PrintWriter(Ploest.outputFile + "//" + Ploest.projectName+ "//readCounts.txt", "UTF-8");
 		for (int r = 0; r < readCounts.length; r++) {
 			writer.print(r + " " + readCounts[r] + "; ");
 		}
 		writer.println();
 		writer.close();
-
+		 
 		
 	}
 

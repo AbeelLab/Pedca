@@ -17,7 +17,7 @@ public class RatioFind
 
 	public RatioFind(double[] ds,int consensusPerc){
 		df.setRoundingMode(RoundingMode.CEILING);
-		java.util.Arrays.sort(ds);
+		//java.util.Arrays.sort(ds);
 		this.ds=ds;
 		consensus = consensusPerc;
 		scores=new CNVscore[(MAX_NB_MIXTURES+1-ds.length)];
@@ -195,7 +195,7 @@ public class RatioFind
 			writer.println("\n");
 			
 			writer.println("> PLOIDY ESTIMATION :"+ Ploest.projectName);
-			writer.println("> GAUSSIAN CLUSTER NUMBER \tCOPY NUMBER ESTIMATION \t DISTANCE ERROR ");
+			writer.println("> GAUSSIAN_CLUSTER_NUMBER \tCOPY_NUMBER_ESTIMATION \t DISTANCE_ERROR ");
 			for(int d=0;d<ds.length;d++){
 				writer.println("\t\t"+d+" \t\t\t"+bestScore.bestCNVIndexes[d]+" \t\t\t"+bestScore.bestMinDistances[d]);
 			}

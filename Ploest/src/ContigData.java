@@ -37,8 +37,8 @@ public class ContigData {
 		int stIndex = 0;// index in startPos array
 		int wdIndex = 0;
 		int wsum = 0;// window sum
-		PrintWriter writer = new PrintWriter(Ploest.outputFile + "//" + Ploest.projectName+"//windPositionsTest.txt", "UTF-8");
-		String line="";
+		//PrintWriter writer = new PrintWriter(Ploest.outputFile + "//" + Ploest.projectName+"//windPositionsTest.txt", "UTF-8");
+		//String line="";
 		while (stIndex < (startPos.length-windLength) && (wdIndex<windPos.length-1)) {
 			for (int i = 0; i < windLength; i++) {
 				wsum += startPos[stIndex++];		
@@ -48,14 +48,14 @@ public class ContigData {
 													// the range of the window;
 			if (windPos[(wdIndex-1)]>max)max=windPos[(wdIndex-1)];
 			
-			line="wdIndex:"+(wdIndex-1)+" wsum:"+wsum+" avg:"+(windPos[wdIndex-1]);
+			//line="wdIndex:"+(wdIndex-1)+" wsum:"+wsum+" avg:"+(windPos[wdIndex-1]);
 			stIndex = stIndex - (wl / 2);// window slides over all positions for
 											// a length of wl , but a new window
 											// is computed after each wl/2;
 			wsum=0;
-			writer.println(line);
+			//writer.println(line);
 		}
-		writer.close();
+		//writer.close();
 		maxWindows=max;
 		
 		return max;

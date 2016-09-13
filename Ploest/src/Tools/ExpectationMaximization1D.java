@@ -70,8 +70,8 @@ public class ExpectationMaximization1D {
 		MixtureModel fout = f.clone();
 		
 		// Variables
-		int        k = fout.size;
-		int        n = points.length;
+		int        k = fout.size;// Number of components in the mixture model
+		int        n = points.length;//number of data points
 		int        row, col;
 		int        iterations = 0;
 		double[][] p = new double[n][k];

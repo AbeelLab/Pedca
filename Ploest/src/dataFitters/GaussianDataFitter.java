@@ -29,11 +29,11 @@ public class GaussianDataFitter {
 		title += "+---------------------------------------------+\n";
 		title += "| EM Gauss Fitter | (with K-means verification)\n";
 		title += "+---------------------------------------------+\n";
-		//System.out.print(title);
+		//
 
 		// Variables
 
-		Vector<PVector>[] clusters = KMeans.run(points, n);
+		Vector<PVector>[] clusters = KMeans.run(points, n);//intial estimation of n clusters 
 
 	
 		// Classical EM

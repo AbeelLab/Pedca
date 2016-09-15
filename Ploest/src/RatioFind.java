@@ -201,7 +201,7 @@ public class RatioFind
 			}
 			writer.println("\n");
 			writer.println("Estimation distance score: "+bestScore.score);
-			writer.println("Estimation consensus: "+consensus+" %");
+			writer.println("Estimation consensus: "+consensus+" %");//100*correctedResults[finalNumberOfMixtures]/NbOfRuns
 			writer.println("Maximum Nb Of Mixtures respected = "+bestScore.respectsMaxNbOfMixtures);
 			writer.close();
 		} catch (FileNotFoundException | UnsupportedEncodingException e) {

@@ -10,7 +10,7 @@ public class ExpectationMaximization1D {
 	/**
 	 * Maximum number of iterations permitted.
 	 */
-	private static int MAX_ITERATIONS = 30;
+	private static int MAX_ITERATIONS = 35;
 
 	
 	/**
@@ -24,7 +24,7 @@ public class ExpectationMaximization1D {
 		MixtureModel mm = new MixtureModel(clusters.length);
 		mm.EF = new UnivariateGaussian();
 		
-		// Amount of points
+		// Amount of total points
 		int nb = 0;
 		for (int i=0; i<clusters.length; i++)
 			nb += clusters[i].size();
@@ -75,11 +75,14 @@ public class ExpectationMaximization1D {
 		int        row, col;
 		int        iterations = 0;
 		double[][] p = new double[n][k];
+		PVector param = new PVector(2);
 		
 		// Initial log likelihood
 		double logLikelihoodNew       = logLikelihood(points, fout);
-		double logLikelihoodThreshold = Math.abs(logLikelihoodNew) * 0.01;
+		double logLikelihoodThreshold =  10e-10;//Math.abs(logLikelihoodNew) * 0.0001;
 		double logLikelihoodOld;
+		
+		
 		
 		// Display
 		//System.out.printf("%2d : %12.6f\n", iterations, logLikelihoodNew);
@@ -122,9 +125,9 @@ public class ExpectationMaximization1D {
 					sigma       += p[row][col]*diff*diff;
 				}
 				sigma /= sum;
-
+				
 				// Set new mu and sigma to the PVectorMatrix
-				PVector param = new PVector(2);
+				param = new PVector(2);
 				param.array[0] = mu;
 				param.array[1] = sigma;
 				fout.param[col]   = param;
@@ -138,9 +141,11 @@ public class ExpectationMaximization1D {
 			
 			// Display
 			//System.out.printf("%2d : %12.6f\n", iterations, logLikelihoodNew);
-			
-		} while( Math.abs(logLikelihoodNew-logLikelihoodOld)>logLikelihoodThreshold && iterations<MAX_ITERATIONS );
+			//System.out.println(" EM iter: "+iterations+ " logLN:"+logLikelihoodNew+" logLO:"+logLikelihoodOld+" dif:"+Math.abs(logLikelihoodNew-logLikelihoodOld));
+		} while( Math.abs((logLikelihoodNew - logLikelihoodOld)/logLikelihoodOld)>logLikelihoodThreshold && iterations<MAX_ITERATIONS );
 		
+		//param.array[1] = param.array[1]/2;
+		//fout.param[col]   = param;
 		// Return
 		return fout;
 	}

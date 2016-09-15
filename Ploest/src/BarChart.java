@@ -42,7 +42,7 @@ public class BarChart {
 		histChart = ChartFactory.createBarChart("Read Count Distribution", "Reads Count", "%Contigs", histDataset,
 				PlotOrientation.VERTICAL, false, true, false);
 		try {
-			ChartUtilities.saveChartAsJPEG(new File(Ploest.outputFile + "//" + Ploest.projectName+ "//readsDistribution.jpg"), histChart, 1000, 600);
+			ChartUtilities.saveChartAsJPEG(new File(Ploest.outputFile + "//" + Ploest.projectName+ "//readsDistribution.jpg"), histChart, 2000, 1200);
 		} catch (IOException e) {
 			System.err.println("Problem occurred creating chart.");
 		}

@@ -55,17 +55,18 @@ public class KMeans {
 		// Initialize the first centroid
 		PVector[] centroids = new PVector[k];
 		Random    rand      = new Random();
-		centroids[0]        = (PVector)points[rand.nextInt(points.length)].clone();
-		
-		// Initialize the other centroids
+		centroids[0] = (PVector)points[rand.nextInt(points.length)].clone();
+
+		// Initialize the other centroids making sure they all have different values
 		for (int i=1; i<k; i++){
 			boolean cond = false;
 			PVector tmp;
 			do{
 				cond = false;
 				tmp  = points[rand.nextInt(points.length)];
+				
 				for (int j=0; j<i; j++){
-					if (PVector.equals(tmp, centroids[j])){
+					if (PVector.equals(tmp, centroids[j])){//makes sure no 2 centroids are the same
 						cond = true;
 						break;
 					}
@@ -73,7 +74,6 @@ public class KMeans {
 			}while(cond);
 			centroids[i] = (PVector)tmp.clone();
 		}
-		
 		// Return
 		return centroids;
 	}

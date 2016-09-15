@@ -2,50 +2,61 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
 
 import dataFitters.GaussianDataFitter;
 public class Ploest {
+
 	static String projectName="CBS_Novogene_";
 	static String inputFile ="C://Users//Mel//Documents//BIOINFORMATICS//DELFT_Research//Data//CBS_Novogene//sorted_CBS1483Novogene.bam";
-	static String outputFile ="C://Users//Mel//Documents//BIOINFORMATICS//DELFT_Research//Data//CBS_Novogene//PloEst";
-	
+	static String outputFile ="C://Users//Mel//Documents//BIOINFORMATICS//DELFT_Research//Data//CBS_Novogene";
+/*
+	static String projectName="PloEst200";
+	static String inputFile ="C://Users//Mel//Documents//BIOINFORMATICS//DELFT_Research//Data//SimulatedReads//200bp.sam";
+	static String outputFile ="C://Users//Mel//Documents//BIOINFORMATICS//DELFT_Research//Data//SimulatedReads//PloEst";
+	*/	
+
 	static int windowLength=500;
 	static File currentFolder;
 	public static void main(String[] args) {
-		//FitGaussian fg=new FitGaussian("C:\\Users\\Mel\\Documents\\BIOINFORMATICS\\DELFT_Research\\Data\\SimulatedReads\\PloEst\\PloEst200\\points.txt");
-		//return;
-		//*
+			
 		if (args.length > 0) {
 			//-help
 			if ((args[0]).equals("-h") || (args[0]).equals("-help") || (args[0]).equals("help") || (args[0]).equals("help")){
-					printHelp();
+				printHelp();
 			}else {		
-				
+
 				projectName=args[0];
 				inputFile = (args[1]);	
 				outputFile = args[2];
-				currentFolder =	 new File(outputFile + "//" + projectName+ "//Contig_Coverage_Charts//");
-				currentFolder.mkdirs();
-				currentFolder =	 new File(outputFile + "//" + projectName+ "//Ploidy_Estimation_Charts//");
-				currentFolder.mkdirs();
-				if ((args.length>2) && (args[2]).equals("-w"))windowLength=Integer.parseInt(args[3]);
-				
-				try {
-					SamParser bp=new SamParser(inputFile,outputFile);
-				} catch (FileNotFoundException e) {
-					// TODO Auto-generated catch block
-					System.out.println("FileNotFoundException");
-					e.printStackTrace();
-				} catch (UnsupportedEncodingException e) {
-					// TODO Auto-generated catch block
-					System.out.println("UnsupportedEncodingException");
-					e.printStackTrace();
-				}
+
+				//if ((args.length>2) && (args[2]).equals("-w"))windowLength=Integer.parseInt(args[3]);
+
+
 			}
 		}
+		currentFolder =	 new File(outputFile + "//" + projectName+ "//Contig_Coverage_Charts//");
+		currentFolder.mkdirs();
+		currentFolder =	 new File(outputFile + "//" + projectName+ "//Ploidy_Estimation_Charts//");
+		currentFolder.mkdirs();
+
+
+		try {
+			SamParser bp=new SamParser(inputFile,outputFile);
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			System.out.println("FileNotFoundException");
+			e.printStackTrace();
+		} catch (UnsupportedEncodingException e) {
+			// TODO Auto-generated catch block
+			System.out.println("UnsupportedEncodingException");
+			e.printStackTrace();
+		}
+
+
 	}
-	
-	
+
+
 	public static void printHelp() {
 		System.out.println("\n +++++++++++++++++++++++++++++++++++++++++++++++++++++++");
 		System.out.println("\nPloEst -help:");
@@ -82,7 +93,7 @@ public class Ploest {
 				"java  -jar  findMultiKmers.jar ecoliMKmersRunUntilEnd C:\\<Pathway to input file>\\Ecoli.fasta  C:\\<Pathway to output folder> -m 3 -k -e -r 8 5 ");
 
 		System.exit(1);
-		
+
 		//*/
 	}
 

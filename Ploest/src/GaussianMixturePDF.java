@@ -15,17 +15,16 @@ public class GaussianMixturePDF {
     
 	public GaussianMixturePDF(MixtureModel mm,double beg,double end){
 		step=((end-beg)/500);
-		System.out.println("GaussianMixturePDF beg:"+beg+" end:"+end+" step:"+step);
+		//System.out.println("GaussianMixturePDF beg:"+beg+" end:"+end+" step:"+step+" xdatapoint size:"+((int) ((end-beg)/step)));
 		mus=new double[mm.size];
 		sigmas=new double[mm.size];
 		this.beg=beg;
 		this.end=end;
-		this.step=step;
+	
 		yDataPoints=new double[(int) ((end-beg)/step)];
 		xDataPoints=new double[(int) ((end-beg)/step)];
 		
-		
-
+	
 		for (int p=0;p<mm.size;p++){//for each param extract mu and sigma
 			mus[p]=((jMEF.PVector)mm.param[p]).array[0];	
 			sigmas[p]=((jMEF.PVector)mm.param[p]).array[1];	
@@ -34,20 +33,21 @@ public class GaussianMixturePDF {
 		
 		double dp=beg;//datapoint
 		int dpInd=0;
-		System.out.println("GaussianMixturePDF beg while // Mixture model size:"+mm.size);
-		while (dp<end){//for each datapoint
+		while (dp<(end-step)){//for each datapoint
 			currentY=0.0;
 			
 			for(int mixtElem=0;mixtElem<mm.size;mixtElem++){//for each mixture member
 				currentY+=mm.weight[mixtElem]*pdf(dp,mus[mixtElem],sigmas[mixtElem]);			
 			}
-			if(dp>30 && dp<50)System.out.println("dpx:"+dp+" dpy:"+currentY);
+			//if(dp>30 && dp<50)
+			
 			xDataPoints[dpInd]=dp;
 			yDataPoints[dpInd++]=currentY;
 			if (currentY>maxYvalue)maxYvalue=currentY;
+			//System.out.println("dp:"+(dpInd-1)+" dpx:"+dp+" dpy:"+currentY);
 			dp+=step;
 		}
-		
+
 	}
 	
 	

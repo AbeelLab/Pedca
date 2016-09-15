@@ -22,15 +22,16 @@ public class SamParser {
 	Map<String, ContigData> contigsList;// Map of ContigDatas(value) and their
 										// name (key)
 	static int[] readCounts;
-	//List<Integer> points=new ArrayList<Integer>();
+	static PVector[] fitPoints;//all the points of all windows positions (coverages) in all contigs. Used to fit the read counts distribution chart
 	
 	int windowLength ;
 	List<String> contArrList;
-	int maxWindows;
-	static int maxCoverage;
+	static int maxWindows;//max coverage found in all contigs (to be used in y axis reads counts)
 	PloestPlotter plotter;//ploidy estimation  plott and pdf gaussian fit data
 	static BarChart barchart;
-
+	static int totalDataPoints=0;//total amount of datapoints (all contigs considered)
+	
+	
 	public SamParser(String inputFile, String outputfile)
 			throws FileNotFoundException, UnsupportedEncodingException {
 		this.windowLength=Ploest.windowLength;
@@ -120,9 +121,9 @@ public class SamParser {
 		boolean hasChanged=false; 
 		for (int i = 0; i < contArrList.size(); i++) {//for each contig
 			ContigData currentContig = contigsList.get(contArrList.get(i));//get the contig from contigsList
-			for (int w = 0; w < currentContig.windPos.length; w++) {//check all readCounts of every window position 
-				if(readCounts[currentContig.windPos[w]]==minYCorrectedValue){
-					currentContig.windPos[w]=0;//(int) (currentContig.windPos[w]/10);//instead of putting 0 we reduce keeping the proportions, so that the curve mins are respected
+			for (int w = 0; w < currentContig.windPos.size(); w++) {//check all readCounts of every window position 
+				if(readCounts[currentContig.windPos.get(w)]==minYCorrectedValue){
+					currentContig.windPos.set(w, 0);//[w]=0;//(int) (currentContig.windPos[w]/10);//instead of putting 0 we reduce keeping the proportions, so that the curve mins are respected
 					ctrDELETEME++;
 					hasChanged=true;
 				}
@@ -140,8 +141,8 @@ public class SamParser {
 		contArrList = new ArrayList<String>(contigsList.keySet());
 		for (int i = 0; i < contArrList.size(); i++) {//for each contig
 			ContigData currentContig = contigsList.get(contArrList.get(i));
-			for (int w = 0; w < currentContig.windPos.length; w++) {//store all readCounts of every window position 
-				readCounts[currentContig.windPos[w]] ++;
+			for (int w = 0; w < currentContig.windPos.size(); w++) {//store all readCounts of every window position 
+				readCounts[currentContig.windPos.get(w)] ++;
 			}
 		}
 		readCounts[0]=0;//to avoid a false peak at 0 which tells us nothing about the real read counts distribution
@@ -152,22 +153,43 @@ public class SamParser {
 	public void windowSlideContigList() throws FileNotFoundException, UnsupportedEncodingException {
 		findMaxWindows();
 		
-		
+		int nbZeroVals=0;
+		//fill readCounts and count totalDataPoints substracting the zero values
 		for (int i = 0; i < contArrList.size(); i++) {//for each contig
 			ContigData currentContig = contigsList.get(contArrList.get(i));
-			for (int w = 0; w < currentContig.windPos.length; w++) {//store all readCounts of every window position 
-				readCounts[currentContig.windPos[w]] += 1;
-				if(currentContig.windPos[w]>maxCoverage)maxCoverage=currentContig.windPos[w];
+			for (int w = 0; w < currentContig.windPos.size(); w++) {//store all readCounts of every window position 
+				if(currentContig.windPos.get(w)!=0){
+					readCounts[currentContig.windPos.get(w)] += 1;
+				}else nbZeroVals++;				
 			}
+			totalDataPoints+= (currentContig.windPos.size()-nbZeroVals);
+			nbZeroVals=0;
+		}
+		System.out.println(" totalDataPoints="+totalDataPoints);
+		//fill fit points
+		int ind=0;
+		fitPoints=new PVector[SamParser.totalDataPoints];
+		for (int i = 0; i < contArrList.size(); i++) {//for each contig
+			ContigData currentContig = contigsList.get(contArrList.get(i));
+			for (int w = 0; w < currentContig.windPos.size(); w++) {//store all readCounts of every window position 
+				if(currentContig.windPos.get(w)!=0){
+					//readCounts[currentContig.windPos.get(w)] += 1;
+					PVector curVec=new PVector(1);
+					curVec.array[0]=currentContig.windPos.get(w);//coverage per window position
+					//if(w>(currentContig.windPos.size()-20))System.out.print(" p:"+currentContig.windPos.get(w));
+					fitPoints[ind++]=curVec; 
+					
+				}			
+			}	
+			//System.out.println();
 		}
 		
-		//cleanContigList();//Clean outliers BAD IDEA
-		
-		
+		insureReadCountsRange();//excludes outliers values (very high and non significant) form reaCount
+																//cleanContigList();//Clean outliers BAD IDEA
 		 //PRINT OUT readCounts
 		PrintWriter writer = new PrintWriter(Ploest.outputFile + "//" + Ploest.projectName+ "//readCounts.txt", "UTF-8");
 		for (int r = 0; r < readCounts.length; r++) {
-			writer.print(r + " " + readCounts[r] + "; ");
+			writer.println(r + " " + readCounts[r] + "; ");
 		}
 		writer.println();
 		writer.close();
@@ -175,11 +197,68 @@ public class SamParser {
 		
 	}
 
+	private void insureReadCountsRange() {
+		int sum=0;
+		for (int i = 0; i < readCounts.length; i++) {
+			sum+=readCounts[i];
+		}
+		int space=sum;
+		int midPoint;
+		for (midPoint=0;midPoint<readCounts.length;midPoint++){
+			space-=readCounts[midPoint];
+			if (space<(sum*0.01))break;//select range that takes 99% of all datapoints in readcounts
+		}
+		
+		//redo readCounts with proper range if necesary
+		int SAFE_RANGE=2;
+		if((readCounts.length-midPoint)>(SAFE_RANGE*midPoint)){
+			
+			System.out.println("reaffecting ReadCounts range. Old:"+readCounts.length+ " new:"+(int)Math.ceil(midPoint*SAFE_RANGE));
+			totalDataPoints=0;
+			readCounts = new int[(int)Math.ceil(midPoint*SAFE_RANGE)];
+			int nbNullVals=0;
+			//fill readCounts without zero values nor extralarge values
+			for (int i = 0; i < contArrList.size(); i++) {//for each contig
+				ContigData currentContig = contigsList.get(contArrList.get(i));
+				for (int w = 0; w < currentContig.windPos.size(); w++) {//store all readCounts of every window position 
+					if (currentContig.windPos.get(w)<midPoint*SAFE_RANGE && currentContig.windPos.get(w)!=0){//but only if they are inside the new range
+						readCounts[currentContig.windPos.get(w)] += 1;//readCounts[0] is goign to be kept zero since it doesn't add info to our problem
+					}else if (currentContig.windPos.get(w)>=midPoint*SAFE_RANGE){
+						currentContig.windPos.set(w, null);
+						nbNullVals++;
+					}
+				}
+				totalDataPoints+= (currentContig.windPos.size()-nbNullVals);
+				nbNullVals=0;
+			}
+			
+			
+			//fill fit points (dataset to be fitted)
+			int ind=0;
+			fitPoints=new PVector[SamParser.totalDataPoints];
+			for (int i = 0; i < contArrList.size(); i++) {//for each contig
+				ContigData currentContig = contigsList.get(contArrList.get(i));
+				for (int w = 0; w < currentContig.windPos.size(); w++) {//store all readCounts of every window position 
+					if(currentContig.windPos.get(w)!=null){//extra big values have been set to zero in previoous loop
+						PVector curVec=new PVector(1);
+						curVec.array[0]=currentContig.windPos.get(w);//coverage per window position
+						fitPoints[ind++]=curVec; 
+					}			
+				}		
+			}
+			
+			
+			
+		}else System.out.println("keeping riginal ReadCounts range. keeping:"+readCounts.length+ " instead of midpoint calculated:"+(int)Math.ceil(midPoint*1.1));
+		//System.out.println("sum:"+sum+ " midPoint:"+midPoint+ " readCounts size:"+readCounts.length);
+	}
+
 	//to correctly range the y axis of readCounts
 	public void findMaxWindows() throws FileNotFoundException, UnsupportedEncodingException {
-	
+		
 		int currentMax=0;
 		contArrList = new ArrayList<String>(contigsList.keySet());
+		//int sumOfAllWindCoverages=0;
 		 
 		for (int i = 0; i < contArrList.size(); i++) {
 			try {
@@ -193,6 +272,7 @@ public class SamParser {
 			//totalDataPoints+=maxWindows+1;
 		}
 		readCounts = new int[(int)Math.ceil(maxWindows*1.05)];
+		System.out.println("findMaxWindows maxWindows:"+maxWindows);
 	}
 	
 

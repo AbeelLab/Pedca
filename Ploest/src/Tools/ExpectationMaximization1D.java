@@ -11,7 +11,7 @@ public class ExpectationMaximization1D {
 	 * Maximum number of iterations permitted.
 	 */
 	private static int MAX_ITERATIONS = 35;
-
+	
 	
 	/**
 	 * Initializes a mixture model from clusters of points.  The parameters estimated corresponds to univariate Gaussian distributions.
@@ -59,6 +59,8 @@ public class ExpectationMaximization1D {
 	}
 	
 	
+	
+	
 	/**
 	 * Performs the Expectation-Maximization algorithm. The parameters estimated corresponds to univariate Gaussian distributions.
 	 * @param  points  point set 
@@ -67,6 +69,7 @@ public class ExpectationMaximization1D {
 	 */
 	public static MixtureModel run(PVector[] points, MixtureModel f){
 		
+	
 		MixtureModel fout = f.clone();
 		
 		// Variables

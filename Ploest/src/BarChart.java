@@ -22,6 +22,7 @@ import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
 
 import jMEF.MixtureModel;
+import jMEF.PVector;
 
 public class BarChart {
 	JFreeChart histChart;
@@ -66,7 +67,7 @@ public class BarChart {
 
 
 			// add a second dataset and renderer...
-			final XYDataset data2 = createCurveDataset(gaussFit);
+			final XYDataset data2 = createFitCurveDataset(gaussFit);
 			final XYItemRenderer renderer2 = new StandardXYItemRenderer();
 
 			plot.setDataset(1, data2);
@@ -107,19 +108,65 @@ public class BarChart {
 		return result;
 	}
 
-	private XYDataset createCurveDataset(GaussianMixturePDF gaussFit) {
+	private XYDataset createFitCurveDataset(GaussianMixturePDF gaussFit) {
 		XYSeriesCollection result = new XYSeriesCollection();
 		XYSeries series = new XYSeries("Gaussian Mixture Fit");
+		/*
+		//transform XDataPoints in PVector;
+		PVector[] XFitPoints=new PVector[gaussFit.xDataPoints.length];
+		PVector curVec;
+		for (int i = 0; i < gaussFit.xDataPoints.length; i++) {//for each contig
+			curVec=new PVector(1);
+			curVec.array[0]=gaussFit.xDataPoints[i];
+			XFitPoints[i]=curVec; 
+		}
+
+		//create matrix of datapoints n by mixtures k
+		double[][] p = new double[XFitPoints.length][gaussFit.mixtMod.size];//matrix [datapoints n] [NbOfmixtures k]
+	
 		//maxX=0;
+		int row,col=0;
+		
+		for ( row=0; row<gaussFit.xDataPoints.length; row++){//for every row
+			double sum = 0;
+			col=0;
+			for ( col=0; col<gaussFit.mixtMod.size; col++){//and every column compute denity
+				double tmp   = gaussFit.mixtMod.weight[col] * gaussFit.mixtMod.EF.density(XFitPoints[row], (PVector)gaussFit.mixtMod.param[col]); 
+				System.out.println("row:"+row+" w:"+gaussFit.mixtMod.weight[col]+" * x: "+XFitPoints[row]+" = y:"+gaussFit.mixtMod.EF.density(XFitPoints[row], (PVector)gaussFit.mixtMod.param[col]));
+				p[row][col]  = tmp;
+				sum         += tmp;
+			}
 
-
+			System.out.print(" x:"+row);
+			for ( col=0; col<gaussFit.mixtMod.size; col++){//and normalize
+				p[row][col] /= sum;
+				System.out.print(" ynorm:"+p[row][col]);
+				
+			}
+			System.out.println();
+		}
+		
+		System.out.println("createFitCurveDataset 3");
+		for ( row = 0; row<XFitPoints.length; row++) {//get y (sum of density) for each x
+			double yfit=0.0; 
+			for ( col=0; col<gaussFit.mixtMod.size; col++){
+				if (yfit < p[row][col]) yfit = p[row][col];
+			}
+			
+			series.add(XFitPoints[row].array[0], yfit);      //add to series   
+		}
+		System.out.println("createFitCurveDataset end");
+		*/
+		
+		
 		for (int i = 0; i<gaussFit.yDataPoints.length; i++) {
 
 			series.add(gaussFit.xDataPoints[i], gaussFit.yDataPoints[i]);
 			//if (x>maxX)maxX=(int) x;           
 		}
-		result.addSeries(series);
-
+		
+		result.addSeries(series);//and send
+		
 		return result;
 	}
 

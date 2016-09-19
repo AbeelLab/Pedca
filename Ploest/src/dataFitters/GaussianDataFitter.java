@@ -18,6 +18,7 @@ public class GaussianDataFitter {
 	double bscLogLikelihood;//BSC logLikelihood of this gauss mix model
 	MixtureModel mmc;// Expectation Maximization Mixture Model
 	MixtureModel mmef;//Bregman soft clustering Mixture Model
+	PVector[] dataPoints;
 	/**
 	 * Main function.
 	 * @param args
@@ -32,7 +33,7 @@ public class GaussianDataFitter {
 		//
 
 		// Variables
-
+		dataPoints=points;
 		Vector<PVector>[] clusters = KMeans.run(points, n);//intial estimation of n clusters 
 
 	

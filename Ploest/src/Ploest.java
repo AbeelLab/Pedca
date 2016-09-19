@@ -10,12 +10,12 @@ public class Ploest {
 	static String projectName="CBS_Novogene_";
 	static String inputFile ="C://Users//Mel//Documents//BIOINFORMATICS//DELFT_Research//Data//CBS_Novogene//sorted_CBS1483Novogene.bam";
 	static String outputFile ="C://Users//Mel//Documents//BIOINFORMATICS//DELFT_Research//Data//CBS_Novogene";
-/*
+/*	
+
 	static String projectName="PloEst200";
 	static String inputFile ="C://Users//Mel//Documents//BIOINFORMATICS//DELFT_Research//Data//SimulatedReads//200bp.sam";
 	static String outputFile ="C://Users//Mel//Documents//BIOINFORMATICS//DELFT_Research//Data//SimulatedReads//PloEst";
-	*/	
-
+*/	
 	static int windowLength=500;
 	static File currentFolder;
 	public static void main(String[] args) {

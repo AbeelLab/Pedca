@@ -11,7 +11,7 @@ public class RatioFind
 	double[] ds;
 	DecimalFormat df = new DecimalFormat("#.##");
 	CNVscore[] scores;
-	CNVscore bestScore;
+	CNVscore bestScore=null;
 	
 	int consensus;//% of consensus in corrected results (certainty of this prediction)
 

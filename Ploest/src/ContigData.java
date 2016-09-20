@@ -11,7 +11,7 @@ public class ContigData {
 	ArrayList<Integer>  windPos;
 	int windLength;
 	int maxWindows;
-	static double COV_RATE=10;//10 default ratio by which the average coverage of each sliding window  is mutiplied
+	static double COV_RATE;//10 default ratio by which the average coverage of each sliding window  is mutiplied
 						  //the bigger, the more detailed will be the readsDistribution bar chart
 	
 
@@ -19,6 +19,7 @@ public class ContigData {
 		contigName = name;
 		maxLength = length;
 		startPos =  new int[maxLength] ;
+		this.COV_RATE=Ploest.COV_RATE;
 		//System.out.println("new ContigData "+name+" startPos.length:"+startPos.length);
 		
 	}

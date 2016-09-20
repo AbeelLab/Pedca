@@ -1,5 +1,9 @@
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 
@@ -18,34 +22,34 @@ import org.jfree.data.xy.XYDataset;
 import jMEF.PVector;
 
 public class SamParser {
-	int nbSeq;// nb of sequences in the FileHeader
+	int nbSeq=0;// nb of sequences in the FileHeader
 	Map<String, ContigData> contigsList;// Map of ContigDatas(value) and their
-										// name (key)
+	// name (key)
 	static int[] readCounts;
 	static PVector[] fitPoints;//all the points of all windows positions (coverages) in all contigs. Used to fit the read counts distribution chart
-	
+
 	int windowLength ;
 	List<String> contArrList;
 	static int maxWindows;//max coverage found in all contigs (to be used in y axis reads counts)
 	PloestPlotter plotter;//ploidy estimation  plott and pdf gaussian fit data
 	static BarChart barchart;
 	static int totalDataPoints=0;//total amount of datapoints (all contigs considered)
-	
-	
+
+
 	public SamParser(String inputFile, String outputfile)
 			throws FileNotFoundException, UnsupportedEncodingException {
 		this.windowLength=Ploest.windowLength;
 		SAMFileReader inputSam = new SAMFileReader(new File(inputFile));
 		//readCounts = new int[nc];
 		nbSeq = inputSam.getFileHeader().getSequenceDictionary().size();// nb of
-																		// sequences
-																		// in
-																		// the
-																		// FileHeader
+		// sequences
+		// in
+		// the
+		// FileHeader
 		contigsList = new HashMap<String, ContigData>(nbSeq);// Map of
-																// ContigDatas(value)
-																// and their
-																// name (key)
+		// ContigDatas(value)
+		// and their
+		// name (key)
 
 		// fill the contigsList
 		for (int i = 0; i < nbSeq; i++) {
@@ -69,7 +73,7 @@ public class SamParser {
 			refName = rec.getReferenceName();
 			alStart = rec.getAlignmentStart();
 			//line = (i + " " + rec.getReadName() + " " + refName + " " + alStart + " " + rec.getAlignmentEnd() + " "
-		    //			+ rec.getReadLength() + " " + rec.getMappingQuality() + " ;");
+			//			+ rec.getReadLength() + " " + rec.getMappingQuality() + " ;");
 			//writer.println(line);
 
 			try {
@@ -87,21 +91,92 @@ public class SamParser {
 		plotter = new PloestPlotter(contigsList,maxWindows);
 	}
 
-	/*
-	private void barchartWithFit(PloestPlotter plotter ) {
-		for (int r=0;r<plotter.gmPDF.length;r++){
-			barchart.BarChartWithFit(plotter.gmPDF[r],r);
-		}		
+
+	public SamParser(File fin, String outputfile)throws IOException {
+
+		this.windowLength=Ploest.windowLength;
+		List<String> listOfInputFiles=new ArrayList<String>();
+		List<SAMFileReader> listOfSAMreaders=new ArrayList<SAMFileReader>();
+		FileInputStream fis = new FileInputStream(fin);
+
+		//Construct BufferedReader from InputStreamReader, and fill list of inputFiles
+		BufferedReader br = new BufferedReader(new InputStreamReader(fis));	 
+		String line = null;
+		try {
+			while ((line = br.readLine()) != null) {
+				listOfInputFiles.add(line);
+			}
+		} catch (IOException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}	 
+		br.close();
+		//determine nbOfSeq in all inputs
+		SAMFileReader inputSam=null;
+		for (int i=0;i<listOfInputFiles.size();i++){
+
+			inputSam = new SAMFileReader(new File(listOfInputFiles.get(i)));
+			listOfSAMreaders.add(inputSam);
+			nbSeq = inputSam.getFileHeader().getSequenceDictionary().size();// nb of
+			// sequences
+			// in
+			// the
+			// FileHeader
+
+
+		}
+		contigsList = new HashMap<String, ContigData>(nbSeq*2);// Map of ContigDatas(value) and their name (key)
+
+		// fill the contigsList
+
+		for (int sr=0;sr<listOfSAMreaders.size();sr++){//for all SAMreaders
+
+			inputSam = listOfSAMreaders.get(sr);
+			//fill contisList
+			for (int i = 0; i < inputSam.getFileHeader().getSequenceDictionary().size(); i++) {
+				contigsList.put(inputSam.getFileHeader().getSequenceDictionary().getSequence(i).getSequenceName(),
+						new ContigData(inputSam.getFileHeader().getSequenceDictionary().getSequence(i).getSequenceName(),
+								inputSam.getFileHeader().getSequenceDictionary().getSequence(i).getSequenceLength()));
+			}
+
+			inputSam.setValidationStringency(ValidationStringency.SILENT);
+			SAMRecordIterator iter = inputSam.iterator();
+
+
+			System.out.println("Analyzing "+contigsList.size()+" contigs for "+sr+ " libraries");
+			String refName = "";// for debugging a bad line in the .sam file
+			int alStart;
+
+			while (iter.hasNext()) {//iterates the sam file
+
+				SAMRecord rec = iter.next();
+				refName = rec.getReferenceName();
+				alStart = rec.getAlignmentStart();
+				try {
+					contigsList.get(refName).setPos(alStart);//storing the starting positions in the corresponing contig
+				} catch (Exception e) {
+				}
+
+
+			}
+			iter.close();
+			inputSam.close();
+		}
+		windowSlideContigList();
+		barchart = new BarChart(readCounts);
+		plotter = new PloestPlotter(contigsList,maxWindows);
 	}
-*/
-	
+
+
+
+
 	public void cleanContigList(){//To clean outliers -- TURNED OUT TO BE A BAD iDEA (could still be useful to show windows with irregular coverage -transforms it to zero in the plot-)
 		//CLEAN READ COUNTS with non significant presence (outliers)
 		//first clean in readCounts
 		int ctrDELETEME=0;
 		double minThreshold=0.0035;
 		int totalSumOfReads=0;
-		
+
 		for (int r = 0; r < readCounts.length; r++) {//get total sum of reads
 			totalSumOfReads+=readCounts[r];
 		}
@@ -136,7 +211,7 @@ public class SamParser {
 		System.out.println("Window position with ReadCounts above threshold:"+ctrDELETEME);
 		System.out.println("Contigs Changed inContigList:"+nbOFChangesDELETEME);
 		//WARNING: DELETE THIS. IT IS A TEST: REDO READCOUNTS
-		
+
 		totalSumOfReads=0;
 		contArrList = new ArrayList<String>(contigsList.keySet());
 		for (int i = 0; i < contArrList.size(); i++) {//for each contig
@@ -146,13 +221,13 @@ public class SamParser {
 			}
 		}
 		readCounts[0]=0;//to avoid a false peak at 0 which tells us nothing about the real read counts distribution
-	
+
 	}
 
 
 	public void windowSlideContigList() throws FileNotFoundException, UnsupportedEncodingException {
 		findMaxWindows();
-		
+
 		int nbZeroVals=0;
 		//fill readCounts and count totalDataPoints substracting the zero values
 		for (int i = 0; i < contArrList.size(); i++) {//for each contig
@@ -178,23 +253,23 @@ public class SamParser {
 					curVec.array[0]=currentContig.windPos.get(w);//coverage per window position
 					//if(w>(currentContig.windPos.size()-20))System.out.print(" p:"+currentContig.windPos.get(w));
 					fitPoints[ind++]=curVec; 
-					
+
 				}			
 			}	
 			//System.out.println();
 		}
-		
+
 		insureReadCountsRange();//excludes outliers values (very high and non significant) form reaCount
-																//cleanContigList();//Clean outliers BAD IDEA
-		 //PRINT OUT readCounts
+		//cleanContigList();//Clean outliers BAD IDEA
+		//PRINT OUT readCounts
 		PrintWriter writer = new PrintWriter(Ploest.outputFile + "//" + Ploest.projectName+ "//readCounts.txt", "UTF-8");
 		for (int r = 0; r < readCounts.length; r++) {
 			writer.println(r + " " + readCounts[r] + "; ");
 		}
 		writer.println();
 		writer.close();
-		 
-		
+
+
 	}
 
 	private void insureReadCountsRange() {
@@ -208,11 +283,11 @@ public class SamParser {
 			space-=readCounts[midPoint];
 			if (space<(sum*0.01))break;//select range that takes 99% of all datapoints in readcounts
 		}
-		
+
 		//redo readCounts with proper range if necesary
 		int SAFE_RANGE=2;
 		if((readCounts.length-midPoint)>(SAFE_RANGE*midPoint)){
-			
+
 			System.out.println("reaffecting ReadCounts range. Old:"+readCounts.length+ " new:"+(int)Math.ceil(midPoint*SAFE_RANGE));
 			totalDataPoints=0;
 			readCounts = new int[(int)Math.ceil(midPoint*SAFE_RANGE)];
@@ -231,8 +306,8 @@ public class SamParser {
 				totalDataPoints+= (currentContig.windPos.size()-nbNullVals);
 				nbNullVals=0;
 			}
-			
-			
+
+
 			//fill fit points (dataset to be fitted)
 			int ind=0;
 			fitPoints=new PVector[SamParser.totalDataPoints];
@@ -246,20 +321,20 @@ public class SamParser {
 					}			
 				}		
 			}
-			
-			
-			
+
+
+
 		}else System.out.println("keeping riginal ReadCounts range. keeping:"+readCounts.length+ " instead of midpoint calculated:"+(int)Math.ceil(midPoint*1.1));
 		//System.out.println("sum:"+sum+ " midPoint:"+midPoint+ " readCounts size:"+readCounts.length);
 	}
 
 	//to correctly range the y axis of readCounts
 	public void findMaxWindows() throws FileNotFoundException, UnsupportedEncodingException {
-		
+
 		int currentMax=0;
 		contArrList = new ArrayList<String>(contigsList.keySet());
 		//int sumOfAllWindCoverages=0;
-		 
+
 		for (int i = 0; i < contArrList.size(); i++) {
 			try {
 				ContigData currentContig = contigsList.get(contArrList.get(i));
@@ -274,14 +349,14 @@ public class SamParser {
 		readCounts = new int[(int)Math.ceil(maxWindows*1.05)];
 		System.out.println("findMaxWindows maxWindows:"+maxWindows);
 	}
-	
+
 
 	public void printContigList() {
 
 		for (int i = 0; i < contArrList.size(); i++) {
 			System.out.println(contArrList.get(i));
 			for (int k = 0; k < 200; k++) {// here I print oby the first 200
-											// positions
+				// positions
 				System.out.print(contigsList.get(contArrList.get(i)).startPos[k] + "; ");
 			}
 			System.out.println();

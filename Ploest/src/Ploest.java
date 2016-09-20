@@ -62,7 +62,7 @@ public class Ploest {
 					projectName=args[argsIndex[0]];						
 					outputFile = args[argsIndex[6]];
 					
-					if(argsIndex[2]!=0)	SIGNIFICANT_MIN=Integer.parseInt(args[argsIndex[2]]);
+					if(argsIndex[2]!=0)	SIGNIFICANT_MIN=Double.parseDouble(args[argsIndex[2]]);
 					if(argsIndex[3]!=0)	windowLength=Integer.parseInt(args[argsIndex[3]]);
 					if(argsIndex[4]!=0)COV_RATE=Integer.parseInt(args[argsIndex[4]]);//bigger, more detail . Default 10
 					if(argsIndex[5]!=0)nbOfRuns=Integer.parseInt(args[argsIndex[5]]);

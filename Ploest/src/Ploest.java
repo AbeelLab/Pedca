@@ -27,6 +27,7 @@ public class Ploest {
 	
 	
 	public static void main(String[] args) {
+		//printHelp();
 		int argsIndex[]=new int[10];  //0:-p,projectName 
 								     //1:-i,inputFile
 								     //2:-s,SIGNIFICANT_MIN
@@ -38,10 +39,14 @@ public class Ploest {
 									 //8:-m,multiple files is set
 	
 		if (args.length > 0) {
+			System.out.print(" Ploest "); for(int i=0;i<args.length;i++){System.out.print(" " +args[i]+" "+args[++i]);} System.out.println();
 			//-help
 			if ((args[0]).equals("-h") || (args[0]).equals("-help") || (args[0]).equals("help") || (args[0]).equals("help")){
 				printHelp();
-			}else {		
+			}else {	
+				
+				
+				
 				for(int i=0;i<args.length;i++){
 				String arg=args[i];
 					switch(arg){
@@ -78,7 +83,7 @@ public class Ploest {
 					printHelp();
 					e.printStackTrace();
 				} 
-			
+		
 
 			}
 		}
@@ -92,8 +97,10 @@ public class Ploest {
 			if (args.length > 0){
 				if(argsIndex[8]==0 ){
 					bp=new SamParser(inputFile,outputFile);
+				
 				}else{
 					bp=new SamParser(fin,outputFile);
+
 				}
 			}
 			bp=new SamParser(inputFile,outputFile);

@@ -59,16 +59,111 @@ public class PloestPlotter {
 		try{
 			displayScatterPlot();
 			createFitterDataset() ;
+			//gaussianDensityEstimation();
+			
 			fitGaussianMixtureModel();
 			displayPloidyAndCoveragePlot();
 			//displayPloidyEstimationScatterPlot();
 
 		}catch (Exception e){
-			System.out.println("Error in PloestPlotter constructor");
 			System.err.println("Error in PloestPlotter constructor");
 		}
 	}
 
+	
+	public void gaussianDensityEstimation(){
+		System.out.println("-------------Fitting Different Gaussian Mixture Models------------------");
+		double bic;
+		double[]aicsEM=new double[MAX_NB_MIXTURES+1];//each EM (Expectation Maximization) AIC value is stored in its corresponding k(number of mixtures) index
+		double[]bicsEM=new double[MAX_NB_MIXTURES+1];//same for EM BIC values
+		double[]aicsBSC=new double[MAX_NB_MIXTURES+1];//each BSC (Bregman Soft Clustering)AIC value is stored in its corresponding k(number of mixtures) index
+		double[]bicsBSC=new double[MAX_NB_MIXTURES+1];//same for BSC BIC values
+		MixtureModel[]emMMs=new MixtureModel[MAX_NB_MIXTURES+1];//contains the result of the EM fit for each of the mixtures
+		MixtureModel[]bscMMs=new MixtureModel[MAX_NB_MIXTURES+1];//contains the result of the BSC fit for each of the mixtures
+		GaussianDataFitter df;
+		int NbOfRuns=Ploest.nbOfRuns;
+		int indofmin;
+		int[] bestBSCGuess=new int[MAX_NB_MIXTURES];//best BSC guess with bic model evaluation
+		int[] bestEMGuess=new int[MAX_NB_MIXTURES];//best BSC guess with EM model evaluation
+		int[] correctedResults=new int[MAX_NB_MIXTURES];//best guess with bic model evaluation + min points evaluation
+
+		gmPDF =new GaussianMixturePDF[NbOfRuns];
+		if(Ploest.forceK==0){
+			for (int r=0;r<NbOfRuns;r++){
+				System.out.println("run --"+r);
+				for (int k=1;k<MAX_NB_MIXTURES;k++){//fit to different number k of mixtures
+					df=new GaussianDataFitter (fitPoints,k );//fits a gauss mixture(by EM and BSC) to the 
+					emMMs[k]=df.getEMmodel();//store EM fit values
+					bscMMs[k]=df.getBSCModel();//same for BSC
+					//get EM LogLikelihoods and estimate BIC and AIC values
+					aic=-2*(df.getEMLogLikelihood())+(2*(k*3));//k+3 are the free parameters: k=number of models +3(weight,mu and sigma)
+					bic=-0.5*(df.getEMLogLikelihood())+((k*3)*Math.log(SamParser.totalDataPoints));
+					aicsEM[k]=aic;
+					bicsEM[k]=bic;
+					//get BSC LogLikelihoods and estimate BIC and AIC values
+					aic=-2*(df.getBSCLogLikelihood())+(2*(k*3));
+					bic=-0.5*(df.getBSCLogLikelihood())+((k*3)*Math.log(SamParser.totalDataPoints));
+					aicsBSC[k]=aic;
+					bicsBSC[k]=bic;	
+				}
+
+
+				indofmin=findIndexOfMin(bicsEM);//find index of gaussian mixture with min EM value
+				bestEMGuess[indofmin]++;
+				indofmin=findIndexOfMin(bicsBSC);//find index of gaussian mixture with min BIC value			
+				bestBSCGuess[indofmin]++;//System.out.println(indofmin+" MM  BSC params:"+bscMMs[indofmin].printParams());
+				//bscMMs[indofmin].printParams()
+				//System.out.println("fitGaussianMixtureModel indofmin --"+indofmin+ "mixt model params:"+bscMMs[indofmin].printParams());
+				//bscMMs[indofmin]
+				gmPDF[r]=new GaussianMixturePDF(bscMMs[indofmin],0.0,(double)SamParser.readCounts.length);
+				int k=significantMinsInPDF( gmPDF[r]);//finds the significant minimums (below a threshold) in the gaussian mixture PDF
+				//helps determine the real number of gaussians in the PDF and correct overfitting
+				System.out.println("fitGaussianMixtureModel significantMinsInPDF ="+k);
+				//SamParser.barchart.BarChartWithFit(gmPDF[r],(100+r));
+
+				correctedResults[k]++;
+			}
+			//PRINT BEST GUESSES AND CORRECTED RESULTS		
+			System.out.println("----------BSC and EM prediction-------- ----------");//identical results with best guess EM
+			System.out.print("[");
+			for (int b=0;b<bestBSCGuess.length;b++){
+				System.out.print(" "+bestBSCGuess[b]);
+			}
+			System.out.println(" ];");
+
+			System.out.println("------- best correctedResults (after minimal points detection of PDF)----");
+			System.out.print("[");
+			for (int b=0;b<correctedResults.length;b++){
+				System.out.print(" "+correctedResults[b]);
+			}
+			System.out.println(" ];");
+			finalNumberOfMixtures=indexOfMode(correctedResults);
+			System.out.println("-------------FINAL RESULT :"+finalNumberOfMixtures+" GAUSSIAN MODELS WITH "+(100*correctedResults[finalNumberOfMixtures]/NbOfRuns)+" % consensus---");
+		}else{//force input number of mixtures
+			finalNumberOfMixtures=Ploest.forceK;
+			System.out.println("-------------FINAL RESULT, GAUSSIAN MODELS WITH :"+finalNumberOfMixtures+" forced mixtures");
+		}
+
+		//print final gaussian fitted result with final number of mixtures
+		dfResult=new GaussianDataFitter (fitPoints,finalNumberOfMixtures );//final data fit with the best number of mixture prediction
+
+		gMMweights=new double[dfResult.getBSCModel().weight.length];
+		gMMmus=new double[dfResult.getBSCModel().param.length];
+		gMMsigmas=new double[dfResult.getBSCModel().param.length];
+		for (int g=0;g<dfResult.getBSCModel().param.length;g++){
+			gMMweights[g]=dfResult.getBSCModel().weight[g];
+			gMMmus[g]=((jMEF.PVector)dfResult.getBSCModel().param[g]).array[0];
+			gMMsigmas[g]=((jMEF.PVector)dfResult.getBSCModel().param[g]).array[1];			
+		}
+		sortGMMs();//sort the result vectors (gMMmus,gMMweights and gMMsigmas) following ascending order of gMMmus
+		gmPDFResult=new GaussianMixturePDF(dfResult.getBSCModel(),0.0,(double)SamParser.readCounts.length);
+		SamParser.barchart.BarChartWithFit(gmPDFResult,finalNumberOfMixtures);
+
+		rt=new RatioFind(gMMmus,100*correctedResults[finalNumberOfMixtures]/NbOfRuns);
+		if(rt!=null)rt.writeOut();
+	}
+	
+	
 	public void fitGaussianMixtureModel(){
 		System.out.println("-------------Fitting Different Gaussian Mixture Models------------------");
 		double aic;
@@ -371,6 +466,12 @@ public class PloestPlotter {
 		}
 		 */
 		fitPoints=SamParser.fitPoints;
+		
+		System.out.println(" fitPoints:"+fitPoints.length);
+		for (int i=1;i<fitPoints.length;i++){
+			System.out.print(" "+fitPoints[i]);
+		}
+		System.out.println();
 	}
 
 

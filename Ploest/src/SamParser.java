@@ -38,6 +38,7 @@ public class SamParser {
 
 	public SamParser(String inputFile, String outputfile)
 			throws FileNotFoundException, UnsupportedEncodingException {
+		
 		this.windowLength=Ploest.windowLength;
 		SAMFileReader inputSam = new SAMFileReader(new File(inputFile));
 		//readCounts = new int[nc];
@@ -46,10 +47,7 @@ public class SamParser {
 		// in
 		// the
 		// FileHeader
-		contigsList = new HashMap<String, ContigData>(nbSeq);// Map of
-		// ContigDatas(value)
-		// and their
-		// name (key)
+		contigsList = new HashMap<String, ContigData>(nbSeq);// Map of  ContigDatas(value) and their name (key)
 
 		// fill the contigsList
 		for (int i = 0; i < nbSeq; i++) {
@@ -60,8 +58,8 @@ public class SamParser {
 
 		inputSam.setValidationStringency(ValidationStringency.SILENT);
 		SAMRecordIterator iter = inputSam.iterator();
-		//PrintWriter writer = new PrintWriter(Ploest.outputFile + "//" + Ploest.projectName+ "//"+Ploest.projectName+"SamParsed.txt", "UTF-8");
-		//String line = "";
+	//PrintWriter writer = new PrintWriter(Ploest.outputFile + "//" + Ploest.projectName+ "//"+Ploest.projectName+"SamParsed.txt", "UTF-8");
+	//String line = "";
 		int i = 1;
 		System.out.println("Analyzing "+contigsList.size()+" contigs");
 		String refName = "";// for debugging a bad line in the .sam file
@@ -72,9 +70,9 @@ public class SamParser {
 			SAMRecord rec = iter.next();
 			refName = rec.getReferenceName();
 			alStart = rec.getAlignmentStart();
-			//line = (i + " " + rec.getReadName() + " " + refName + " " + alStart + " " + rec.getAlignmentEnd() + " "
-			//			+ rec.getReadLength() + " " + rec.getMappingQuality() + " ;");
-			//writer.println(line);
+	//line = (i + " " + rec.getReadName() + " " + refName + " " + alStart + " " + rec.getAlignmentEnd() + " "
+	//+ rec.getReadLength() + " " + rec.getMappingQuality() + " ;");
+	//writer.println(line);
 
 			try {
 				contigsList.get(refName).setPos(alStart);//storing the starting positions in the corresponing contig
@@ -85,7 +83,7 @@ public class SamParser {
 		}
 		iter.close();
 		inputSam.close();
-		//writer.close();
+	//writer.close();
 		windowSlideContigList();
 		barchart = new BarChart(readCounts);
 		plotter = new PloestPlotter(contigsList,maxWindows);
@@ -107,7 +105,6 @@ public class SamParser {
 				listOfInputFiles.add(line);
 			}
 		} catch (IOException e1) {
-			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		}	 
 		br.close();
@@ -125,7 +122,7 @@ public class SamParser {
 
 
 		}
-		contigsList = new HashMap<String, ContigData>(nbSeq*2);// Map of ContigDatas(value) and their name (key)
+		contigsList = new HashMap<String, ContigData>(nbSeq*2);// Map of ContigDatas  name (key) and the atual ContigData (value)
 
 		// fill the contigsList
 
@@ -226,6 +223,7 @@ public class SamParser {
 
 
 	public void windowSlideContigList() throws FileNotFoundException, UnsupportedEncodingException {
+		
 		findMaxWindows();
 
 		int nbZeroVals=0;
@@ -259,7 +257,7 @@ public class SamParser {
 			//System.out.println();
 		}
 
-		insureReadCountsRange();//excludes outliers values (very high and non significant) form reaCount
+		insureReadCountsRange();//excludes outliers values (very high and non significant) form readCount
 		//cleanContigList();//Clean outliers BAD IDEA
 		//PRINT OUT readCounts
 		PrintWriter writer = new PrintWriter(Ploest.outputFile + "//" + Ploest.projectName+ "//readCounts.txt", "UTF-8");
@@ -324,7 +322,7 @@ public class SamParser {
 
 
 
-		}else System.out.println("keeping riginal ReadCounts range. keeping:"+readCounts.length+ " instead of midpoint calculated:"+(int)Math.ceil(midPoint*1.1));
+		}else System.out.println("keeping original ReadCounts range. keeping:"+readCounts.length+ " instead of midpoint calculated:"+(int)Math.ceil(midPoint*1.1));
 		//System.out.println("sum:"+sum+ " midPoint:"+midPoint+ " readCounts size:"+readCounts.length);
 	}
 
@@ -341,7 +339,6 @@ public class SamParser {
 				currentMax=currentContig.windPos(windowLength);				
 				if (currentMax>maxWindows)maxWindows= currentMax;
 			} catch (FileNotFoundException | UnsupportedEncodingException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 			//totalDataPoints+=maxWindows+1;

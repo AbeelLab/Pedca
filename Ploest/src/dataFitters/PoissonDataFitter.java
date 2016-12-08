@@ -7,6 +7,7 @@ import java.io.FileNotFoundException;
 import java.util.Scanner;
 import java.util.Vector;
 
+import Tools.ExpectationMaximization1D;
 import Tools.KMeans;
 import jMEF.BregmanSoftClustering;
 import jMEF.MixtureModel;
@@ -16,9 +17,9 @@ import jMEF.Poisson;
 
 public class PoissonDataFitter {
 
-	//double emLogLikelihood;//EM logLikelihood of this poisson mix model
+	double emLogLikelihood;//EM logLikelihood of this poisson mix model
 	double bscLogLikelihood;//BSC logLikelihood of this poisson mix model
-	//MixtureModel mmopc;// Expectation Maximization Mixture Model
+	MixtureModel mmopc;// Expectation Maximization Mixture Model
 	MixtureModel mopbsc;;//Poisson Bregman soft clustering Mixture Model
 	/**
 	 * Main function.
@@ -36,18 +37,24 @@ public class PoissonDataFitter {
 		// Variables
 
 		Vector<PVector>[] clusters = KMeans.run(points, n);
-
-
+		System.out.print("KMeans run end");
+		// Classical EM
 		
+		mmopc = ExpectationMaximization1D.initialize(clusters);
+		System.out.print("  ExpectationMaximization1D initialize end");
+		mmopc = ExpectationMaximization1D.run(points, mmopc);
+		System.out.print("  ExpectationMaximization1D run end");
+		emLogLikelihood=mmopc.getEMLogLikelihod();
+		System.out.println("ExpectationMaximization1D getEMLogLikelihod end");
 		// Bregman soft clustering
 		
 		mopbsc = BregmanSoftClustering.initialize(clusters, new Poisson());
 		mopbsc = BregmanSoftClustering.run(points, mopbsc);
 		bscLogLikelihood=mopbsc.getBSCLogLikelihod();
 		//System.out.println("Mixure model estimated using Bregman soft clustering \n" + mmef + "\n");
-
+		System.out.println("  Poisson Fitter end");
 	}
-/*
+
 	public double getEMLogLikelihood(){
 		return emLogLikelihood;
 	}
@@ -55,7 +62,7 @@ public class PoissonDataFitter {
 	public MixtureModel getEMmodel(){
 		return mmopc;
 	}
-	*/
+	
 	public double getBSCLogLikelihood(){
 		return bscLogLikelihood;
 	}

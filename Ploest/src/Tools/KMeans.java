@@ -18,10 +18,10 @@ public class KMeans {
 	 * @return         clusters
 	 */
 	public static Vector<PVector>[] run(PVector[] points, int k){
-		
+		System.out.print("Starting KMeans run . Points size:"+points.length+" k="+k);
 		PVector[]         centroids   = initialize(points, k);
-		/*
 		
+		/*
 		System.out.println("**Centroids :");
 		for (int c=0;c<centroids.length;c++){
 			System.out.println(" :"+centroids[c].toString());
@@ -32,14 +32,15 @@ public class KMeans {
 		
 		int   it  = 0;      
 		int[] tmp = new int[points.length];
-		
+		System.out.print("Starting KMeans do loop ");
 		do{
+			System.out.print(" KMeans  loop "+it);
 			tmp = repartition.clone();
 			repartitionStep(points, k, centroids, repartition, clusters);
 			centroidStep(points, k, centroids, clusters);
 			it++;
 		} while(!Arrays.equals(repartition, tmp) && it<MAX_ITERATIONS);
-		
+		System.out.println(" KMeans end ");
 		return clusters;
 	}
 	

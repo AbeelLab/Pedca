@@ -102,8 +102,8 @@ public class Ploest {
 					bp=new SamParser(fin,outputFile);
 
 				}
-			}
-			bp=new SamParser(inputFile,outputFile);
+			}else bp=new SamParser(inputFile,outputFile);// IS THIS RIGHT??? (AFTER THE ELSE)
+			
 		} catch (FileNotFoundException e) {
 			System.out.println("FileNotFoundException");
 			e.printStackTrace();

@@ -89,8 +89,10 @@ public class BarChart {
 		}
 	}
 
-public void BarChartWithFit (PoissonMixturePDF poissFit,int r) {
+public void BarChartWithFit (PoissonMixturePDF poissFit,int r, String title) {
 		
+		
+	
 		if (poissFit==null){
 			System.out.println("BarChartWithFit poissFit==null r:"+r);
 		}else{
@@ -118,7 +120,7 @@ public void BarChartWithFit (PoissonMixturePDF poissFit,int r) {
 
 
 			try {
-				ChartUtilities.saveChartAsJPEG(new File(Ploest.outputFile + "//" + Ploest.projectName+ "//readsDistributionPoissonFitted"+r+".jpg"), overlaidChart, 1000, 600);
+				ChartUtilities.saveChartAsJPEG(new File(Ploest.outputFile + "//" + Ploest.projectName+ "//readsDistributionPoissonFitted"+r+title+".jpg"), overlaidChart, 1000, 600);
 			} catch (IOException e) {
 				System.err.println("Problem occurred creating chart.");
 			}

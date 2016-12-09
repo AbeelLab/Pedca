@@ -9,7 +9,7 @@ import jMEF.PVector;;
 public class PoissonMixturePDF {
 	double [] yDataPoints;
 	double [] xDataPoints;
-	double [] mus;
+	double [] lambdas;
 
 	double beg;//bgining of x axis
 	double end;//end of x axis
@@ -21,7 +21,7 @@ public class PoissonMixturePDF {
 		step=((end-beg)/200);//    /500);
 		mixtMod=mm;
 		System.out.println("PoissonMixturePDF beg:"+beg+" end:"+end+" step:"+step+" xdatapoint size:"+((int) ((end-beg)/step))+" mixturemodel:"+mm.toString());
-		mus=new double[mm.size];
+		lambdas=new double[mm.size];
 		//sigmas=new double[mm.size];
 		this.beg=beg;
 		this.end=end;
@@ -31,7 +31,7 @@ public class PoissonMixturePDF {
 		
 	
 		for (int p=0;p<mm.size;p++){//for each param extract mu and sigma
-			mus[p]=((jMEF.PVector)mm.param[p]).array[0];	
+			lambdas[p]=((jMEF.PVector)mm.param[p]).array[0];	
 			//sigmas[p]=((jMEF.PVector)mm.param[p]).array[1];	
 		}
 		double currentY;
@@ -43,7 +43,7 @@ System.out.print("        DATAPOINTS: [");
 			currentY=0.0;
 			
 			for(int mixtElem=0;mixtElem<mm.size;mixtElem++){//for each mixture member
-				currentY+=mm.weight[mixtElem]*pdf(dp,mus[mixtElem]);
+				currentY+=mm.weight[mixtElem]*pdf(dp,lambdas[mixtElem]);
 				if( dp<3)System.out.print(" w"+mixtElem+":"+mm.weight[mixtElem]);
 			}
 			//if(dp>30 && dp<35)
@@ -52,7 +52,7 @@ System.out.print("        DATAPOINTS: [");
 			yDataPoints[dpInd++]=currentY;
 			if (currentY>maxYvalue)maxYvalue=currentY;
 			
-			System.out.print(dp+" "+currentY+"; ");
+			System.out.print("("+dp+" ,"+currentY+" ); ");
 			
 			dp+=step;
 		}
@@ -63,21 +63,30 @@ System.out.print("        DATAPOINTS: [");
 	
 	
 	// return pdf(x) = standard Gaussian pdf
+	/*
     public static double pdf(double x) {
         return Math.exp(-x*x / 2) / Math.sqrt(2 * Math.PI);
     }
+	 */
+	public static double factorial ( double input )
+	{
+	  double x, fact = 1;
+	  for ( x = input; x > 1; x--)
+	     fact *= x;
 
+	  return fact;
+
+	}
     // return pdf(x, mu) = Poisson pdf with mean and stddev lambda
     public static double pdf(double x, double lambda) {
     	
-    	double factorial=x;
-    	for (double i = x-1; i >= 1; i--) {
-    		factorial = factorial * i;
-    	}
+    	double denominator=factorial(x);
     	
-    	double denominator=Math.pow(lambda,x)*Math.exp(-lambda);
-    	if( x<3)System.out.print(" d:"+denominator+"/ f:"+factorial+"="+(denominator / factorial));
-        return (denominator / factorial);
+    	double numerator=Math.pow(lambda,x)*Math.exp(-lambda);
+    	
+    	if( x<3)System.out.print(" {x:"+x+" l:"+lambda+" n:"+numerator+"/ d:"+denominator+"="+(numerator / denominator)+"} ");
+        
+    	return (numerator / denominator);
     }
 
 

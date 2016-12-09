@@ -16,6 +16,7 @@ public class RatioFind
 	int consensus;//% of consensus in corrected results (certainty of this prediction)
 
 	public RatioFind(double[] ds,int consensusPerc){
+	
 		df.setRoundingMode(RoundingMode.CEILING);
 		//java.util.Arrays.sort(ds);
 		this.ds=ds;
@@ -38,6 +39,8 @@ public class RatioFind
 			scores[i-1]=nextNearestMeans(productsVect,i);	  
 		}
 		bestScore=findMinScore(scores);
+		System.out.println("END RatioFind");
+	
 	}
 	
 	private CNVscore nextNearestMeans(double[] productsVect, int ratio) {
@@ -203,12 +206,46 @@ public class RatioFind
 			writer.println("Estimation distance score: "+bestScore.score);
 			writer.println("Estimation consensus: "+consensus+" %");//100*correctedResults[finalNumberOfMixtures]/NbOfRuns
 			writer.println("Maximum Nb Of Mixtures respected = "+bestScore.respectsMaxNbOfMixtures);
+			System.out.println("quasi END write out");
 			writer.close();
 		} catch (FileNotFoundException | UnsupportedEncodingException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		System.out.println("END write out");
 		
+	}
+	
+	public void writeOutPoisson() {
+		try {
+			PrintWriter writer = new PrintWriter(Ploest.outputFile + "//" + Ploest.projectName+ "//"+Ploest.projectName+"PloidyEstimation.txt", "UTF-8");
+			
+			
+			writer.println(">FINAL NUMBER OF MIXTURES: "+PloestPlotter.finalNumberOfMixtures+" poissons\n" );
+			writer.println("\n");
+			
+			for (int g=0;g<PloestPlotter.pdfResult.getBSCModel().param.length;g++){
+				writer.println("weight["+g+"]:"+PloestPlotter.gMMweights[g]+" \tmu["+g+"]"+PloestPlotter.gMMmus[g]);		
+			}
+				
+			writer.println("\n");
+			
+			writer.println("> PLOIDY ESTIMATION :"+ Ploest.projectName);
+			writer.println("> POISSON_CLUSTER_NUMBER \tCOPY_NUMBER_ESTIMATION \t DISTANCE_ERROR ");
+			for(int d=0;d<ds.length;d++){
+				writer.println("\t\t"+d+" \t\t\t"+bestScore.bestCNVIndexes[d]+" \t\t\t"+bestScore.bestMinDistances[d]);
+			}
+			writer.println("\n");
+			writer.println("Estimation distance score: "+bestScore.score);
+			writer.println("Estimation consensus: "+consensus+" %");//100*correctedResults[finalNumberOfMixtures]/NbOfRuns
+			writer.println("Maximum Nb Of Mixtures respected = "+bestScore.respectsMaxNbOfMixtures);
+		
+			writer.close();
+		} catch (FileNotFoundException | UnsupportedEncodingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
 		
 	}
 

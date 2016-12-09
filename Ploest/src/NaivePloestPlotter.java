@@ -1,11 +1,9 @@
 import java.awt.Color;
-import java.awt.Rectangle;
 import java.awt.Shape;
 import java.awt.geom.Rectangle2D;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
@@ -13,8 +11,6 @@ import java.util.Map;
 import java.util.Vector;
 
 import org.jfree.chart.ChartFactory;
-import org.jfree.chart.ChartFrame;
-import org.jfree.chart.ChartPanel;
 import org.jfree.chart.ChartUtilities;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.NumberAxis;
@@ -29,11 +25,14 @@ import org.jfree.data.xy.XYDataset;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
 
-import dataFitters.*;
+import dataFitters.GaussianDataFitter;
+import dataFitters.PoissonDataFitter;
 import jMEF.MixtureModel;
 import jMEF.PVector;
 
-public class PloestPlotter {
+public class NaivePloestPlotter {
+
+	
 	static final int MAX_NB_MIXTURES=10;
 	//static final double SIGMA_FACTOR=2;//accepted factor for standard variation criterion of a point belonging to a gaussian  
 	Map<String,ContigData> contigsList;
@@ -55,7 +54,7 @@ public class PloestPlotter {
 	static int finalNumberOfMixtures;
 	RatioFind rt;//contains the ratio of the gaussians to the ploidy unit which allows computation of ploidy from contig coverage
 
-	public PloestPlotter(Map<String,ContigData> contList,int maxWindows) {
+	public NaivePloestPlotter(Map<String,ContigData> contList,int maxWindows) {
 		contigsList=contList;
 		contArrList = new ArrayList<String>(contigsList.keySet());
 
@@ -64,14 +63,12 @@ public class PloestPlotter {
 		
 		try{
 			displayScatterPlot();
-			createFitterDataset() ;
-		//gaussianDensityEstimation();//TEST NEW METHOD
-			
-			
-			fitPoissonMixtureModel();//fitGaussianMixtureModel();
-			displayPloidyAndCoveragePlotPoisson();//displayPloidyAndCoveragePlot();
-			
-			//displayPloidyEstimationScatterPlot();
+			/*
+			createFitterDataset() ;	
+			fitPoissonMixtureModel();
+			displayPloidyAndCoveragePlotPoisson();
+			*/
+	
 
 		}catch (Exception e){
 			System.err.println("Error in PloestPlotter constructor");
@@ -616,15 +613,18 @@ public void displayPloidyEstimationScatterPlotPoisson() throws IOException{//not
 		double y;
 		//this first loop is for the PLOESTPLOTTER
 		int wInd=0;//writting index
+		System.out.println( "readCounts=(");
 		for (int i = 0; i <= (contigD.windPos.size()-1); i++) {
 			if(contigD.windPos.get(i)!=null){
 				x = wInd++;  			
 				y = contigD.windPos.get(i);
 				series.add(x, y);
 				//writer.println( " x:" +x + " y:"+y);
+				System.out.print( x + " "+y+ "; ");
 			}
 
 		}
+		System.out.println( ")");
 
 		result.addSeries(series);
 		maxX=contigD.windPos.size();
@@ -860,15 +860,5 @@ public void displayPloidyEstimationScatterPlotPoisson() throws IOException{//not
 		return sigMins;
 	}
 
-
-
-
-	/*
-	public MixtureModel bestMixtureModel(){
-		for(int i=1;i<MAX_NB_MIXTURES;i++){
-
-		}
-	}
-	 */
-
+	
 }

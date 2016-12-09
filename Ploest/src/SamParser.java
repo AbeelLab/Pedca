@@ -32,6 +32,7 @@ public class SamParser {
 	List<String> contArrList;
 	static int maxWindows;//max coverage found in all contigs (to be used in y axis reads counts)
 	PloestPlotter plotter;//ploidy estimation  plott and pdf gaussian fit data
+	NaivePloestPlotter myploter;
 	static BarChart barchart;
 	static int totalDataPoints=0;//total amount of datapoints (all contigs considered)
 
@@ -86,7 +87,8 @@ public class SamParser {
 	//writer.close();
 		windowSlideContigList();
 		barchart = new BarChart(readCounts);
-		plotter = new PloestPlotter(contigsList,maxWindows);
+		myploter = new NaivePloestPlotter(contigsList,maxWindows);//plotter = new PloestPlotter(contigsList,maxWindows);
+		
 	}
 
 

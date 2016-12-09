@@ -35,19 +35,14 @@ public class PoissonDataFitter {
 		System.out.print(title);
 
 		// Variables
-
 		Vector<PVector>[] clusters = KMeans.run(points, n);
-		System.out.print("KMeans run end");
+
 		// Classical EM
-		
 		mmopc = ExpectationMaximization1D.initialize(clusters);
-		System.out.print("  ExpectationMaximization1D initialize end");
 		mmopc = ExpectationMaximization1D.run(points, mmopc);
-		System.out.print("  ExpectationMaximization1D run end");
 		emLogLikelihood=mmopc.getEMLogLikelihod();
-		System.out.println("ExpectationMaximization1D getEMLogLikelihod end");
+
 		// Bregman soft clustering
-		
 		mopbsc = BregmanSoftClustering.initialize(clusters, new Poisson());
 		mopbsc = BregmanSoftClustering.run(points, mopbsc);
 		bscLogLikelihood=mopbsc.getBSCLogLikelihod();

@@ -87,7 +87,8 @@ public class SamParser {
 	//writer.close();
 		windowSlideContigList();
 		barchart = new BarChart(readCounts);
-		myploter = new NaivePloestPlotter(contigsList,maxWindows);//plotter = new PloestPlotter(contigsList,maxWindows);
+		
+		myploter = new NaivePloestPlotter(contigsList,maxWindows, readCounts);//plotter = new PloestPlotter(contigsList,maxWindows);
 		
 	}
 

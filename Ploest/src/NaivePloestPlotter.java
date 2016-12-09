@@ -32,7 +32,7 @@ import jMEF.PVector;
 
 public class NaivePloestPlotter {
 
-	
+	static int[] readCounts;
 	static final int MAX_NB_MIXTURES=10;
 	//static final double SIGMA_FACTOR=2;//accepted factor for standard variation criterion of a point belonging to a gaussian  
 	Map<String,ContigData> contigsList;
@@ -54,7 +54,12 @@ public class NaivePloestPlotter {
 	static int finalNumberOfMixtures;
 	RatioFind rt;//contains the ratio of the gaussians to the ploidy unit which allows computation of ploidy from contig coverage
 
-	public NaivePloestPlotter(Map<String,ContigData> contList,int maxWindows) {
+	public NaivePloestPlotter(Map<String,ContigData> contList,int maxWindows, int[] rc) {
+		readCounts=rc;
+		
+
+		
+		
 		contigsList=contList;
 		contArrList = new ArrayList<String>(contigsList.keySet());
 
@@ -62,10 +67,11 @@ public class NaivePloestPlotter {
 		
 		
 		try{
-			displayScatterPlot();
+			displayScatterPlot();			
+			createFitterDataset() ;
+			fitNaiveMixtureModel();
 			/*
-			createFitterDataset() ;	
-			fitPoissonMixtureModel();
+			
 			displayPloidyAndCoveragePlotPoisson();
 			*/
 	
@@ -85,8 +91,13 @@ public class NaivePloestPlotter {
 	}
 	
 	
-	public void fitPoissonMixtureModel(){
-		System.out.println("-------------Fitting Different Poisso Mixture Models------------------");
+	public void fitNaiveMixtureModel(){
+		System.out.println("-------------Fitting Different Poisson Mixture Models------------------");
+		
+		NaivePDF npdf=new NaivePDF(readCounts);
+		//PoissonDataFitter (fitPoints,k );
+		
+		/*
 		//System.out.println("-------------fitGaussianMixtureModel  MAX NB OF MIXTURE SET TO 90 !!!!------------------");
 		double aic;
 		double bic;
@@ -106,6 +117,8 @@ public class NaivePloestPlotter {
 
 	
 		pmPDF=new PoissonMixturePDF[NbOfRuns];
+		
+		
 		if(Ploest.forceK==0){
 			NbOfRuns=1;//DELETE WHEN DONE TESTING !!!!!!!
 			for (int r=0;r<NbOfRuns;r++){
@@ -215,7 +228,7 @@ public class NaivePloestPlotter {
 		rt=new RatioFind(gMMmus,100*correctedResults[finalNumberOfMixtures]/NbOfRuns);
 		
 		if(rt!=null)rt.writeOutPoisson();
-
+	*/
 	}
 	
 	public void fitGaussianMixtureModel(){
@@ -613,18 +626,16 @@ public void displayPloidyEstimationScatterPlotPoisson() throws IOException{//not
 		double y;
 		//this first loop is for the PLOESTPLOTTER
 		int wInd=0;//writting index
-		System.out.println( "readCounts=(");
+	
 		for (int i = 0; i <= (contigD.windPos.size()-1); i++) {
 			if(contigD.windPos.get(i)!=null){
 				x = wInd++;  			
 				y = contigD.windPos.get(i);
 				series.add(x, y);
 				//writer.println( " x:" +x + " y:"+y);
-				System.out.print( x + " "+y+ "; ");
 			}
 
 		}
-		System.out.println( ")");
 
 		result.addSeries(series);
 		maxX=contigD.windPos.size();
@@ -634,28 +645,9 @@ public void displayPloidyEstimationScatterPlotPoisson() throws IOException{//not
 
 
 	private  void createFitterDataset() {
-		/*
-		fitPoints=new PVector[SamParser.totalDataPoints];
-		int ind=0;
-		for (int c=0;c<contigsList.size();c++){//for each contig
-			ContigData contigD=contigsList.get(contArrList.get(c));
-			for (int i = 0; i < (contigD.windPos.size()); i++) {//for each window position
-				//if(contigD.windPos.get(i)!=0){
-					PVector curVec=new PVector(1);
-					curVec.array[0]=contigD.windPos.get(i);//coverage per window position
-					fitPoints[ind++]=curVec; 
-				//}				              
-			}
-		}
-		 */
+	
 		fitPoints=SamParser.fitPoints;
-		/*PRINTOUT FIT POINTS (14541 !!!)
-		System.out.println(" fitPoints:"+fitPoints.length);
-		for (int i=1;i<fitPoints.length;i++){
-			System.out.print(" "+fitPoints[i]);
-		}
-		System.out.println();
-		*/
+
 	}
 
 

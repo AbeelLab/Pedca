@@ -26,14 +26,17 @@ public class SamParser {
 	Map<String, ContigData> contigsList;// Map of ContigDatas(value) and their
 	// name (key)
 	static int[] readCounts;
+
 	static PVector[] fitPoints;//all the points of all windows positions (coverages) in all contigs. Used to fit the read counts distribution chart
 
 	int windowLength ;
 	List<String> contArrList;
-	static int maxWindows;//max coverage found in all contigs (to be used in y axis reads counts)
+	static int maxWindows;//max coverage found in all contigs (to be used in x axis reads counts)
+	static float maxY=0;//max normalized value in the y axis (to be used in y axis reads counts)
 	PloestPlotter plotter;//ploidy estimation  plott and pdf gaussian fit data
 	NaivePloestPlotter myploter;
 	static BarChart barchart;
+	
 	static int totalDataPoints=0;//total amount of datapoints (all contigs considered)
 
 
@@ -87,8 +90,8 @@ public class SamParser {
 	//writer.close();
 		windowSlideContigList();
 		barchart = new BarChart(readCounts);
-		
-		myploter = new NaivePloestPlotter(contigsList,maxWindows, readCounts);//plotter = new PloestPlotter(contigsList,maxWindows);
+		maxY=barchart.maxY;
+		myploter = new NaivePloestPlotter(contigsList,maxWindows, barchart.normReadCounts);//plotter = new PloestPlotter(contigsList,maxWindows);
 		
 	}
 

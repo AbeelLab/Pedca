@@ -48,26 +48,20 @@ public class ContigData {
 		int stIndex = 0;// index in startPos array
 		int wdIndex = 0;
 		int wsum = 0;// window sum
-		//PrintWriter writer = new PrintWriter(Ploest.outputFile + "//" + Ploest.projectName+"//windPositionsTest.txt", "UTF-8");
-		//String line="";
+	
 		while (stIndex < (startPos.length-windLength) && (wdIndex<windPos.size()-1)) {
 			for (int i = 0; i < windLength; i++) {
 				wsum += startPos[stIndex++];		
 			}
 			
-			windPos.set(wdIndex++, (int) (wsum /(windLength/COV_RATE)));//[wdIndex++] =(int) (wsum /(windLength/COV_RATE));// relative average of coverage over
-			//if(wdIndex>15 && wdIndex<35)System.out.print(" (s:"+wsum+" , c:"+ (int) (wsum /(windLength/COV_RATE))+")");								// the range of the window;
+			windPos.set(wdIndex++, (int) (wsum /(windLength/COV_RATE)));// relative average of coverage over the range of the window;
 			if (windPos.get(wdIndex-1)>max)max=windPos.get(wdIndex-1);
 			
-		
-			stIndex = stIndex - (wl / 2);// window slides over all positions for
-											// a length of wl , but a new window
-											// is computed after each wl/2;
+			stIndex = stIndex - (wl / 2);// window slides over all positions for a length of wl , but a new window is computed after each wl/2;
 			wsum=0;
-			//writer.println(line);
+	
 		}
-		//System.out.println();
-		//writer.close();
+	
 		maxWindows=max;
 		
 		return max;

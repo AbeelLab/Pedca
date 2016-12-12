@@ -30,6 +30,7 @@ public class BarChart {
 	DefaultCategoryDataset histDataset;
 	float [] normReadCounts;
 	int maxX;
+	float maxY=0;
 
 	public BarChart (int [] readCounts) {
 		normReadCounts=normalize(readCounts);
@@ -38,6 +39,7 @@ public class BarChart {
 		histDataset = new DefaultCategoryDataset();
 		for (int r=0;r<normReadCounts.length;r++){			
 			histDataset.setValue(normReadCounts[r], "#Contigs",(Integer)r);
+			if(normReadCounts[r]>maxY)maxY=normReadCounts[r];
 		}
 
 		histChart = ChartFactory.createBarChart("Read Count Distribution", "Reads Count", "%Contigs", histDataset,
@@ -48,7 +50,7 @@ public class BarChart {
 		} catch (IOException e) {
 			System.err.println("Problem occurred creating chart.");
 		}
-		System.out.println("BarChar printed");
+		System.out.println("BarChar printed. maxY="+maxY);
 	}
 
 	//@SuppressWarnings("deprecation")
@@ -128,8 +130,70 @@ public void BarChartWithFit (PoissonMixturePDF poissFit,int r, String title) {
 		}
 	}
 	
+
+public void BarChartWithFit (NaivePDF naivePDF,int r, String title) {
+	System.out.println("final BarChartWithFit start");
 	
-	private XYDataset createHistDataset( GaussianMixturePDF gaussFit) {
+	
+	if (naivePDF==null){
+		System.out.println("BarChartWithFit poissFit==null r:"+r);
+	}else{
+		
+		final XYDataset data1 = createHistDataset(naivePDF) ;//histogram of readCounts
+		System.out.println("final BarChartWithFit createHistDataset done");
+		final XYItemRenderer renderer1 = new StandardXYItemRenderer();
+
+		final NumberAxis domainAxis = new NumberAxis("ReadsCounts");
+		//domainAxis.setTickMarkPosition(DateTickMarkPosition.MIDDLE);
+		final ValueAxis rangeAxis = new NumberAxis("%Contigs");
+		final XYPlot plot = new XYPlot  (data1, domainAxis, rangeAxis, renderer1);
+
+		System.out.println("final BarChartWithFit first Dataset done");
+		// add a second dataset and renderer...
+		final XYDataset data2 = createFitCurveDataset(naivePDF);
+		System.out.println("final BarChartWithFit 2nd Dataset done");
+		final XYItemRenderer renderer2 = new StandardXYItemRenderer();
+
+		plot.setDataset(1, data2);
+		plot.setRenderer(1, renderer2);
+
+		plot.setDatasetRenderingOrder(DatasetRenderingOrder.REVERSE);
+		System.out.println("final BarChartWithFit before print");
+		// return a new chart containing the overlaid plot...
+		overlaidChart=new JFreeChart("Gauss Mixture Model Fit of Reads Distribution", JFreeChart.DEFAULT_TITLE_FONT, plot, true);
+
+
+		try {
+			ChartUtilities.saveChartAsJPEG(new File(Ploest.outputFile + "//" + Ploest.projectName+ "//readsDistributionPoissonFitted"+r+title+".jpg"), overlaidChart, 1000, 600);
+		} catch (IOException e) {
+			System.err.println("Problem occurred creating chart.");
+		}
+		System.out.println("BarChar of "+r+" naive PDF printed");
+	}
+}
+	
+
+private XYDataset createHistDataset( GaussianMixturePDF gaussFit) {
+	XYSeriesCollection result = new XYSeriesCollection();
+	XYSeries series = new XYSeries("Reads Counts");
+	//maxX=0;
+
+	double ind=(gaussFit.beg-0.5);
+
+	for (int i = 0; i<normReadCounts.length; i++) {
+		while (ind<i+0.5){
+			//System.out.println("|ind:"+ind+" i:"+i+" x:"+normReadCounts[i]+" y:"+normReadCounts[i]);
+			series.add(ind, normReadCounts[i]);
+			ind+=gaussFit.step;
+		}
+
+	}
+	result.addSeries(series);
+
+	return result;
+}
+
+	private XYDataset createHistDataset( NaivePDF gaussFit) {
 		XYSeriesCollection result = new XYSeriesCollection();
 		XYSeries series = new XYSeries("Reads Counts");
 		//maxX=0;
@@ -168,6 +232,19 @@ public void BarChartWithFit (PoissonMixturePDF poissFit,int r, String title) {
 		return result;
 	}
 
+	private XYDataset createFitCurveDataset(NaivePDF gaussFit) {
+		XYSeriesCollection result = new XYSeriesCollection();
+		XYSeries series = new XYSeries("Gaussian Mixture Fit");
+		
+		for (int i = 0; i<gaussFit.yDataPoints.length; i++) {
+			series.add(gaussFit.xDataPoints[i]+7, gaussFit.yDataPoints[i]*10);
+		}
+		
+		result.addSeries(series);//and send
+		
+		return result;
+	}
+	
 	private XYDataset createFitCurveDataset(GaussianMixturePDF gaussFit) {
 		XYSeriesCollection result = new XYSeriesCollection();
 		XYSeries series = new XYSeries("Gaussian Mixture Fit");

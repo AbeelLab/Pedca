@@ -32,9 +32,8 @@ import jMEF.PVector;
 
 public class NaivePloestPlotter {
 
-	static int[] readCounts;
+	static float[] readCounts;
 	static final int MAX_NB_MIXTURES=10;
-	//static final double SIGMA_FACTOR=2;//accepted factor for standard variation criterion of a point belonging to a gaussian  
 	Map<String,ContigData> contigsList;
 	List<String> contArrList;
 	static double[] gMMweights;//final result of the WEIGHTS of the gaussians in the mixture model fitting
@@ -44,17 +43,18 @@ public class NaivePloestPlotter {
 	static GaussianMixturePDF gmPDFResult;//final Gaussian Mixture PDF
 	static PoissonDataFitter pdfResult;//final data fit with the best POISSON fit predicted 
 	static PoissonMixturePDF pmPDFResult;//final POISSON Mixture PDF
+	static NaivePDF npdf;//Naive Smoothed Density Function
 	PVector[] fitPoints;
 	JFreeChart chart;
 	static int maxX=0;
 	//static int maxY=0;
 	static int totalDataPoints=0;//total number of input datapoints (coverage for all windows)
-	GaussianMixturePDF[] gmPDF;//Y points of the gaussian fit
-	PoissonMixturePDF[] pmPDF;//Y points of the poisson fitpmPDF
+
 	static int finalNumberOfMixtures;
 	RatioFind rt;//contains the ratio of the gaussians to the ploidy unit which allows computation of ploidy from contig coverage
-
-	public NaivePloestPlotter(Map<String,ContigData> contList,int maxWindows, int[] rc) {
+	
+	
+	public NaivePloestPlotter(Map<String,ContigData> contList,int maxWindows, float[] rc) {
 		readCounts=rc;
 		
 
@@ -70,6 +70,7 @@ public class NaivePloestPlotter {
 			displayScatterPlot();			
 			createFitterDataset() ;
 			fitNaiveMixtureModel();
+			
 			/*
 			
 			displayPloidyAndCoveragePlotPoisson();
@@ -82,19 +83,19 @@ public class NaivePloestPlotter {
 		
 	}
 
-	
-	public void gaussianDensityEstimation(){
-		System.out.println("-------------http://grepcode.com/file/repo1.maven.org/maven2/nz.ac.waikato.cms.weka/weka-stable/3.6.7/weka/estimators/KernelEstimator.java------------------");
-		
-	
-		
-	}
+
 	
 	
 	public void fitNaiveMixtureModel(){
 		System.out.println("-------------Fitting Different Poisson Mixture Models------------------");
 		
-		NaivePDF npdf=new NaivePDF(readCounts);
+		npdf=new NaivePDF(readCounts);
+		int k=significantMaxsInPDF(npdf);
+		SamParser.barchart.BarChartWithFit(npdf,finalNumberOfMixtures,"FINALRESULT");
+
+		//rt=new RatioFind(gMMmus,100*correctedResults[finalNumberOfMixtures]/NbOfRuns);
+		
+		
 		//PoissonDataFitter (fitPoints,k );
 		
 		/*
@@ -231,103 +232,7 @@ public class NaivePloestPlotter {
 	*/
 	}
 	
-	public void fitGaussianMixtureModel(){
-		System.out.println("-------------Fitting Different Gaussian Mixture Models------------------");
-		//System.out.println("-------------fitGaussianMixtureModel  MAX NB OF MIXTURE SET TO 90 !!!!------------------");
-		double aic;
-		double bic;
-		double[]aicsEM=new double[MAX_NB_MIXTURES+1];//each EM (Expectation Maximization) AIC value is stored in its corresponding k(number of mixtures) index
-		double[]bicsEM=new double[MAX_NB_MIXTURES+1];//same for EM BIC values
-		double[]aicsBSC=new double[MAX_NB_MIXTURES+1];//each BSC (Bregman Soft Clustering)AIC value is stored in its corresponding k(number of mixtures) index
-		double[]bicsBSC=new double[MAX_NB_MIXTURES+1];//same for BSC BIC values
-		MixtureModel[]emMMs=new MixtureModel[MAX_NB_MIXTURES+1];//contains the result of the EM fit for each of the mixtures
-		MixtureModel[]bscMMs=new MixtureModel[MAX_NB_MIXTURES+1];//contains the result of the BSC fit for each of the mixtures
-		GaussianDataFitter df;
-		int NbOfRuns=Ploest.nbOfRuns;
-		int indofmin;
-		int[] bestBSCGuess=new int[MAX_NB_MIXTURES];//best BSC guess with bic model evaluation
-		int[] bestEMGuess=new int[MAX_NB_MIXTURES];//best BSC guess with EM model evaluation
-		int[] correctedResults=new int[MAX_NB_MIXTURES];//best guess with bic model evaluation + min points evaluation
-
-		gmPDF =new GaussianMixturePDF[NbOfRuns];
-		pmPDF=new PoissonMixturePDF[NbOfRuns];
-		if(Ploest.forceK==0){
-			for (int r=0;r<NbOfRuns;r++){
-				System.out.println("run --"+r);
-				for (int k=0;k<MAX_NB_MIXTURES;k++){//fit to different number k of mixtures
-					df=new GaussianDataFitter (fitPoints,k );//fits a gauss mixture(by EM and BSC) to the 
-					emMMs[k]=df.getEMmodel();//store EM fit values
-					bscMMs[k]=df.getBSCModel();//same for BSC
-					//get EM LogLikelihoods and estimate BIC and AIC values
-					aic=-2*(df.getEMLogLikelihood())+(2*(k*3));//k+3 are the free parameters: k=number of models +3(weight,mu and sigma)
-					bic=-0.5*(df.getEMLogLikelihood())+((k*3)*Math.log(SamParser.totalDataPoints));
-					aicsEM[k]=aic;
-					bicsEM[k]=bic;
-					//get BSC LogLikelihoods and estimate BIC and AIC values
-					aic=-2*(df.getBSCLogLikelihood())+(2*(k*3));
-					bic=-0.5*(df.getBSCLogLikelihood())+((k*3)*Math.log(SamParser.totalDataPoints));
-					aicsBSC[k]=aic;
-					bicsBSC[k]=bic;	
-				}
-
-
-				indofmin=findIndexOfMin(bicsEM);//find index of gaussian mixture with min EM value
-				bestEMGuess[indofmin]++;
-				indofmin=findIndexOfMin(bicsBSC);//find index of gaussian mixture with min BIC value			
-				bestBSCGuess[indofmin]++;//System.out.println(indofmin+" MM  BSC params:"+bscMMs[indofmin].printParams());
-				//bscMMs[indofmin].printParams()
-				//System.out.println("fitGaussianMixtureModel indofmin --"+indofmin+ "mixt model params:"+bscMMs[indofmin].printParams());
-				//bscMMs[indofmin]
-				gmPDF[r]=new GaussianMixturePDF(bscMMs[indofmin],0.0,(double)SamParser.readCounts.length);
-				int k=significantMinsInPDF( gmPDF[r]);//finds the significant minimums (below a threshold) in the gaussian mixture PDF
-				//helps determine the real number of gaussians in the PDF and correct overfitting
-				System.out.println("fitGaussianMixtureModel significantMinsInPDF ="+k);
-				//SamParser.barchart.BarChartWithFit(gmPDF[r],(100+r));
-
-				correctedResults[k]++;
-			}
-			//PRINT BEST GUESSES AND CORRECTED RESULTS		
-			System.out.println("----------BSC and EM prediction-------- ----------");//identical results with best guess EM
-			System.out.print("[");
-			for (int b=0;b<bestBSCGuess.length;b++){
-				System.out.print(" "+bestBSCGuess[b]);
-			}
-			System.out.println(" ];");
-
-			System.out.println("------- best correctedResults (after minimal points detection of PDF)----");
-			System.out.print("[");
-			for (int b=0;b<correctedResults.length;b++){
-				System.out.print(" "+correctedResults[b]);
-			}
-			System.out.println(" ];");
-			finalNumberOfMixtures=indexOfMode(correctedResults);
-			System.out.println("-------------FINAL RESULT :"+finalNumberOfMixtures+" GAUSSIAN MODELS WITH "+(100*correctedResults[finalNumberOfMixtures]/NbOfRuns)+" % consensus---");
-		}else{//force input number of mixtures
-			finalNumberOfMixtures=Ploest.forceK;//
-			//finalNumberOfMixtures=8;//RESET VALUE DELETING THIS
-			//System.out.println("-------------FINAL RESULT, GAUSSIAN MODELS WITH NB OF MIXTURE SET TO 90 !!!! (instead of :"+finalNumberOfMixtures+" reset values in PloestPlotter) forced mixtures");
-			System.out.println("-------------FINAL RESULT, GAUSSIAN MODELS WITH :"+finalNumberOfMixtures+"  forced mixtures");
-
-		}
-
-		//print final gaussian fitted result with final number of mixtures
-		dfResult=new GaussianDataFitter (fitPoints,finalNumberOfMixtures );//final data fit with the best number of mixture prediction
-
-		gMMweights=new double[dfResult.getBSCModel().weight.length];
-		gMMmus=new double[dfResult.getBSCModel().param.length];
-		gMMsigmas=new double[dfResult.getBSCModel().param.length];
-		for (int g=0;g<dfResult.getBSCModel().param.length;g++){
-			gMMweights[g]=dfResult.getBSCModel().weight[g];
-			gMMmus[g]=((jMEF.PVector)dfResult.getBSCModel().param[g]).array[0];
-			gMMsigmas[g]=((jMEF.PVector)dfResult.getBSCModel().param[g]).array[1];			
-		}
-		sortGMMs();//sort the result vectors (gMMmus,gMMweights and gMMsigmas) following ascending order of gMMmus
-		gmPDFResult=new GaussianMixturePDF(dfResult.getBSCModel(),0.0,(double)SamParser.readCounts.length);
-		SamParser.barchart.BarChartWithFit(gmPDFResult,finalNumberOfMixtures);
-
-		rt=new RatioFind(gMMmus,100*correctedResults[finalNumberOfMixtures]/NbOfRuns);
-		if(rt!=null)rt.writeOut();
-	}
+	
 
 	private void sortGMMs() {//sort gMMmu in ascending order, then sort their weights and sigmas in the
 		//corresponding order
@@ -780,77 +685,76 @@ public void displayPloidyEstimationScatterPlotPoisson() throws IOException{//not
 		return finalNumberOfMixtures;
 	}
 
-	private int significantMinsInPDF(GaussianMixturePDF gmf) {
-		//MaxMinArrays lists = new MaxMinArrays();
-		int sigMins=0;
-		double threshold=Ploest.SIGNIFICANT_MIN;//discards the mins that are above this threshold 
-		//First find Mins:
-		//int count = 0; // To handle special case of singleton list
-		ArrayList<Double> yMinList= new  ArrayList<Double>();
-		ArrayList<Double> xMinList= new  ArrayList<Double>();
-		double left  = gmf.maxYvalue;
-		double mid   = gmf.maxYvalue;
-		double right = gmf.maxYvalue;
-		int ind=0;
-		while (ind<gmf.yDataPoints.length) {
-			//count++;
-			if(gmf.yDataPoints[ind]!=right){
-				left = mid;
-				mid = right;
-			}	
-			right = gmf.yDataPoints[ind];
-
-			if (ind!=1 && right > mid && mid < left && mid < threshold) {// we count mins only after index 2 and above threshold
-				yMinList.add(mid);
-				xMinList.add(gmf.xDataPoints[ind]);					
-				sigMins++;
-			}
-
-			ind++;
-		}
-		//add last point as min
-		yMinList.add(mid);
-		xMinList.add(gmf.xDataPoints[ind-1]);					
-		sigMins++;
-
-		return sigMins;
-	}
-
-	private int significantMinsInPDF(PoissonMixturePDF pmf) {
-		//MaxMinArrays lists = new MaxMinArrays();
-		int sigMins=0;
-		double threshold=Ploest.SIGNIFICANT_MIN;//discards the mins that are above this threshold 
-		//First find Mins:
-		//int count = 0; // To handle special case of singleton list
-		ArrayList<Double> yMinList= new  ArrayList<Double>();
-		ArrayList<Double> xMinList= new  ArrayList<Double>();
-		double left  = pmf.maxYvalue;
-		double mid   = pmf.maxYvalue;
-		double right = pmf.maxYvalue;
-		int ind=0;
-		while (ind<pmf.yDataPoints.length) {
-			//count++;
-			if(pmf.yDataPoints[ind]!=right){
-				left = mid;
-				mid = right;
-			}	
-			right = pmf.yDataPoints[ind];
-
-			if (ind!=1 && right > mid && mid < left && mid < threshold) {// we count mins only after index 2 and above threshold
-				yMinList.add(mid);
-				xMinList.add(pmf.xDataPoints[ind]);					
-				sigMins++;
-			}
-
-			ind++;
-		}
-		//add last point as min
-		yMinList.add(mid);
-		xMinList.add(pmf.xDataPoints[ind-1]);					
-		sigMins++;
-
-		return sigMins;
-	}
-
 	
+
+	private int significantMaxsInPDF(NaivePDF naivePDF) {
+		int sigMaxs = 0;//nb of significant maximums
+		double threshold = SamParser.maxY * 0.001;// discards the values that are
+													// below this threshold
+		System.out.println(" SamParser.maxYh :" + SamParser.maxY + " Y min threshold:" + threshold);
+
+		ArrayList<Double> yMinList = new ArrayList<Double>();
+		ArrayList<Double> xMinList = new ArrayList<Double>();
+		//pointers to the y values
+		double left = 0;
+		double mid = 0;
+		double right = 0;
+		//pointers to the x values
+		int ind = 0;
+		int lastLeftIndex = 0;
+		int lastMidIndex = 0;
+		int lastRightIndex = 0;
+
+		System.out.println(" pmf.yDataPoints.length :" + naivePDF.yDataPoints.length + " Y min threshold:" + threshold+ " \nSignificant maxima in NaivePDF:");
+
+		while (ind < naivePDF.yDataPoints.length) {
+
+			if (naivePDF.yDataPoints[ind] != right) {
+				//move and update pointers
+				left = mid;
+				mid = right;
+				right = naivePDF.yDataPoints[ind];
+				lastLeftIndex = lastMidIndex;
+				lastMidIndex = lastRightIndex;
+				lastRightIndex = ind;
+				//System.out.println(" .     ind :" + ind + " = " + mid + "  l:" + left + " m:" + mid+ " r:" + right );
+
+				if (right < mid && mid > left && mid > threshold) {// we count maxs only above threshold
+					
+					// now that we encountered a max bin, we scan the previous
+					// and the following bins to find the exact maximum point in this area
+					
+					double maxVal = 0;// precise max Y value in the corresponding bins
+					int Xindex = lastLeftIndex;//index (x value) of the maxVal
+
+					//System.out.println(" ....    max in :" + lastRightIndex + " = " + mid + "  l:" + left + " m:" + mid+ " r:" + right + "  between leftIn:" + lastLeftIndex + " midInd:" + lastMidIndex+ " rightInd:" + lastRightIndex + " \nSCANING from lastLeftIndex:" + lastLeftIndex+ " to  :" + (lastRightIndex + naivePDF.smootherLength));
+
+					for (int ib = lastLeftIndex; ib < (lastRightIndex + naivePDF.smootherLength); ib++) {
+
+						if (readCounts[ib] > maxVal) {
+							maxVal = readCounts[ib];
+							Xindex = ib;
+						}
+						//System.out.println("     ib:" + ib + " Xindex:" + Xindex + " maxval:" + maxVal+ " readCounts[ib]:" + readCounts[ib]);
+
+					}
+
+					yMinList.add(maxVal);
+					xMinList.add(naivePDF.xDataPoints[Xindex]);
+					System.out.println(" ****    max in :" + naivePDF.xDataPoints[Xindex] + " = " + maxVal);
+					sigMaxs++;
+
+				}
+			} else {
+				right = naivePDF.yDataPoints[ind];
+				lastRightIndex = ind;
+			}
+
+			ind++;
+		}
+
+		System.out.println("     SIGMAXS :" + sigMaxs);
+
+		return sigMaxs;
+	}
 }

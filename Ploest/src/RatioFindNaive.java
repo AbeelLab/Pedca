@@ -5,7 +5,7 @@ import java.math.RoundingMode;
 import java.text.DecimalFormat;
 import java.util.Stack;
 
-public class RatioFind
+public class RatioFindNaive
 {
 	static int MAX_NB_MIXTURES=10;
 	double[] ds;
@@ -15,60 +15,34 @@ public class RatioFind
 	
 	int consensus;//% of consensus in corrected results (certainty of this prediction)
 
-	public RatioFind(double[] ds,int consensusPerc){
-	
-		df.setRoundingMode(RoundingMode.CEILING);
-		//java.util.Arrays.sort(ds);
-		this.ds=ds;
-		consensus = consensusPerc;
-		scores=new CNVscore[(MAX_NB_MIXTURES+1-ds.length)];
 
-		double candUnit=0.0;
-		double product=00;
-		double[] productsVect;
-		for (int i=(MAX_NB_MIXTURES+1-ds.length);i>0;i--){//TODO: I'would rewrite this section to start evaluating the candidate unit 
-															//from the bigger gaussian, instead of the smallest, which will give a higher 
-															//accuracy estimation of candUnit
-			candUnit=ds[0]/i;
-			productsVect=new double[MAX_NB_MIXTURES];
-
-			for (int j=i+1;j<MAX_NB_MIXTURES;j++){//for all candidate Alternative Nb Of Mixtures higher than candUnit
-				product=candUnit*j;//get product ( theoretical mean value) = candUnit * candAlternativeNbOfMixture
-				productsVect[j]=product;//store all products for all candAlternativeNbOfMixture
-			}
-			scores[i-1]=nextNearestMeans(productsVect,i);	  
-		}
-		bestScore=findMinScore(scores);
-		System.out.println("END RatioFind");
-	
-	}
 	
 	
-	public RatioFind(double[] ds){
+	public RatioFindNaive(double[] ds){
 		
 		df.setRoundingMode(RoundingMode.CEILING);
-		//java.util.Arrays.sort(ds);
+	
+		
 		this.ds=ds;
 	
-		scores=new CNVscore[(MAX_NB_MIXTURES+1-ds.length)];
+		scores=new CNVscore[(MAX_NB_MIXTURES+1-ds.length)];//vector with all the scores for each of the posible ratio solutions
 
 		double candUnit=0.0;
 		double product=00;
 		double[] productsVect;
 		for (int i=(MAX_NB_MIXTURES+1-ds.length);i>0;i--){//TODO: I'would rewrite this section to start evaluating the candidate unit 
-															//from the bigger gaussian, instead of the smallest, which will give a higher 
+															//from the bigger cluster, instead of the smallest, which will give a higher 
 															//accuracy estimation of candUnit
 			candUnit=ds[0]/i;
+			
 			productsVect=new double[MAX_NB_MIXTURES];
-
 			for (int j=i+1;j<MAX_NB_MIXTURES;j++){//for all candidate Alternative Nb Of Mixtures higher than candUnit
 				product=candUnit*j;//get product ( theoretical mean value) = candUnit * candAlternativeNbOfMixture
 				productsVect[j]=product;//store all products for all candAlternativeNbOfMixture
 			}
-			scores[i-1]=nextNearestMeans(productsVect,i);	  
+			scores[i-1]=nextNearestMeans(productsVect,i);
 		}
 		bestScore=findMinScore(scores);
-		System.out.println("END RatioFind");
 	
 	}
 	
@@ -84,7 +58,7 @@ public class RatioFind
 			if (productsVect[i]!=0.0){//start with THIS value
 				minDist=productsVect[i]*MAX_NB_MIXTURES;
 				for (int nd=1;nd<ds.length;nd++){
-					candDist=Math.abs(ds[nd]-productsVect[i]);//get distance to all next means values 
+					candDist=round(100*Math.abs(ds[nd]-productsVect[i])/SamParser.maxWindows,3);//get distance to all next means values (divided by maxWindows to normalize)
 					if (candDist<minDist){
 						minDist=candDist;
 						minInd=nd;
@@ -99,6 +73,16 @@ public class RatioFind
 		}
 		result=new CNVscore(resultInds, resultDists, ratio);
 		return result;	
+	}
+	
+	
+	public static double round(double value, int places) {
+	    if (places < 0) throw new IllegalArgumentException();
+
+	    long factor = (long) Math.pow(10, places);
+	    value = value * factor;
+	    long tmp = Math.round(value);
+	    return (double) tmp / factor;
 	}
 
 	public class CNVscore{
@@ -214,40 +198,34 @@ public class RatioFind
 	}
 	
 	public void writeOut() {
-		
+		PrintWriter writer=null ;
 		try {
-			PrintWriter writer = new PrintWriter(Ploest.outputFile + "//" + Ploest.projectName+ "//"+Ploest.projectName+"PloidyEstimation.txt", "UTF-8");
-			
-			System.out.println("BEG ratio write out");
-			writer.println(">FINAL NUMBER OF MIXTURES: "+PloestPlotter.finalNumberOfMixtures+" gaussians\n" );
+			writer = new PrintWriter(Ploest.outputFile + "//" + Ploest.projectName+ "//"+Ploest.projectName+"PloidyEstimation.txt", "UTF-8");
+			writer.println(">FINAL NUMBER OF CLUSTERS: "+NaivePloestPlotter.clusterMus.length );
 			writer.println("\n");
-			System.out.println("1 ratio write out");
-			for (int g=0;g<PloestPlotter.dfResult.getBSCModel().param.length;g++){
-				writer.println("weight["+g+"]:"+PloestPlotter.gMMweights[g]+" \tmu["+g+"]"+PloestPlotter.gMMmus[g]+"\tsigma["+g+"]:"+PloestPlotter.gMMsigmas[g]);		
+	
+			for (int g=0;g<NaivePloestPlotter.clusterMus.length;g++){
+				System.out.println("clust:"+g+" mu:"+NaivePloestPlotter.clusterMus[g]);
+				writer.println("cluster center ["+g+"]:\t"+NaivePloestPlotter.clusterMus[g]);		
 			}
-			System.out.println("2 ratio write out");	
 			writer.println("\n");
 			
 			writer.println("> PLOIDY ESTIMATION :"+ Ploest.projectName);
-			writer.println("> GAUSSIAN_CLUSTER_NUMBER \tCOPY_NUMBER_ESTIMATION \t DISTANCE_ERROR ");
+			writer.println("> CLUSTER_NUMBER \tCOPY_NUMBER_ESTIMATION \t DISTANCE_ERROR (% MAX reads counts) ");
 			for(int d=0;d<ds.length;d++){
 				writer.println("\t\t"+d+" \t\t\t"+bestScore.bestCNVIndexes[d]+" \t\t\t"+bestScore.bestMinDistances[d]);
 			}
-			System.out.println("3 ratio write out");
+	
 			writer.println("\n");
-			writer.println("Estimation distance score: "+bestScore.score);
-			System.out.println("4 ratio write out");
-			writer.println("Estimation consensus: "+consensus+" %");//100*correctedResults[finalNumberOfMixtures]/NbOfRuns
-			System.out.println("5 ratio write out");
-			writer.println("Maximum Nb Of Mixtures respected = "+bestScore.respectsMaxNbOfMixtures);
-			System.out.println("quasi END write out");
+			writer.println(">Estimation distance score: "+bestScore.score);
+			//writer.println(">Estimation consensus: "+consensus+" %");
+			writer.println(">Maximum Nb Of Mixtures respected = "+bestScore.respectsMaxNbOfMixtures);
 			writer.close();
 		} catch (FileNotFoundException | UnsupportedEncodingException e) {
+			if(writer!=null)writer.close();
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		}
-		System.out.println("END ratio write out");
-		
+		}		
 	}
 	
 	public void writeOutPoisson() {

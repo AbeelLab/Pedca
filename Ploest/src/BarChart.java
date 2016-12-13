@@ -132,35 +132,29 @@ public void BarChartWithFit (PoissonMixturePDF poissFit,int r, String title) {
 	
 
 public void BarChartWithFit (NaivePDF naivePDF,int r, String title) {
-	System.out.println("final BarChartWithFit start");
-	
-	
+
 	if (naivePDF==null){
 		System.out.println("BarChartWithFit poissFit==null r:"+r);
 	}else{
 		
 		final XYDataset data1 = createHistDataset(naivePDF) ;//histogram of readCounts
-		System.out.println("final BarChartWithFit createHistDataset done");
 		final XYItemRenderer renderer1 = new StandardXYItemRenderer();
-
 		final NumberAxis domainAxis = new NumberAxis("ReadsCounts");
+		
 		//domainAxis.setTickMarkPosition(DateTickMarkPosition.MIDDLE);
 		final ValueAxis rangeAxis = new NumberAxis("%Contigs");
 		final XYPlot plot = new XYPlot  (data1, domainAxis, rangeAxis, renderer1);
 
-		System.out.println("final BarChartWithFit first Dataset done");
 		// add a second dataset and renderer...
 		final XYDataset data2 = createFitCurveDataset(naivePDF);
-		System.out.println("final BarChartWithFit 2nd Dataset done");
 		final XYItemRenderer renderer2 = new StandardXYItemRenderer();
 
 		plot.setDataset(1, data2);
 		plot.setRenderer(1, renderer2);
 
 		plot.setDatasetRenderingOrder(DatasetRenderingOrder.REVERSE);
-		System.out.println("final BarChartWithFit before print");
 		// return a new chart containing the overlaid plot...
-		overlaidChart=new JFreeChart("Gauss Mixture Model Fit of Reads Distribution", JFreeChart.DEFAULT_TITLE_FONT, plot, true);
+		overlaidChart=new JFreeChart("Naive Smoothed Fit of Reads Distribution", JFreeChart.DEFAULT_TITLE_FONT, plot, true);
 
 
 		try {
@@ -168,7 +162,7 @@ public void BarChartWithFit (NaivePDF naivePDF,int r, String title) {
 		} catch (IOException e) {
 			System.err.println("Problem occurred creating chart.");
 		}
-		System.out.println("BarChar of "+r+" naive PDF printed");
+		System.out.println("BarChar of naive PDF printed");
 	}
 }
 	
@@ -232,12 +226,17 @@ private XYDataset createHistDataset( GaussianMixturePDF gaussFit) {
 		return result;
 	}
 
-	private XYDataset createFitCurveDataset(NaivePDF gaussFit) {
+	private XYDataset createFitCurveDataset(NaivePDF naiveFit) {
 		XYSeriesCollection result = new XYSeriesCollection();
-		XYSeries series = new XYSeries("Gaussian Mixture Fit");
+		XYSeries series = new XYSeries("PDF Naive Smoother Fit");
 		
-		for (int i = 0; i<gaussFit.yDataPoints.length; i++) {
-			series.add(gaussFit.xDataPoints[i]+7, gaussFit.yDataPoints[i]*10);
+		//correction for overlapping the 2 datasets
+		int xOffSet=naiveFit.smootherWing+1;//to correct for the bins width
+		int yRatioCorrection=12;//to correct the y data normalization ratio
+		
+		//add to series
+		for (int i = 0; i<naiveFit.yDataPoints.length; i++) {
+			series.add(naiveFit.xDataPoints[i]+xOffSet, naiveFit.yDataPoints[i]*yRatioCorrection);
 		}
 		
 		result.addSeries(series);//and send

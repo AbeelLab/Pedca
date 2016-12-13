@@ -19,7 +19,8 @@ public class NaivePDF {
     double maxYvalue=0.0;
     double maxXvalue=0.0;
     MixtureModel mixtMod;
-    int smootherLength;
+    static int smootherLength;
+    static int smootherWing;
     
 	public NaivePDF(float[] rc){
 		
@@ -37,7 +38,7 @@ public class NaivePDF {
 			System.out.println("smoother Length = "+(smootherLength+1)+" instead of "+smootherLength);
 			smootherLength++;//must be odd number
 		}
-		int smootherWing=smootherLength/2;//part of the smootherLength before or after the pointer
+		smootherWing=smootherLength/2;//part of the smootherLength before or after the pointer
 		
 		System.out.println("NaivePDF smootherLength:"+smootherLength+" smootherWing:"+smootherWing+ " rc size"+rc.length+" [");
 	

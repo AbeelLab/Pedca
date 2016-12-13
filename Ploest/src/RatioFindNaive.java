@@ -205,7 +205,6 @@ public class RatioFindNaive
 			writer.println("\n");
 	
 			for (int g=0;g<NaivePloestPlotter.clusterMus.length;g++){
-				System.out.println("clust:"+g+" mu:"+NaivePloestPlotter.clusterMus[g]);
 				writer.println("cluster center ["+g+"]:\t"+NaivePloestPlotter.clusterMus[g]);		
 			}
 			writer.println("\n");

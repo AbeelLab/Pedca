@@ -31,17 +31,15 @@ import jMEF.MixtureModel;
 import jMEF.PVector;
 
 public class NaivePloestPlotter {
-
+	static boolean PLOIDY_CONTINUITY=false;//TO DO smooths the ploidy estimation by continuity filter
+	static boolean AVG_PLOIDY=true;//smooths the ploidy estimation by averaging over a window of length: PLOIDY_SMOOTHER_WIDTH
+	static int PLOIDY_SMOOTHER_WIDTH=49;//preferably odd number
+	
 	static float[] readCounts;
 	static final int MAX_NB_MIXTURES=10;
 	Map<String,ContigData> contigsList;
 	List<String> contArrList;
-	static double[] clustersWeights;//final result of the WEIGHTS of the clausters in the mixture model fitting
 	static double[] clusterMus;//final result of the MEANS (mus) of the clusters in the mixture model fitting
-	static double[] clusterSigmas;//final result of the STANDARD VARIATIONS (sigmas) of the clausters in the mixture model fitting
-	static GaussianDataFitter dfResult;//final data fit with the best fit predicted 
-//	static GaussianMixturePDF gmPDFResult;//final Gaussian Mixture PDF
-	static PoissonDataFitter pdfResult;//final data fit with the best POISSON fit predicted 
 	static PoissonMixturePDF pmPDFResult;//final POISSON Mixture PDF
 	static NaivePDF npdf;//Naive Smoothed Density Function
 	PVector[] fitPoints;
@@ -51,7 +49,7 @@ public class NaivePloestPlotter {
 	static int totalDataPoints=0;//total number of input datapoints (coverage for all windows)
 
 	static int finalNumberOfMixtures;
-	RatioFindNaive rt;//contains the ratio of the gaussians to the ploidy unit which allows computation of ploidy from contig coverage
+	RatioFindNaive rt;//contains the ratio of each cluster to the ploidy-unit which allows computation of ploidy from contig coverage
 	
 	
 	public NaivePloestPlotter(Map<String,ContigData> contList,int maxWindows, float[] rc) {
@@ -61,16 +59,11 @@ public class NaivePloestPlotter {
 
 		
 		try{
-			displayScatterPlot();			
+			displayScatterPlot();//Scatterplot containing the contig coverage (per slided window)		
 			createFitterDataset() ;
-			fitNaiveMixtureModel();
-			
-			/*
-			
-			displayPloidyAndCoveragePlotPoisson();
-			*/
-	
-
+			fitNaiveMixtureModel();						
+			displayPloidyAndCoveragePlotNaive();//Plot containng both the coverage and the ploidy estimation
+		
 		}catch (Exception e){
 			System.err.println("Error in PloestPlotter constructor");
 		}
@@ -94,34 +87,6 @@ public class NaivePloestPlotter {
 	}
 	
 	
-
-	
-	
-	private void sortPMMs() {//sort gMMmu in ascending order, then sort their weights and sigmas in the
-		//corresponding order
-
-		Vector<Double> origCopy = new Vector<Double>(clusterMus.length);//get a copy of the original order
-		for (int o=0;o<clusterMus.length;o++){
-			origCopy.add(clusterMus[o]);
-		}	
-
-		java.util.Arrays.sort(clusterMus);//sort the reference vector
-		int[]order=new int[origCopy.size()];
-		for (int o=0;o<order.length;o++){////store the order
-			order[o]=origCopy.indexOf(clusterMus[o]);
-		}
-	
-		//now order the otherGMM
-		//double[]newgMMsigmas=new double[pdfResult.getBSCModel().param.length];//newly order sigmas
-		double[]newgMMweights=new double[pdfResult.getBSCModel().param.length];//newly order weights
-		for (int o=0;o<order.length;o++){
-			//newgMMsigmas[o]=gMMsigmas[order[o]];
-			newgMMweights[o]=clustersWeights[order[o]];
-		}
-		//gMMsigmas=newgMMsigmas;
-		clustersWeights=newgMMweights;
-
-	}
 	public int indexOfMode(int[] vector){//finds the index of the most represented result in this vector
 		double max=vector[0] ;
 		int maxIndex=0;
@@ -162,63 +127,9 @@ public class NaivePloestPlotter {
 	}
 
 
-	public void displayPloidyAndCoveragePlot()throws IOException{
-		
+	
 
-		ContigData contigD;
-
-		for (int c=0;c<contigsList.size();c++){//for each contig
-			System.out.println("  displayPloidyAndCoveragePlot contig:" +c);
-			contigD=contigsList.get(contArrList.get(c));
-			XYPlot xyPlot = new XYPlot();
-
-			/* SETUP SCATTER */
-
-			// Create the scatter data, renderer, and axis
-			XYDataset collection1 = createPlotDataset(contigD);
-			XYItemRenderer renderer1 = new XYLineAndShapeRenderer(false, true);   // Shapes only
-			ValueAxis domain1 = new NumberAxis("Genome Position (x 1000 bp)");
-			ValueAxis rangeAxis = new NumberAxis("Coverage");
-
-			// Set the scatter data, renderer, and axis into plot
-			xyPlot.setDataset(0, collection1);
-			xyPlot.setRenderer(0, renderer1);
-			xyPlot.setDomainAxis(0, domain1);
-			xyPlot.setRangeAxis(0, rangeAxis);
-
-			// Map the scatter to the first Domain and first Range
-			xyPlot.mapDatasetToDomainAxis(0, 0);
-			xyPlot.mapDatasetToRangeAxis(0, 0);
-
-			/* SETUP LINE */
-
-			// Create the line data, renderer, and axis
-			XYDataset collection2 = createPloidyEstimationDataset(contigD);
-			XYItemRenderer renderer2 = new XYLineAndShapeRenderer(true, false);   // Lines only
-			ValueAxis domain2 = new NumberAxis("Genome Position (x 1000 bp)");
-			ValueAxis range2 = new NumberAxis("Ploidy Estimation");
-
-			// Set the line data, renderer, and axis into plot
-			domain2.setStandardTickUnits(NumberAxis.createIntegerTickUnits());
-			xyPlot.setDataset(1, collection2);
-			xyPlot.setRenderer(1, renderer2);
-			xyPlot.setDomainAxis(1, domain2);
-			xyPlot.setRangeAxis(1, range2);
-
-			// Map the line to the second Domain and second Range
-			xyPlot.mapDatasetToDomainAxis(1, 1);
-			xyPlot.mapDatasetToRangeAxis(1, 1);
-
-			xyPlot.setDatasetRenderingOrder( DatasetRenderingOrder.REVERSE );
-			// Create the chart with the plot and a legend
-			JFreeChart chart = new JFreeChart("Coverage and Ploidy Estimation :"+contigD.contigName, JFreeChart.DEFAULT_TITLE_FONT, xyPlot, true);
-			ChartUtilities.saveChartAsJPEG(new File(Ploest.outputFile + "//" + Ploest.projectName+ "//Ploidy_Estimation_Charts//Ploidy_Estimation_Contig_"+c+".jpg"),chart, 1000, 600);
-
-		}
-	}
-
-
-public void displayPloidyAndCoveragePlotPoisson()throws IOException{
+public void displayPloidyAndCoveragePlotNaive()throws IOException{
 		
 
 		ContigData contigD;
@@ -250,10 +161,11 @@ public void displayPloidyAndCoveragePlotPoisson()throws IOException{
 			/* SETUP LINE */
 
 			// Create the line data, renderer, and axis
-			XYDataset collection2 = createPloidyEstimationDatasetPoisson(contigD);
-			XYItemRenderer renderer2 = new XYLineAndShapeRenderer(true, false);   // Lines only
+			XYDataset collection2 = createPloidyEstimationDatasetNaive(contigD);
+			XYItemRenderer renderer2 = new XYLineAndShapeRenderer(false , true);   // Lines only
 			ValueAxis domain2 = new NumberAxis("Genome Position (x 1000 bp)");
 			ValueAxis range2 = new NumberAxis("Ploidy Estimation");
+			range2.setUpperBound(rangeAxis.getUpperBound()/rt.bestScore.candidateUnit);
 
 			// Set the line data, renderer, and axis into plot
 			domain2.setStandardTickUnits(NumberAxis.createIntegerTickUnits());
@@ -266,86 +178,18 @@ public void displayPloidyAndCoveragePlotPoisson()throws IOException{
 			xyPlot.mapDatasetToDomainAxis(1, 1);
 			xyPlot.mapDatasetToRangeAxis(1, 1);
 
-			xyPlot.setDatasetRenderingOrder( DatasetRenderingOrder.REVERSE );
+			xyPlot.setDatasetRenderingOrder( DatasetRenderingOrder.FORWARD );	
+			
 			// Create the chart with the plot and a legend
 			JFreeChart chart = new JFreeChart("Coverage and Ploidy Estimation :"+contigD.contigName, JFreeChart.DEFAULT_TITLE_FONT, xyPlot, true);
-			ChartUtilities.saveChartAsJPEG(new File(Ploest.outputFile + "//" + Ploest.projectName+ "//Ploidy_Estimation_Charts//Ploidy_Estimation_Contig_"+c+".jpg"),chart, 1000, 600);
+			ChartUtilities.saveChartAsJPEG(new File(Ploest.outputFile + "//" + Ploest.projectName+ "//Ploidy_Estimation_Charts//Ploidy_Estimation_"+contigD.contigName+".jpg"),chart, 1500, 900);
 
 		}
 	}
 
-public void displayPloidyEstimationScatterPlotPoisson() throws IOException{//not used
-	//XYDataset
-	for (int c=0;c<contigsList.size();c++){//for each contig
-		ContigData contigD=contigsList.get(contArrList.get(c));
-		XYDataset data2 = createPloidyEstimationDatasetPoisson(contigD);
-
-		chart = ChartFactory.createScatterPlot(
-				("Ploidy Estimation "+contigD.contigName), // chart title
-				"Genome Position (x 1000 bp)", // x axis label
-				"Coverage", // y axis label
-				data2 , // XYDataset 
-				PlotOrientation.VERTICAL,
-				true, // include legend
-				true, // tooltips
-				false // urls
-				);
-		//Set range
-		XYPlot xyPlot = (XYPlot) chart.getPlot();
-		NumberAxis domain = (NumberAxis) xyPlot.getDomainAxis();
-		domain.setRange(0.00, maxX);
-		ValueAxis rangeAxis = xyPlot.getRangeAxis();	
-		rangeAxis.setRange(0.00, MAX_NB_MIXTURES);	
-
-		XYItemRenderer renderer = new StandardXYItemRenderer();
-		xyPlot.setRenderer(0, renderer);
-		renderer.setSeriesPaint(0, Color.blue);
-		double size = 20.0;
-		double delta = size / 2.0;
-		Shape shape1 = new Rectangle2D.Double(-delta, -delta, size, size);
-		renderer.setSeriesShape(0,shape1);
-
-		ChartUtilities.saveChartAsJPEG(new File(Ploest.outputFile + "//" + Ploest.projectName+ "//Ploidy_Estimation_Charts//Ploidy_Estimation_Contig_"+contigD.contigName+".jpg"),chart, 1000, 600);
-
-	}
-}
 
 
-	public void displayPloidyEstimationScatterPlot() throws IOException{//not used
-		//XYDataset
-		for (int c=0;c<contigsList.size();c++){//for each contig
-			ContigData contigD=contigsList.get(contArrList.get(c));
-			XYDataset data2 = createPloidyEstimationDataset(contigD);
-
-			chart = ChartFactory.createScatterPlot(
-					("Ploidy Estimation "+contigD.contigName), // chart title
-					"Genome Position (x 1000 bp)", // x axis label
-					"Coverage", // y axis label
-					data2 , // XYDataset 
-					PlotOrientation.VERTICAL,
-					true, // include legend
-					true, // tooltips
-					false // urls
-					);
-			//Set range
-			XYPlot xyPlot = (XYPlot) chart.getPlot();
-			NumberAxis domain = (NumberAxis) xyPlot.getDomainAxis();
-			domain.setRange(0.00, maxX);
-			ValueAxis rangeAxis = xyPlot.getRangeAxis();	
-			rangeAxis.setRange(0.00, MAX_NB_MIXTURES);	
-
-			XYItemRenderer renderer = new StandardXYItemRenderer();
-			xyPlot.setRenderer(0, renderer);
-			renderer.setSeriesPaint(0, Color.blue);
-			double size = 20.0;
-			double delta = size / 2.0;
-			Shape shape1 = new Rectangle2D.Double(-delta, -delta, size, size);
-			renderer.setSeriesShape(0,shape1);
-
-			ChartUtilities.saveChartAsJPEG(new File(Ploest.outputFile + "//" + Ploest.projectName+ "//Ploidy_Estimation_Charts//Ploidy_Estimation_Contig_"+contigD.contigName+".jpg"),chart, 1000, 600);
-
-		}
-	}
+	
 
 	public int findIndexOfMin(double[] bicVector){
 		double min=bicVector[1] ;
@@ -394,130 +238,93 @@ public void displayPloidyEstimationScatterPlotPoisson() throws IOException{//not
 	}
 
 
-	private  XYDataset createPloidyEstimationDataset(ContigData contigD) {
-		System.out.println("createPloidyEstimationDataset beg");
+
+	
+	private  XYDataset createPloidyEstimationDatasetNaive(ContigData contigD) {
+		
 		XYSeriesCollection result = new XYSeriesCollection();
 		XYSeries series = new XYSeries(" Ploidy Estimation");
+		
 
 		double x;
 		double y;
+		double [] xValues=new double[contigD.windPos.size()];
+		int [] yValues=new int[contigD.windPos.size()];
 		maxX=0;
 		int wInd=0;
 		//this loop is for ESTIMATED PLOIDY PLOTTING
 		for (int i = 0; i < contigD.windPos.size(); i++) {
 
 			if(contigD.windPos.get(i)!=null){
-				x = wInd++;  			
-				y = getPointPloidyEstimation(contigD.windPos.get(i));
-				series.add(x, y);
-				if (x>maxX)maxX=(int) x; 
-				//writer.println( " x:" +x + " y:"+y);
+				xValues [wInd]= wInd;  			
+				yValues [wInd]= getPointPloidyEstimationNaive(contigD.windPos.get(i));
+				if (!AVG_PLOIDY)series.add(wInd, yValues [wInd]);
+				wInd++;
 			}				
 
 		}
-		System.out.println();
-		result.addSeries(series);
-		System.out.println("createPloidyEstimationDataset end");
-		return result;
-	}
-	
-	private  XYDataset createPloidyEstimationDatasetPoisson(ContigData contigD) {
-		XYSeriesCollection result = new XYSeriesCollection();
-		XYSeries series = new XYSeries(" Ploidy Estimation");
-
-		double x;
-		double y;
-		maxX=0;
-		int wInd=0;
-		//this loop is for ESTIMATED PLOIDY PLOTTING
-		for (int i = 0; i < contigD.windPos.size(); i++) {
-
-			if(contigD.windPos.get(i)!=null){
-				x = wInd++;  			
-				y = getPointPloidyEstimationPoisson(contigD.windPos.get(i));
-				series.add(x, y);
-				if (x>maxX)maxX=(int) x; 
-				//writer.println( " x:" +x + " y:"+y);
-			}				
-
+		if (--wInd>maxX){
+			maxX=(int) wInd;
 		}
+
+		if(AVG_PLOIDY){		//smooth the ploidy plot by averaging the values over a window of PLOIDY_SMOOTHER_WIDTH points
+			series=averagePloidy(series,wInd,xValues,yValues);
+		}
+		
 		System.out.println();
 		result.addSeries(series);
 
 		return result;
 	}
+
+	public XYSeries averagePloidy(XYSeries series, int wInd,double [] xValues,int [] yValues){
+		double sum=0;
+		int PLOIDY_SMOOTHER_WING=PLOIDY_SMOOTHER_WIDTH/2; //length of each of the sides of the PLOIDY_SMOOTHER window before and after the position being evaluated
+
+		//solve the first PLOIDY_SMOOTHER_WIDTH/2 positions of the plot
+		for(int v=0;v<PLOIDY_SMOOTHER_WIDTH;v++){
+			sum+=yValues [v];
+		}
+		for(int v=0;v<PLOIDY_SMOOTHER_WING+1;v++){
+			series.add(xValues[v], Math.round(sum/PLOIDY_SMOOTHER_WIDTH));
+		}
+
+		
+		//solve the rest of the positions until size-PLOIDY_SMOOTHER_WIDTH/2 
+		for(int v=(PLOIDY_SMOOTHER_WING+1);v<(wInd-PLOIDY_SMOOTHER_WING);v++){
+			sum+=yValues [v+PLOIDY_SMOOTHER_WING];//add next value in the right side of the wing
+			sum-=yValues [v-(PLOIDY_SMOOTHER_WING+1)];//substract the value that just moved out of the left side of the wing
+			series.add(xValues[v], Math.round(sum/PLOIDY_SMOOTHER_WIDTH));
+		}
+		
+		//solve the last positions
+		for(int v=(wInd-PLOIDY_SMOOTHER_WING);v<wInd;v++){
+			series.add(xValues[v], Math.round(sum/PLOIDY_SMOOTHER_WIDTH));
+		}
+		return series;
+	}
 	
-	public double getPointPloidyEstimation(double ptCoverage){//computes the probability of the data point 
-		//belonging to all gaussians and returns the best option
+	public int getPointPloidyEstimationNaive(double ptCoverage){//computes the probability of the data point 
+		//belonging to all clusters and returns the best option
 
 		double [] pdfVals=new double[clusterMus.length];
 		for (int mm=0;mm<clusterMus.length;mm++){//for all mixtures computes the probability pdfVal of the data point belonging to it
-			pdfVals[mm]=GaussianMixturePDF.pdf(ptCoverage,clusterMus[mm],clusterSigmas[mm]);
+			pdfVals[mm]=NaivePDF.pdf(ptCoverage,clusterMus[mm]);
 		}
-		double max=pdfVals[0];
-		int maxInd=0;
+		double min=pdfVals[0];
+		int minInd=0;
+		
 		for (int mm=0;mm<pdfVals.length;mm++){//search for the highest pdfVal
 			//System.out.print(" //mm:"+mm +" pdfVal:"+pdfVals[mm]);
-			if(pdfVals[mm]>max){
-				max=pdfVals[mm];
-				maxInd=mm;
+			if(pdfVals[mm]<min){
+				min=pdfVals[mm];
+				minInd=mm;
 			}
 		}
-		//System.out.println();
-		return (double)rt.bestScore.bestCNVIndexes[maxInd];
+		//if(ptCoverage<150)System.out.println("ptCoverage:"+ptCoverage+" min:"+min+" minInd:"+minInd+" CNV:"+rt.bestScore.bestCNVIndexes[minInd]);
+		return rt.bestScore.bestCNVIndexes[minInd];//returns the best CN estimation (1-10) to which this points x belongs
 	}
 
-	public double getPointPloidyEstimationPoisson(double ptCoverage){//computes the probability of the data point 
-		//belonging to all gaussians and returns the best option
-
-		double [] pdfVals=new double[clusterMus.length];
-		for (int mm=0;mm<clusterMus.length;mm++){//for all mixtures computes the probability pdfVal of the data point belonging to it
-			pdfVals[mm]=PoissonMixturePDF.pdf(ptCoverage,clusterMus[mm]);
-		}
-		double max=pdfVals[0];
-		int maxInd=0;
-		for (int mm=0;mm<pdfVals.length;mm++){//search for the highest pdfVal
-			//System.out.print(" //mm:"+mm +" pdfVal:"+pdfVals[mm]);
-			if(pdfVals[mm]>max){
-				max=pdfVals[mm];
-				maxInd=mm;
-			}
-		}
-		//System.out.println();
-		return (double)rt.bestScore.bestCNVIndexes[maxInd];
-	}
-
-	class MaxMinArrays{
-		ArrayList<Double> maxList ;		
-		ArrayList<Double> minList ;
-		public MaxMinArrays(){
-			maxList = new ArrayList<Double>();
-			minList = new ArrayList<Double>();
-		}
-		public void addToMinList(Double d) {
-			this.minList.add(d);
-		}
-		public void addToMaxList(Double d) {
-			this.maxList.add(d);
-		}
-		public ArrayList<Double> getMaxList() {
-			return maxList;
-		}
-		public ArrayList<Double> getMinList() {
-			return minList;
-		}
-		public int getNumberOfSignificantMins(){//returns the number of mins in the function that are below a certain threshold
-			int sigMins=0;
-			double threshold=0.01;
-			for (int i=0;i<minList.size();i++){
-				if (minList.get(i) < threshold){
-					sigMins++;
-				}
-			}
-			return sigMins;
-		}
-
-	}
 
 	static int getFinalNumberOfMixtures(){
 		return finalNumberOfMixtures;

@@ -158,7 +158,7 @@ public class RatioFindNaive
 		public void printScore(){
 			System.out.println("========================");
 			for(int d=0;d<ds.length;d++){
-				System.out.println("gaussian cluster number:"+d+" Copy number estimation:"+bestCNVIndexes[d]+" Distance error:"+bestMinDistances[d]);
+				System.out.println(" Cluster number:"+d+" Copy number estimation:"+bestCNVIndexes[d]+" Distance error:"+bestMinDistances[d]);
 			}
 			System.out.println();
 			System.out.println("Estimation score:"+score);

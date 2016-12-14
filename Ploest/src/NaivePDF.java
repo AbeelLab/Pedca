@@ -98,16 +98,10 @@ public class NaivePDF {
 	  return fact;
 
 	}
-    // return pdf(x, mu) = Poisson pdf with mean and stddev lambda
-    public static double pdf(double x, double lambda) {
-    	
-    	double denominator=factorial(x);
-    	
-    	double numerator=Math.pow(lambda,x)*Math.exp(-lambda);
-    	
-    	if( x<3)System.out.print(" {x:"+x+" l:"+lambda+" n:"+numerator+"/ d:"+denominator+"="+(numerator / denominator)+"} ");
-        
-    	return (numerator / denominator);
+    // return distance to the center mu of this cluster 
+    public static double pdf(double x, double mu) {
+    	//if(x<150)System.out.println("x:"+x+" m:"+mu+" d:"+Math.abs(x-mu));
+    	return Math.abs(x-mu);
     }
 
 

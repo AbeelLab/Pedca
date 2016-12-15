@@ -12,7 +12,7 @@ public class RatioFindNaive
 	DecimalFormat df = new DecimalFormat("#.##");
 	CNVscore[] scores;
 	CNVscore bestScore=null;
-	
+	PrintWriter writer=null ;
 	int consensus;//% of consensus in corrected results (certainty of this prediction)
 
 
@@ -198,7 +198,7 @@ public class RatioFindNaive
 	}
 	
 	public void writeOut() {
-		PrintWriter writer=null ;
+		
 		try {
 			writer = new PrintWriter(Ploest.outputFile + "//" + Ploest.projectName+ "//"+Ploest.projectName+"PloidyEstimation.txt", "UTF-8");
 			writer.println(">FINAL NUMBER OF CLUSTERS: "+NaivePloestPlotter.clusterMus.length );
@@ -219,7 +219,7 @@ public class RatioFindNaive
 			writer.println(">Estimation distance score: "+bestScore.score);
 			//writer.println(">Estimation consensus: "+consensus+" %");
 			writer.println(">Maximum Nb Of Mixtures respected = "+bestScore.respectsMaxNbOfMixtures);
-			writer.close();
+			//writer.close();
 		} catch (FileNotFoundException | UnsupportedEncodingException e) {
 			if(writer!=null)writer.close();
 			// TODO Auto-generated catch block

@@ -4,6 +4,7 @@ import java.awt.geom.Rectangle2D;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
@@ -61,9 +62,10 @@ public class NaivePloestPlotter {
 		try{
 			displayScatterPlot();//Scatterplot containing the contig coverage (per slided window)		
 			createFitterDataset() ;
-			fitNaiveMixtureModel();						
+			fitNaiveMixtureModel();	//approximate the distribution by naive smoother and infere max points				
 			displayPloidyAndCoveragePlotNaive();//Plot containng both the coverage and the ploidy estimation
-		
+			
+			
 		}catch (Exception e){
 			System.err.println("Error in PloestPlotter constructor");
 		}
@@ -73,8 +75,31 @@ public class NaivePloestPlotter {
 
 	
 	
+	private void writeOutPloEstByFragment(PrintWriter writer , XYSeries series, String contigname ) {
+		
+		Number prevPloidy=series.getY(0);
+		Number prevPos=0;
+		int ItemsSize=series.getItems().size();
+		writer.println("Detailed ploidy estimation for "+contigname);
+		for (int yv=0;yv<ItemsSize;yv++){
+			if(!series.getY(yv).equals(prevPloidy)){//segmentation point
+				writer.println(" Ploidy: "+prevPloidy+" from +/- "+((int)prevPos*SamParser.windowLength/2)+" bp to +/- "+(yv*SamParser.windowLength/2)+" bp");
+				prevPloidy=series.getY(yv);
+				prevPos=yv;
+			}
+		}
+
+
+		writer.println(" Ploidy: "+prevPloidy+" from +/- "+((int)prevPos*SamParser.windowLength/2)+" bp to +/- "+(    (ItemsSize*SamParser.windowLength/2)+(SamParser.windowLength/2)  )+" bp");
+		writer.println();
+		
+	}
+
+
+
+
 	public void fitNaiveMixtureModel(){
-		System.out.println("-------------Fitting Different Poisson Mixture Models------------------");
+		System.out.println("-------------Smoothing the data by averaging values in bins------------------");
 		
 		npdf=new NaivePDF(readCounts);
 		int k=significantMaxsInPDF(npdf);
@@ -82,8 +107,7 @@ public class NaivePloestPlotter {
 
 		rt=new RatioFindNaive(clusterMus);
 		rt.writeOut();
-		
-		
+
 	}
 	
 	
@@ -133,7 +157,11 @@ public void displayPloidyAndCoveragePlotNaive()throws IOException{
 		
 
 		ContigData contigD;
-
+		PrintWriter writer = rt.writer;
+		writer.println();
+		writer.println("*********************************************************");
+		writer.println(" Ploidy estimation detailed by fragments.  Precision: +/-"+(SamParser.windowLength/2)+" bp");
+		writer.println();
 		for (int c=0;c<contigsList.size();c++){//for each contig
 
 			contigD=contigsList.get(contArrList.get(c));
@@ -161,7 +189,7 @@ public void displayPloidyAndCoveragePlotNaive()throws IOException{
 			/* SETUP LINE */
 
 			// Create the line data, renderer, and axis
-			XYDataset collection2 = createPloidyEstimationDatasetNaive(contigD);
+			XYDataset collection2 = createPloidyEstimationDatasetNaive(contigD,writer);
 			XYItemRenderer renderer2 = new XYLineAndShapeRenderer(false , true);   // Lines only
 			ValueAxis domain2 = new NumberAxis("Genome Position (x 1000 bp)");
 			ValueAxis range2 = new NumberAxis("Ploidy Estimation");
@@ -183,8 +211,8 @@ public void displayPloidyAndCoveragePlotNaive()throws IOException{
 			// Create the chart with the plot and a legend
 			JFreeChart chart = new JFreeChart("Coverage and Ploidy Estimation :"+contigD.contigName, JFreeChart.DEFAULT_TITLE_FONT, xyPlot, true);
 			ChartUtilities.saveChartAsJPEG(new File(Ploest.outputFile + "//" + Ploest.projectName+ "//Ploidy_Estimation_Charts//Ploidy_Estimation_"+contigD.contigName+".jpg"),chart, 1500, 900);
-
 		}
+		writer.close();
 	}
 
 
@@ -240,7 +268,7 @@ public void displayPloidyAndCoveragePlotNaive()throws IOException{
 
 
 	
-	private  XYDataset createPloidyEstimationDatasetNaive(ContigData contigD) {
+	private  XYDataset createPloidyEstimationDatasetNaive(ContigData contigD, PrintWriter writer ) {
 		
 		XYSeriesCollection result = new XYSeriesCollection();
 		XYSeries series = new XYSeries(" Ploidy Estimation");
@@ -273,6 +301,11 @@ public void displayPloidyAndCoveragePlotNaive()throws IOException{
 		
 		System.out.println();
 		result.addSeries(series);
+	
+		//
+	
+		writeOutPloEstByFragment(writer, series,contigD.contigName );//writes out the ploidy estimation detailed by fragment
+
 
 		return result;
 	}

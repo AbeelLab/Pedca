@@ -31,8 +31,8 @@ public class SamParser {
 
 	static int windowLength ;
 	List<String> contArrList;
-	static int maxWindows;//max coverage found in all contigs (to be used in x axis reads counts)
-	static float maxY=0;//max normalized value in the y axis (to be used in y axis reads counts)
+	static int readsDistributionMaxCoverage;//max coverage found in all contigs (to be used in x axis reads counts)
+	static float readDistributionMaxY=0;//max normalized value in the y axis (to be used in y axis reads counts)
 	PloestPlotter plotter;//ploidy estimation  plott and pdf gaussian fit data
 	NaivePloestPlotter myploter;
 	static BarChart barchart;
@@ -46,11 +46,7 @@ public class SamParser {
 		this.windowLength=Ploest.windowLength;
 		SAMFileReader inputSam = new SAMFileReader(new File(inputFile));
 		//readCounts = new int[nc];
-		nbSeq = inputSam.getFileHeader().getSequenceDictionary().size();// nb of
-		// sequences
-		// in
-		// the
-		// FileHeader
+		nbSeq = inputSam.getFileHeader().getSequenceDictionary().size();// nb of sequences in the FileHeader
 		contigsList = new HashMap<String, ContigData>(nbSeq);// Map of  ContigDatas(value) and their name (key)
 
 		// fill the contigsList
@@ -90,8 +86,9 @@ public class SamParser {
 	//writer.close();
 		windowSlideContigList();
 		barchart = new BarChart(readCounts);
-		maxY=barchart.maxY;
-		myploter = new NaivePloestPlotter(contigsList,maxWindows, barchart.normReadCounts);//plotter = new PloestPlotter(contigsList,maxWindows);
+		readDistributionMaxY=barchart.maxY;
+		
+		myploter = new NaivePloestPlotter(contigsList,readsDistributionMaxCoverage, barchart.normReadCounts);//plotter = new PloestPlotter(contigsList,maxWindows);
 		
 	}
 
@@ -167,7 +164,7 @@ public class SamParser {
 		}
 		windowSlideContigList();
 		barchart = new BarChart(readCounts);
-		plotter = new PloestPlotter(contigsList,maxWindows);
+		plotter = new PloestPlotter(contigsList,readsDistributionMaxCoverage);
 	}
 
 
@@ -252,19 +249,16 @@ public class SamParser {
 			ContigData currentContig = contigsList.get(contArrList.get(i));
 			for (int w = 0; w < currentContig.windPos.size(); w++) {//store all readCounts of every window position 
 				if(currentContig.windPos.get(w)!=0){
-					//readCounts[currentContig.windPos.get(w)] += 1;
 					PVector curVec=new PVector(1);
 					curVec.array[0]=currentContig.windPos.get(w);//coverage per window position
-					//if(w>(currentContig.windPos.size()-20))System.out.print(" p:"+currentContig.windPos.get(w));
 					fitPoints[ind++]=curVec; 
 
 				}			
-			}	
-			//System.out.println();
+			}
 		}
 
 		insureReadCountsRange();//excludes outliers values (very high and non significant) form readCount
-		//cleanContigList();//Clean outliers BAD IDEA
+
 		//PRINT OUT readCounts
 		PrintWriter writer = new PrintWriter(Ploest.outputFile + "//" + Ploest.projectName+ "//readCounts.txt", "UTF-8");
 		for (int r = 0; r < readCounts.length; r++) {
@@ -343,14 +337,14 @@ public class SamParser {
 			try {
 				ContigData currentContig = contigsList.get(contArrList.get(i));
 				currentMax=currentContig.windPos(windowLength);				
-				if (currentMax>maxWindows)maxWindows= currentMax;
+				if (currentMax>readsDistributionMaxCoverage)readsDistributionMaxCoverage= currentMax;
 			} catch (FileNotFoundException | UnsupportedEncodingException e) {
 				e.printStackTrace();
 			}
 			//totalDataPoints+=maxWindows+1;
 		}
-		readCounts = new int[(int)Math.ceil(maxWindows*1.05)];
-		System.out.println("findMaxWindows maxWindows:"+maxWindows);
+		readCounts = new int[(int)Math.ceil(readsDistributionMaxCoverage*1.05)];
+		System.out.println("findMaxWindows maxWindows:"+readsDistributionMaxCoverage);
 	}
 
 

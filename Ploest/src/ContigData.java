@@ -11,6 +11,8 @@ public class ContigData {
 	ArrayList<Integer>  windPos;
 	int windLength;
 	int maxWindows;
+	int maxY=0;
+	
 	static double COV_RATE;//10 default ratio by which the average coverage of each sliding window  is mutiplied
 						  //the bigger, the more detailed will be the readsDistribution bar chart
 	
@@ -35,36 +37,39 @@ public class ContigData {
 	public int windPos(int wl) throws FileNotFoundException, UnsupportedEncodingException {//computes the windPos vector, storing 
 			//at each window position, the number of reads found in that window. Returns the maximum value found at that window
 											
-		int max=0;
+		int maxX=0;
+	
 		windLength = wl;
 		windPos = new ArrayList<Integer>((startPos.length / wl) * 2);//ensure capacity		
 		for (int i=0;i<((startPos.length / wl) * 2);i++){//initialize the list with zeros
 			windPos.add( 0);
 		}
-		//System.out.println("windPos "+windPos.size()+" startPos.length:"+startPos.length+ "wl:"+wl);
 	
 		
 		
 		int stIndex = 0;// index in startPos array
 		int wdIndex = 0;
 		int wsum = 0;// window sum
-	
 		while (stIndex < (startPos.length-windLength) && (wdIndex<windPos.size()-1)) {
 			for (int i = 0; i < windLength; i++) {
 				wsum += startPos[stIndex++];		
 			}
 			
 			windPos.set(wdIndex++, (int) (wsum /(windLength/COV_RATE)));// relative average of coverage over the range of the window;
-			if (windPos.get(wdIndex-1)>max)max=windPos.get(wdIndex-1);
-			
+			if (windPos.get(wdIndex-1)>maxX)maxX=windPos.get(wdIndex-1);
+		
 			stIndex = stIndex - (wl / 2);// window slides over all positions for a length of wl , but a new window is computed after each wl/2;
 			wsum=0;
 	
 		}
 	
-		maxWindows=max;
+		maxWindows=maxX;
+	
 		
-		return max;
+		
+		
+		
+		return maxX;
 	}
 	
 	

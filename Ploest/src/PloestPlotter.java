@@ -402,7 +402,7 @@ public class PloestPlotter {
 			NumberAxis domain = (NumberAxis) xyPlot.getDomainAxis();
 			domain.setRange(0.00, maxX);
 			ValueAxis rangeAxis = xyPlot.getRangeAxis();	
-			rangeAxis.setRange(0.00, SamParser.maxWindows);
+			rangeAxis.setRange(0.00, SamParser.readsDistributionMaxCoverage);
 			ChartUtilities.saveChartAsJPEG(new File(Ploest.outputFile + "//" + Ploest.projectName+ "//Contig_Coverage_Charts//Chart_Contig_"+c+".jpg"), chart, 1000, 600);
 		}
 

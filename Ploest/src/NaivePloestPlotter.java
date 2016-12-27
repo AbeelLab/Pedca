@@ -60,7 +60,7 @@ public class NaivePloestPlotter {
 
 		
 		try{
-			displayScatterPlot();//Scatterplot containing the contig coverage (per slided window)		
+			displayScatterPlots();//Scatterplot containing the contig coverage (per slided window)		
 			createFitterDataset() ;
 			fitNaiveMixtureModel();	//approximate the distribution by naive smoother and infere max points				
 			displayPloidyAndCoveragePlotNaive();//Plot containng both the coverage and the ploidy estimation
@@ -76,7 +76,8 @@ public class NaivePloestPlotter {
 	
 	
 	private void writeOutPloEstByFragment(PrintWriter writer , XYSeries series, String contigname ) {
-		
+		System.out.println("-------------writeOutPloEstByFragment------------------");
+
 		Number prevPloidy=series.getY(0);
 		Number prevPos=0;
 		int ItemsSize=series.getItems().size();
@@ -92,6 +93,8 @@ public class NaivePloestPlotter {
 
 		writer.println(" Ploidy: "+prevPloidy+" from +/- "+((int)prevPos*SamParser.windowLength/2)+" bp to +/- "+(    (ItemsSize*SamParser.windowLength/2)+(SamParser.windowLength/2)  )+" bp");
 		writer.println();
+
+		System.out.println("-------------writeOutPloEstByFragment END------------------");
 		
 	}
 
@@ -103,11 +106,9 @@ public class NaivePloestPlotter {
 		
 		npdf=new NaivePDF(readCounts);
 		int k=significantMaxsInPDF(npdf);
-		SamParser.barchart.BarChartWithFit(npdf,finalNumberOfMixtures,"FINALRESULT");
-
+		SamParser.barchart.BarChartWithFit(npdf,"FINALRESULT");
 		rt=new RatioFindNaive(clusterMus);
 		rt.writeOut();
-
 	}
 	
 	
@@ -123,7 +124,7 @@ public class NaivePloestPlotter {
 		return maxIndex;
 	}
 
-	public void displayScatterPlot() throws IOException{
+	public void displayScatterPlots() throws IOException{
 		ContigData contigD;
 		for (int c=0;c<contigsList.size();c++){//for each contig
 			contigD=contigsList.get(contArrList.get(c));
@@ -131,7 +132,7 @@ public class NaivePloestPlotter {
 			XYDataset data1=createPlotDataset(contigD);
 			chart = ChartFactory.createScatterPlot(
 					("Genome Coverage "+contigD.contigName), // chart title
-					"Genome Position (x 1000 bp)", // x axis label
+					"Genome Position (x " +(contigD.windLength/2)+" bp)", // x axis label
 					"Coverage", // y axis label
 					data1, // XYDataset 
 					PlotOrientation.VERTICAL,
@@ -144,8 +145,22 @@ public class NaivePloestPlotter {
 			NumberAxis domain = (NumberAxis) xyPlot.getDomainAxis();
 			domain.setRange(0.00, maxX);
 			ValueAxis rangeAxis = xyPlot.getRangeAxis();	
-			rangeAxis.setRange(0.00, SamParser.maxWindows);
+			//rangeAxis.setRange(0.00, SamParser.readsDistributionMaxCoverage);
+			if(contigD.maxY>0){
+				rangeAxis.setRange(0.00,contigD.maxY);
+			}else {
+				rangeAxis.setRange(0.00,10);
+				System.err.println(contigD.contigName+" doesn't have any coverage. Contig is Removed");
+				
+				contigsList.remove(contArrList.get(c));
+				contArrList.remove(c);
+				c--;
+			}
+			
+			
+
 			ChartUtilities.saveChartAsJPEG(new File(Ploest.outputFile + "//" + Ploest.projectName+ "//Contig_Coverage_Charts//Chart_Contig_"+c+".jpg"), chart, 1000, 600);
+			
 		}
 
 	}
@@ -163,17 +178,15 @@ public void displayPloidyAndCoveragePlotNaive()throws IOException{
 		writer.println(" Ploidy estimation detailed by fragments.  Precision: +/-"+(SamParser.windowLength/2)+" bp");
 		writer.println();
 		for (int c=0;c<contigsList.size();c++){//for each contig
-
+			
 			contigD=contigsList.get(contArrList.get(c));
 			XYPlot xyPlot = new XYPlot();
-
 			/* SETUP SCATTER */
 
 			// Create the scatter data, renderer, and axis
 			XYDataset collection1 = createPlotDataset(contigD);
-			
 			XYItemRenderer renderer1 = new XYLineAndShapeRenderer(false, true);   // Shapes only
-			ValueAxis domain1 = new NumberAxis("Genome Position (x 1000 bp)");
+			ValueAxis domain1 = new NumberAxis("Genome Position (x " +(contigD.windLength/2)+" bp)");
 			ValueAxis rangeAxis = new NumberAxis("Coverage");
 
 			// Set the scatter data, renderer, and axis into plot
@@ -191,33 +204,28 @@ public void displayPloidyAndCoveragePlotNaive()throws IOException{
 			// Create the line data, renderer, and axis
 			XYDataset collection2 = createPloidyEstimationDatasetNaive(contigD,writer);
 			XYItemRenderer renderer2 = new XYLineAndShapeRenderer(false , true);   // Lines only
-			ValueAxis domain2 = new NumberAxis("Genome Position (x 1000 bp)");
+			ValueAxis domain2 = new NumberAxis("Genome Position (x " +(contigD.windLength/2)+" bp)");
 			ValueAxis range2 = new NumberAxis("Ploidy Estimation");
 			range2.setUpperBound(rangeAxis.getUpperBound()/rt.bestScore.candidateUnit);
-
+			domain2.setUpperBound(domain1.getUpperBound());
 			// Set the line data, renderer, and axis into plot
-			domain2.setStandardTickUnits(NumberAxis.createIntegerTickUnits());
+			range2.setStandardTickUnits(NumberAxis.createIntegerTickUnits());//domain2.setStandardTickUnits(NumberAxis.createIntegerTickUnits());
 			xyPlot.setDataset(1, collection2);
 			xyPlot.setRenderer(1, renderer2);
 			xyPlot.setDomainAxis(1, domain2);
 			xyPlot.setRangeAxis(1, range2);
-
 			// Map the line to the second Domain and second Range
 			xyPlot.mapDatasetToDomainAxis(1, 1);
 			xyPlot.mapDatasetToRangeAxis(1, 1);
-
 			xyPlot.setDatasetRenderingOrder( DatasetRenderingOrder.FORWARD );	
-			
 			// Create the chart with the plot and a legend
 			JFreeChart chart = new JFreeChart("Coverage and Ploidy Estimation :"+contigD.contigName, JFreeChart.DEFAULT_TITLE_FONT, xyPlot, true);
-			ChartUtilities.saveChartAsJPEG(new File(Ploest.outputFile + "//" + Ploest.projectName+ "//Ploidy_Estimation_Charts//Ploidy_Estimation_"+contigD.contigName+".jpg"),chart, 1500, 900);
+			String correctedContigName = contigD.contigName.replaceAll("[^a-zA-Z0-9.-]", "_");
+			ChartUtilities.saveChartAsJPEG(new File(Ploest.outputFile + "//" + Ploest.projectName+ "//Ploidy_Estimation_Charts//Ploidy_Estimation_"+correctedContigName+".jpg"),chart, 1500, 900);
 		}
 		writer.close();
 	}
 
-
-
-	
 
 	public int findIndexOfMin(double[] bicVector){
 		double min=bicVector[1] ;
@@ -239,6 +247,7 @@ public void displayPloidyAndCoveragePlotNaive()throws IOException{
 
 		double x;
 		double y;
+		
 		//this first loop is for the PLOESTPLOTTER
 		int wInd=0;//writting index
 	
@@ -246,6 +255,8 @@ public void displayPloidyAndCoveragePlotNaive()throws IOException{
 			if(contigD.windPos.get(i)!=null){
 				x = wInd++;  			
 				y = contigD.windPos.get(i);
+				if(y>contigD.maxY)contigD.maxY=(int)y;
+
 				series.add(x, y);
 				//writer.println( " x:" +x + " y:"+y);
 			}
@@ -269,13 +280,10 @@ public void displayPloidyAndCoveragePlotNaive()throws IOException{
 
 	
 	private  XYDataset createPloidyEstimationDatasetNaive(ContigData contigD, PrintWriter writer ) {
-		
+
 		XYSeriesCollection result = new XYSeriesCollection();
 		XYSeries series = new XYSeries(" Ploidy Estimation");
 		
-
-		double x;
-		double y;
 		double [] xValues=new double[contigD.windPos.size()];
 		int [] yValues=new int[contigD.windPos.size()];
 		maxX=0;
@@ -295,8 +303,8 @@ public void displayPloidyAndCoveragePlotNaive()throws IOException{
 			maxX=(int) wInd;
 		}
 
-		if(AVG_PLOIDY){		//smooth the ploidy plot by averaging the values over a window of PLOIDY_SMOOTHER_WIDTH points
-			series=averagePloidy(series,wInd,xValues,yValues);
+		if(AVG_PLOIDY ){		//smooth the ploidy plot by averaging the values over a window of PLOIDY_SMOOTHER_WIDTH points
+			series=averagePloidyMode(series,wInd,xValues,yValues);
 		}
 		
 		System.out.println();
@@ -306,33 +314,138 @@ public void displayPloidyAndCoveragePlotNaive()throws IOException{
 	
 		writeOutPloEstByFragment(writer, series,contigD.contigName );//writes out the ploidy estimation detailed by fragment
 
-
+		System.out.println("createPloidyEstimationDatasetNaive end:"+contigD.contigName);
 		return result;
 	}
 
 	public XYSeries averagePloidy(XYSeries series, int wInd,double [] xValues,int [] yValues){
+		//wInd == size of x data
 		double sum=0;
 		int PLOIDY_SMOOTHER_WING=PLOIDY_SMOOTHER_WIDTH/2; //length of each of the sides of the PLOIDY_SMOOTHER window before and after the position being evaluated
+		System.out.print("AveragePloidy size(wInd):"+wInd);
+		if (wInd > PLOIDY_SMOOTHER_WIDTH) {//we need a minimum of points to average the ploidy
+			// solve the first PLOIDY_SMOOTHER_WIDTH/2 positions of the plot
+			for (int v = 0; v < PLOIDY_SMOOTHER_WIDTH; v++) {
+				sum += yValues[v];
+			}
+			System.out.println(" sum:" + sum);
 
-		//solve the first PLOIDY_SMOOTHER_WIDTH/2 positions of the plot
-		for(int v=0;v<PLOIDY_SMOOTHER_WIDTH;v++){
-			sum+=yValues [v];
-		}
-		for(int v=0;v<PLOIDY_SMOOTHER_WING+1;v++){
-			series.add(xValues[v], Math.round(sum/PLOIDY_SMOOTHER_WIDTH));
-		}
+			for (int v = 0; v < PLOIDY_SMOOTHER_WING + 1; v++) {
+//				x = xValues[v];
+//				y = Math.round(sum / PLOIDY_SMOOTHER_WIDTH);
+//				series.add(x, y);
+				 series.add(xValues[v],Math.round(sum/PLOIDY_SMOOTHER_WIDTH));
+				//System.out.print(" " + x + "," + y + "");
+			}
 
-		
-		//solve the rest of the positions until size-PLOIDY_SMOOTHER_WIDTH/2 
-		for(int v=(PLOIDY_SMOOTHER_WING+1);v<(wInd-PLOIDY_SMOOTHER_WING);v++){
-			sum+=yValues [v+PLOIDY_SMOOTHER_WING];//add next value in the right side of the wing
-			sum-=yValues [v-(PLOIDY_SMOOTHER_WING+1)];//substract the value that just moved out of the left side of the wing
-			series.add(xValues[v], Math.round(sum/PLOIDY_SMOOTHER_WIDTH));
+			// solve the rest of the positions until
+			// size-PLOIDY_SMOOTHER_WIDTH/2
+			for (int v = (PLOIDY_SMOOTHER_WING + 1); v < (wInd - PLOIDY_SMOOTHER_WING); v++) {
+				sum += yValues[v + PLOIDY_SMOOTHER_WING];// add next value in
+															// the right side of
+															// the wing
+				sum -= yValues[v - (PLOIDY_SMOOTHER_WING + 1)];// substract the
+																// value that
+																// just moved
+																// out of the
+																// left side of
+																// the wing
+//				x = xValues[v];
+//				y = Math.round(sum / PLOIDY_SMOOTHER_WIDTH);
+//				series.add(x, y);//
+				 series.add(xValues[v], Math.round(sum/PLOIDY_SMOOTHER_WIDTH));
+				//System.out.print(" " + x + "," + y + "");
+			}
+
+			// solve the last positions
+			for (int v = (wInd - PLOIDY_SMOOTHER_WING); v < wInd; v++) {
+//				x = xValues[v];
+//				y = Math.round(sum / PLOIDY_SMOOTHER_WIDTH);
+//				series.add(x, y);//
+				series.add(xValues[v], Math.round(sum/PLOIDY_SMOOTHER_WIDTH));
+				//System.out.print(" " + x + "," + y + "");
+			}
+			//System.out.println();
+		}else{//simple average of the first points
+			//System.out.println(" SIMPLE AVERAGE");
+			
+			for (int v = 0; v < wInd; v++) {
+				sum += yValues[v];
+			}
+			for (int v = 0; v < wInd; v++) {
+//				x = xValues[v];
+//				y = Math.round(sum / wInd);
+//				series.add(x, y);
+				series.add(xValues[v], Math.round(sum/PLOIDY_SMOOTHER_WIDTH));
+				//System.out.print(" " + x + "," + y + "");
+			}//System.out.println();
 		}
-		
-		//solve the last positions
-		for(int v=(wInd-PLOIDY_SMOOTHER_WING);v<wInd;v++){
-			series.add(xValues[v], Math.round(sum/PLOIDY_SMOOTHER_WIDTH));
+		return series;
+	}
+	
+	
+	public XYSeries averagePloidyMode(XYSeries series, int wInd,double [] xValues,int [] yValues){
+		//wInd == size of x data
+		double sum=0;
+		int PLOIDY_SMOOTHER_WING=PLOIDY_SMOOTHER_WIDTH/2; //length of each of the sides of the PLOIDY_SMOOTHER window before and after the position being evaluated
+		int [] averagingWindow=new int[PLOIDY_SMOOTHER_WIDTH];
+		//System.out.print("AveragePloidy size(wInd):"+wInd);
+		if (wInd > PLOIDY_SMOOTHER_WIDTH) {//we need a minimum of points to average the ploidy
+			// solve the first PLOIDY_SMOOTHER_WIDTH/2 positions of the plot
+			for (int v = 0; v < PLOIDY_SMOOTHER_WIDTH; v++) {
+				sum += yValues[v];
+			}
+			System.out.println(" sum:" + sum);
+
+			for (int v = 0; v < PLOIDY_SMOOTHER_WING + 1; v++) {
+//				x = xValues[v];
+//				y = Math.round(sum / PLOIDY_SMOOTHER_WIDTH);
+//				series.add(x, y);
+				 series.add(xValues[v],Math.round(sum/PLOIDY_SMOOTHER_WIDTH));
+				//System.out.print(" " + x + "," + y + "");
+			}
+
+			// solve the rest of the positions until
+			// size-PLOIDY_SMOOTHER_WIDTH/2
+			for (int v = (PLOIDY_SMOOTHER_WING + 1); v < (wInd - PLOIDY_SMOOTHER_WING); v++) {
+				sum += yValues[v + PLOIDY_SMOOTHER_WING];// add next value in
+															// the right side of
+															// the wing
+				sum -= yValues[v - (PLOIDY_SMOOTHER_WING + 1)];// substract the
+																// value that
+																// just moved
+																// out of the
+																// left side of
+																// the wing
+//				x = xValues[v];
+//				y = Math.round(sum / PLOIDY_SMOOTHER_WIDTH);
+//				series.add(x, y);//
+				 series.add(xValues[v], Math.round(sum/PLOIDY_SMOOTHER_WIDTH));
+				//System.out.print(" " + x + "," + y + "");
+			}
+
+			// solve the last positions
+			for (int v = (wInd - PLOIDY_SMOOTHER_WING); v < wInd; v++) {
+//				x = xValues[v];
+//				y = Math.round(sum / PLOIDY_SMOOTHER_WIDTH);
+//				series.add(x, y);//
+				series.add(xValues[v], Math.round(sum/PLOIDY_SMOOTHER_WIDTH));
+				//System.out.print(" " + x + "," + y + "");
+			}
+			//System.out.println();
+		}else{//simple average of the first points
+			//System.out.println(" SIMPLE AVERAGE");
+			
+			for (int v = 0; v < wInd; v++) {
+				sum += yValues[v];
+			}
+			for (int v = 0; v < wInd; v++) {
+//				x = xValues[v];
+//				y = Math.round(sum / wInd);
+//				series.add(x, y);
+				series.add(xValues[v], Math.round(sum/PLOIDY_SMOOTHER_WIDTH));
+				//System.out.print(" " + x + "," + y + "");
+			}//System.out.println();
 		}
 		return series;
 	}
@@ -367,9 +480,9 @@ public void displayPloidyAndCoveragePlotNaive()throws IOException{
 
 	private int significantMaxsInPDF(NaivePDF naivePDF) {
 		int sigMaxs = 0;//nb of significant maximums
-		double threshold = SamParser.maxY * 0.001;// discards the values that are
+		double threshold = SamParser.readDistributionMaxY * 0.001;// discards the values that are
 													// below this threshold
-		System.out.println(" SamParser.maxYh :" + SamParser.maxY + " Y min threshold:" + threshold);
+		System.out.println(" SamParser.maxYh :" + SamParser.readDistributionMaxY + " Y min threshold:" + threshold);
 
 		ArrayList<Double> yMinList = new ArrayList<Double>();
 		ArrayList<Double> xMinList = new ArrayList<Double>();

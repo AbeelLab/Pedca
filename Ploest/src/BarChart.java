@@ -31,6 +31,7 @@ public class BarChart {
 	float [] normReadCounts;
 	int maxX;
 	float maxY=0;
+	
 
 	public BarChart (int [] readCounts) {
 		normReadCounts=normalize(readCounts);
@@ -131,10 +132,10 @@ public void BarChartWithFit (PoissonMixturePDF poissFit,int r, String title) {
 	}
 	
 
-public void BarChartWithFit (NaivePDF naivePDF,int r, String title) {
+public void BarChartWithFit (NaivePDF naivePDF, String title) {
 
 	if (naivePDF==null){
-		System.out.println("BarChartWithFit poissFit==null r:"+r);
+		System.out.println("BarChartWithFit poissFit==null");
 	}else{
 		
 		final XYDataset data1 = createHistDataset(naivePDF) ;//histogram of readCounts
@@ -158,7 +159,7 @@ public void BarChartWithFit (NaivePDF naivePDF,int r, String title) {
 
 
 		try {
-			ChartUtilities.saveChartAsJPEG(new File(Ploest.outputFile + "//" + Ploest.projectName+ "//readsDistributionPoissonFitted"+r+title+".jpg"), overlaidChart, 1000, 600);
+			ChartUtilities.saveChartAsJPEG(new File(Ploest.outputFile + "//" + Ploest.projectName+ "//readsDistributionPoissonFitted"+title+".jpg"), overlaidChart, 1000, 600);
 		} catch (IOException e) {
 			System.err.println("Problem occurred creating chart.");
 		}
@@ -187,23 +188,23 @@ private XYDataset createHistDataset( GaussianMixturePDF gaussFit) {
 	return result;
 }
 
-	private XYDataset createHistDataset( NaivePDF gaussFit) {
+	private XYDataset createHistDataset( NaivePDF naiveFit) {
 		XYSeriesCollection result = new XYSeriesCollection();
 		XYSeries series = new XYSeries("Reads Counts");
-		//maxX=0;
+		
 
-		double ind=(gaussFit.beg-0.5);
+		double ind=(naiveFit.beg-0.5);
 
 		for (int i = 0; i<normReadCounts.length; i++) {
 			while (ind<i+0.5){
 				//System.out.println("|ind:"+ind+" i:"+i+" x:"+normReadCounts[i]+" y:"+normReadCounts[i]);
 				series.add(ind, normReadCounts[i]);
-				ind+=gaussFit.step;
+				ind+=naiveFit.step;
+				if(normReadCounts[i]>naiveFit.maxYHISTOGRAMvalue)naiveFit.maxYHISTOGRAMvalue=normReadCounts[i];
 			}
 
 		}
 		result.addSeries(series);
-
 		return result;
 	}
 	private XYDataset createHistDataset( PoissonMixturePDF gaussFit) {
@@ -232,8 +233,8 @@ private XYDataset createHistDataset( GaussianMixturePDF gaussFit) {
 		
 		//correction for overlapping the 2 datasets
 		int xOffSet=naiveFit.smootherWing+1;//to correct for the bins width
-		int yRatioCorrection=12;//to correct the y data normalization ratio
-		
+		double yRatioCorrection=naiveFit.maxYHISTOGRAMvalue/naiveFit.maxYFITvalue;//to correct the y data normalization ratio
+		System.out.println("createFitCurveDataset naiveFit.maxy="+naiveFit.maxYFITvalue+" ");
 		//add to series
 		for (int i = 0; i<naiveFit.yDataPoints.length; i++) {
 			series.add(naiveFit.xDataPoints[i]+xOffSet, naiveFit.yDataPoints[i]*yRatioCorrection);

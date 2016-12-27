@@ -16,8 +16,10 @@ public class NaivePDF {
 	double beg;//bgining of x axis
 	double end;//end of x axis
 	double step=1;//step on x axis
-    double maxYvalue=0.0;
+    double maxYFITvalue=0.0;
+    double maxYHISTOGRAMvalue=0.0;
     double maxXvalue=0.0;
+    int peakYvalueIndex=0;//index f the peak value (therefore in both histogram and fit). Used to find the correct ratio of both plots
     MixtureModel mixtMod;
     static int smootherLength;
     static int smootherWing;
@@ -47,7 +49,7 @@ public class NaivePDF {
 		
 		for (int p=0;p<readCounts.length;p++){//for each point
 			double sum=0;
-			int substract=0;
+			int substract=0;//substract these bins (for begining and end of genome)
 			for(int cp=(p-smootherWing);cp<(p+smootherWing);cp++){//average over the smoother window
 				
 				if(cp>0 && cp<readCounts.length){
@@ -63,13 +65,16 @@ public class NaivePDF {
 				if(cp>0 && cp<readCounts.length){
 					xDataPoints[cp]=(double)cp;
 					yDataPoints[cp]=sum/(smootherLength-substract);
-					if(yDataPoints[cp]>maxYvalue)maxYvalue=yDataPoints[cp];
+					if(yDataPoints[cp]>maxYFITvalue){
+						maxYFITvalue=yDataPoints[cp];
+					}
 					
 				}
 			}
 			p=p+smootherWing;
 
 		}
+	
 		/*
 		System.out.println();
 		System.out.print("naivepdf SOFT readcounts =[");

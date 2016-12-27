@@ -58,7 +58,7 @@ public class RatioFindNaive
 			if (productsVect[i]!=0.0){//start with THIS value
 				minDist=productsVect[i]*MAX_NB_MIXTURES;
 				for (int nd=1;nd<ds.length;nd++){
-					candDist=round(100*Math.abs(ds[nd]-productsVect[i])/SamParser.maxWindows,3);//get distance to all next means values (divided by maxWindows to normalize)
+					candDist=round(100*Math.abs(ds[nd]-productsVect[i])/SamParser.readsDistributionMaxCoverage,3);//get distance to all next means values (divided by maxWindows to normalize)
 					if (candDist<minDist){
 						minDist=candDist;
 						minInd=nd;

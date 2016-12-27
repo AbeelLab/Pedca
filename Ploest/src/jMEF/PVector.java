@@ -1,6 +1,7 @@
 package jMEF;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Locale;
 
 
@@ -21,7 +22,7 @@ import java.util.Locale;
  */
 public final class PVector extends Parameter{
 
-
+	private HashMap<Integer,Integer> hm=new HashMap<Integer,Integer>();
 	/**
 	 * Constant for serialization.
 	 */

@@ -77,22 +77,31 @@ public class NaivePloestPlotter {
 	
 	private void writeOutPloEstByFragment(PrintWriter writer , XYSeries series, String contigname ) {
 		System.out.println("-------------writeOutPloEstByFragment------------------");
-
-		Number prevPloidy=series.getY(0);
-		Number prevPos=0;
-		int ItemsSize=series.getItems().size();
 		writer.println("Detailed ploidy estimation for "+contigname);
-		for (int yv=0;yv<ItemsSize;yv++){
-			if(!series.getY(yv).equals(prevPloidy)){//segmentation point
-				writer.println(" Ploidy: "+prevPloidy+" from +/- "+((int)prevPos*SamParser.windowLength/2)+" bp to +/- "+(yv*SamParser.windowLength/2)+" bp");
-				prevPloidy=series.getY(yv);
-				prevPos=yv;
+		//System.out.println("Detailed ploidy estimation for "+contigname);
+		if(series.getItemCount()>0){
+			Number prevPloidy=series.getY(0);
+			Number prevPos=0;
+			int ItemsSize=series.getItems().size();
+
+			for (int yv=0;yv<ItemsSize;yv++){
+				if(!series.getY(yv).equals(prevPloidy)){//segmentation point
+					writer.println(" Ploidy: "+prevPloidy+" from +/- "+((int)prevPos*SamParser.windowLength/2)+" bp to +/- "+(yv*SamParser.windowLength/2)+" bp");
+					//System.out.println(" Ploidy: "+prevPloidy+" from +/- "+((int)prevPos*SamParser.windowLength/2)+" bp to +/- "+(yv*SamParser.windowLength/2)+" bp");
+					prevPloidy=series.getY(yv);
+					prevPos=yv;
+				}
 			}
+
+			//System.out.println(" Ploidy: "+prevPloidy+" from +/- "+((int)prevPos*SamParser.windowLength/2)+" bp to +/- "+(    (ItemsSize*SamParser.windowLength/2)+(SamParser.windowLength/2)  )+" bp");
+			writer.println(" Ploidy: "+prevPloidy+" from +/- "+((int)prevPos*SamParser.windowLength/2)+" bp to +/- "+(    (ItemsSize*SamParser.windowLength/2)+(SamParser.windowLength/2)  )+" bp");
+			writer.println();
+			//System.out.println();
+		}else{
+			writer.println("  Not enough information to determine ploidy for "+contigname);
+			System.out.println("  Not enough information to determine ploidy for "+contigname);
 		}
-
-
-		writer.println(" Ploidy: "+prevPloidy+" from +/- "+((int)prevPos*SamParser.windowLength/2)+" bp to +/- "+(    (ItemsSize*SamParser.windowLength/2)+(SamParser.windowLength/2)  )+" bp");
-		writer.println();
+		
 
 		System.out.println("-------------writeOutPloEstByFragment END------------------");
 		
@@ -289,20 +298,22 @@ public void displayPloidyAndCoveragePlotNaive()throws IOException{
 		maxX=0;
 		int wInd=0;
 		//this loop is for ESTIMATED PLOIDY PLOTTING
+		System.out.println("ESTIMATED PLOIDY PLOTTING:");
 		for (int i = 0; i < contigD.windPos.size(); i++) {
 
 			if(contigD.windPos.get(i)!=null){
 				xValues [wInd]= wInd;  			
 				yValues [wInd]= getPointPloidyEstimationNaive(contigD.windPos.get(i));
+				System.out.print(" "+wInd+","+yValues [wInd]);
 				if (!AVG_PLOIDY)series.add(wInd, yValues [wInd]);
 				wInd++;
 			}				
 
-		}
+		}System.out.println();
 		if (--wInd>maxX){
 			maxX=(int) wInd;
 		}
-
+		System.out.println("createPloidyEstimationDatasetNaive :"+contigD.contigName);
 		if(AVG_PLOIDY ){		//smooth the ploidy plot by averaging the values over a window of PLOIDY_SMOOTHER_WIDTH points
 			series=averagePloidyMode(series,wInd,xValues,yValues);
 		}
@@ -314,7 +325,7 @@ public void displayPloidyAndCoveragePlotNaive()throws IOException{
 	
 		writeOutPloEstByFragment(writer, series,contigD.contigName );//writes out the ploidy estimation detailed by fragment
 
-		System.out.println("createPloidyEstimationDatasetNaive end:"+contigD.contigName);
+		
 		return result;
 	}
 
@@ -385,74 +396,96 @@ public void displayPloidyAndCoveragePlotNaive()throws IOException{
 	
 	
 	public XYSeries averagePloidyMode(XYSeries series, int wInd,double [] xValues,int [] yValues){
+		System.out.println(" AVERAGE PLOIDY MODE. wInd="+wInd+" (PLOIDY_SMOOTHER_WIDTH/2):"+(PLOIDY_SMOOTHER_WIDTH/2));
+		
 		//wInd == size of x data
-		double sum=0;
+		int currentMode=0;//the most observed ploidy value over the PLOIDY_SMOOTHER_WIDTH
 		int PLOIDY_SMOOTHER_WING=PLOIDY_SMOOTHER_WIDTH/2; //length of each of the sides of the PLOIDY_SMOOTHER window before and after the position being evaluated
-		int [] averagingWindow=new int[PLOIDY_SMOOTHER_WIDTH];
-		//System.out.print("AveragePloidy size(wInd):"+wInd);
+		int [] ploidyCounter=new int[MAX_NB_MIXTURES+1];//over the PLOIDY_SMOOTHER_WIDTH, this vector keeps track of how many times each ploidy is observed
 		if (wInd > PLOIDY_SMOOTHER_WIDTH) {//we need a minimum of points to average the ploidy
-			// solve the first PLOIDY_SMOOTHER_WIDTH/2 positions of the plot
-			for (int v = 0; v < PLOIDY_SMOOTHER_WIDTH; v++) {
-				sum += yValues[v];
-			}
-			System.out.println(" sum:" + sum);
-
-			for (int v = 0; v < PLOIDY_SMOOTHER_WING + 1; v++) {
-//				x = xValues[v];
-//				y = Math.round(sum / PLOIDY_SMOOTHER_WIDTH);
-//				series.add(x, y);
-				 series.add(xValues[v],Math.round(sum/PLOIDY_SMOOTHER_WIDTH));
-				//System.out.print(" " + x + "," + y + "");
-			}
-
-			// solve the rest of the positions until
-			// size-PLOIDY_SMOOTHER_WIDTH/2
-			for (int v = (PLOIDY_SMOOTHER_WING + 1); v < (wInd - PLOIDY_SMOOTHER_WING); v++) {
-				sum += yValues[v + PLOIDY_SMOOTHER_WING];// add next value in
-															// the right side of
-															// the wing
-				sum -= yValues[v - (PLOIDY_SMOOTHER_WING + 1)];// substract the
-																// value that
-																// just moved
-																// out of the
-																// left side of
-																// the wing
-//				x = xValues[v];
-//				y = Math.round(sum / PLOIDY_SMOOTHER_WIDTH);
-//				series.add(x, y);//
-				 series.add(xValues[v], Math.round(sum/PLOIDY_SMOOTHER_WIDTH));
-				//System.out.print(" " + x + "," + y + "");
-			}
-
-			// solve the last positions
-			for (int v = (wInd - PLOIDY_SMOOTHER_WING); v < wInd; v++) {
-//				x = xValues[v];
-//				y = Math.round(sum / PLOIDY_SMOOTHER_WIDTH);
-//				series.add(x, y);//
-				series.add(xValues[v], Math.round(sum/PLOIDY_SMOOTHER_WIDTH));
-				//System.out.print(" " + x + "," + y + "");
-			}
-			//System.out.println();
-		}else{//simple average of the first points
-			//System.out.println(" SIMPLE AVERAGE");
 			
-			for (int v = 0; v < wInd; v++) {
-				sum += yValues[v];
+			// solve the first  positions of the plot
+			for (int v = 0; v < PLOIDY_SMOOTHER_WIDTH/2; v++) {
+				if(yValues[v]<=MAX_NB_MIXTURES ){
+					ploidyCounter[yValues[v]]++;
+					if (ploidyCounter[currentMode]<ploidyCounter[yValues[v]]){
+						currentMode=yValues[v];
+					}
+					if (currentMode!=0){
+						series.add(xValues[v], currentMode);
+						System.out.print(" "+(int)xValues[v]+","+currentMode);
+					}
+				}
+				
 			}
+			//solve the rest of the genome until the last positions-PLOIDY_SMOOTHER_WIDTH/2
+			int mostRightValue;//value at the right end of the ploidy-smoother window
+			int mostLeftValue=0;//value at the left end of the ploidy-smoother window
+			for(int v=(PLOIDY_SMOOTHER_WIDTH/2);v<(wInd-(PLOIDY_SMOOTHER_WIDTH/2));v++){
+				if(yValues[v]<=MAX_NB_MIXTURES ){
+					System.out.print("-");
+					mostLeftValue=yValues[v-(PLOIDY_SMOOTHER_WIDTH/2)];
+					if(mostLeftValue>0 && mostLeftValue<=MAX_NB_MIXTURES ){
+						ploidyCounter[mostLeftValue]--;//remove mostleft value of window
+					}
+					System.out.print("-");
+					mostRightValue=yValues[v+(PLOIDY_SMOOTHER_WIDTH/2)];
+					if (mostRightValue>0 && mostRightValue<=MAX_NB_MIXTURES )ploidyCounter[mostRightValue]++;//add mostright value of window
+					System.out.print("-");
+					if(mostLeftValue!=mostRightValue){//if the removed and the added are different, get the mode of the curent vector ploidyCounter
+						for(int pc=0;pc<ploidyCounter.length;pc++){
+							if(ploidyCounter[pc]>ploidyCounter[currentMode])currentMode=pc;
+						}
+					}
+					if (currentMode!=0){
+						series.add(xValues[v], currentMode);
+						System.out.print(" "+(int)xValues[v]+","+currentMode);
+					}
+				}
+			}
+			
+			//solve the very last positions PLOIDY_SMOOTHER_WIDTH/2
+			for(int v=(wInd-(PLOIDY_SMOOTHER_WIDTH/2));v<wInd;v++){
+				if(yValues[v]<=MAX_NB_MIXTURES ){
+					if(yValues[v]>0 && yValues[v]<=MAX_NB_MIXTURES)ploidyCounter[yValues[v]]--;
+					if (ploidyCounter[currentMode]<ploidyCounter[yValues[v]]){
+						for(int pc=0;pc<ploidyCounter.length;pc++){
+							if(ploidyCounter[pc]>ploidyCounter[currentMode])currentMode=pc;
+						}
+					}
+					if (currentMode!=0){
+						series.add(xValues[v], currentMode);
+						System.out.print(" "+(int)xValues[v]+","+currentMode);
+					}
+				}
+			}
+			
+			System.out.println("");
+		}else{//not enough points, simply average over the available points
 			for (int v = 0; v < wInd; v++) {
-//				x = xValues[v];
-//				y = Math.round(sum / wInd);
-//				series.add(x, y);
-				series.add(xValues[v], Math.round(sum/PLOIDY_SMOOTHER_WIDTH));
-				//System.out.print(" " + x + "," + y + "");
-			}//System.out.println();
+				if(yValues[v]<=MAX_NB_MIXTURES ){
+					ploidyCounter[yValues[v]]++;
+					if (ploidyCounter[currentMode]<ploidyCounter[yValues[v]]){
+						currentMode=yValues[v];
+					}
+					
+					if (currentMode!=0){
+						series.add(xValues[v], currentMode);
+						System.out.print(" "+(int)xValues[v]+","+currentMode);
+					}
+				}
+			}
+			System.out.println();
 		}
+		System.out.println("END");
 		return series;
 	}
 	
 	public int getPointPloidyEstimationNaive(double ptCoverage){//computes the probability of the data point 
 		//belonging to all clusters and returns the best option
 
+		/*
+		
 		double [] pdfVals=new double[clusterMus.length];
 		for (int mm=0;mm<clusterMus.length;mm++){//for all mixtures computes the probability pdfVal of the data point belonging to it
 			pdfVals[mm]=NaivePDF.pdf(ptCoverage,clusterMus[mm]);
@@ -467,8 +500,15 @@ public void displayPloidyAndCoveragePlotNaive()throws IOException{
 				minInd=mm;
 			}
 		}
-		//if(ptCoverage<150)System.out.println("ptCoverage:"+ptCoverage+" min:"+min+" minInd:"+minInd+" CNV:"+rt.bestScore.bestCNVIndexes[minInd]);
+		//if(rt.bestScore.bestCNVIndexes[minInd]!=Math.round(ptCoverage/RatioFindNaive.candUnit)){
+			//System.out.println(" ** ptCoverage:"+ptCoverage+" rt.bestScore.bestCNVIndexes[minInd]:"+rt.bestScore.bestCNVIndexes[minInd]+" Math.round:"+Math.round(ptCoverage/RatioFindNaive.candUnit));
+		//}
 		return rt.bestScore.bestCNVIndexes[minInd];//returns the best CN estimation (1-10) to which this points x belongs
+		*/
+		
+			return(int) Math.round(ptCoverage/RatioFindNaive.candUnit);
+
+		
 	}
 
 

@@ -14,12 +14,12 @@ public class RatioFindNaive
 	CNVscore bestScore=null;
 	PrintWriter writer=null ;
 	int consensus;//% of consensus in corrected results (certainty of this prediction)
-
+	static double candUnit=0.0;
 
 	
 	
 	public RatioFindNaive(double[] ds){
-		
+	
 		df.setRoundingMode(RoundingMode.CEILING);
 	
 		
@@ -27,7 +27,7 @@ public class RatioFindNaive
 	
 		scores=new CNVscore[(MAX_NB_MIXTURES+1-ds.length)];//vector with all the scores for each of the posible ratio solutions
 
-		double candUnit=0.0;
+		
 		double product=00;
 		double[] productsVect;
 		for (int i=(MAX_NB_MIXTURES+1-ds.length);i>0;i--){//TODO: I'would rewrite this section to start evaluating the candidate unit 

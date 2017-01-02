@@ -78,25 +78,28 @@ public class NaivePloestPlotter {
 	private void writeOutPloEstByFragment(PrintWriter writer , XYSeries series, String contigname ) {
 		System.out.println("-------------writeOutPloEstByFragment------------------");
 		writer.println("Detailed ploidy estimation for "+contigname);
-		//System.out.println("Detailed ploidy estimation for "+contigname);
+		System.out.print("Detailed ploidy estimation for "+contigname);
 		if(series.getItemCount()>0){
-			Number prevPloidy=series.getY(0);
+			Number prevPloidy=series.getMinY();//series.getY(0);
 			Number prevPos=0;
 			int ItemsSize=series.getItems().size();
-
-			for (int yv=0;yv<ItemsSize;yv++){
+			System.out.println("prevPloidy "+prevPloidy+" ItemsSize:"+ItemsSize);
+			for (int yv=1;yv<ItemsSize;yv++){
+				System.out.print(" "+yv+","+series.getY(yv));
 				if(!series.getY(yv).equals(prevPloidy)){//segmentation point
 					writer.println(" Ploidy: "+prevPloidy+" from +/- "+((int)prevPos*SamParser.windowLength/2)+" bp to +/- "+(yv*SamParser.windowLength/2)+" bp");
-					//System.out.println(" Ploidy: "+prevPloidy+" from +/- "+((int)prevPos*SamParser.windowLength/2)+" bp to +/- "+(yv*SamParser.windowLength/2)+" bp");
+					System.out.println(" Ploidy: "+prevPloidy+" from +/- "+((int)prevPos*SamParser.windowLength/2)+" bp to +/- "+(yv*SamParser.windowLength/2)+" bp");
 					prevPloidy=series.getY(yv);
 					prevPos=yv;
 				}
+		
+				
 			}
 
-			//System.out.println(" Ploidy: "+prevPloidy+" from +/- "+((int)prevPos*SamParser.windowLength/2)+" bp to +/- "+(    (ItemsSize*SamParser.windowLength/2)+(SamParser.windowLength/2)  )+" bp");
+			System.out.println(" Ploidy: "+prevPloidy+" from +/- "+((int)prevPos*SamParser.windowLength/2)+" bp to +/- "+(    (ItemsSize*SamParser.windowLength/2)+(SamParser.windowLength/2)  )+" bp");
 			writer.println(" Ploidy: "+prevPloidy+" from +/- "+((int)prevPos*SamParser.windowLength/2)+" bp to +/- "+(    (ItemsSize*SamParser.windowLength/2)+(SamParser.windowLength/2)  )+" bp");
 			writer.println();
-			//System.out.println();
+			System.out.println();
 		}else{
 			writer.println("  Not enough information to determine ploidy for "+contigname);
 			System.out.println("  Not enough information to determine ploidy for "+contigname);
@@ -291,31 +294,31 @@ public void displayPloidyAndCoveragePlotNaive()throws IOException{
 	private  XYDataset createPloidyEstimationDatasetNaive(ContigData contigD, PrintWriter writer ) {
 
 		XYSeriesCollection result = new XYSeriesCollection();
-		XYSeries series = new XYSeries(" Ploidy Estimation");
+		XYSeries series = new XYSeries(" Ploidy Estimation 1");
 		
 		double [] xValues=new double[contigD.windPos.size()];
 		int [] yValues=new int[contigD.windPos.size()];
 		maxX=0;
 		int wInd=0;
 		//this loop is for ESTIMATED PLOIDY PLOTTING
-		System.out.println("ESTIMATED PLOIDY PLOTTING:");
+		//System.out.println("ESTIMATED PLOIDY PLOTTING:");
 		for (int i = 0; i < contigD.windPos.size(); i++) {
 
 			if(contigD.windPos.get(i)!=null){
 				xValues [wInd]= wInd;  			
 				yValues [wInd]= getPointPloidyEstimationNaive(contigD.windPos.get(i));
-				System.out.print(" "+wInd+","+yValues [wInd]);
+				//System.out.print(" "+wInd+","+yValues [wInd]);
 				if (!AVG_PLOIDY)series.add(wInd, yValues [wInd]);
 				wInd++;
 			}				
 
-		}System.out.println();
+		}//System.out.println();
 		if (--wInd>maxX){
 			maxX=(int) wInd;
 		}
 		System.out.println("createPloidyEstimationDatasetNaive :"+contigD.contigName);
 		if(AVG_PLOIDY ){		//smooth the ploidy plot by averaging the values over a window of PLOIDY_SMOOTHER_WIDTH points
-			series=averagePloidyMode(series,wInd,xValues,yValues);
+			series=averagePloidyMode(contigD.contigName,series,wInd,xValues,yValues);
 		}
 		
 		System.out.println();
@@ -395,7 +398,7 @@ public void displayPloidyAndCoveragePlotNaive()throws IOException{
 	}
 	
 	
-	public XYSeries averagePloidyMode(XYSeries series, int wInd,double [] xValues,int [] yValues){
+	public XYSeries averagePloidyMode(String contigname,XYSeries series, int wInd,double [] xValues,int [] yValues){
 		System.out.println(" AVERAGE PLOIDY MODE. wInd="+wInd+" (PLOIDY_SMOOTHER_WIDTH/2):"+(PLOIDY_SMOOTHER_WIDTH/2));
 		
 		//wInd == size of x data
@@ -423,15 +426,15 @@ public void displayPloidyAndCoveragePlotNaive()throws IOException{
 			int mostLeftValue=0;//value at the left end of the ploidy-smoother window
 			for(int v=(PLOIDY_SMOOTHER_WIDTH/2);v<(wInd-(PLOIDY_SMOOTHER_WIDTH/2));v++){
 				if(yValues[v]<=MAX_NB_MIXTURES ){
-					System.out.print("-");
+		
 					mostLeftValue=yValues[v-(PLOIDY_SMOOTHER_WIDTH/2)];
 					if(mostLeftValue>0 && mostLeftValue<=MAX_NB_MIXTURES ){
 						ploidyCounter[mostLeftValue]--;//remove mostleft value of window
 					}
-					System.out.print("-");
+		
 					mostRightValue=yValues[v+(PLOIDY_SMOOTHER_WIDTH/2)];
 					if (mostRightValue>0 && mostRightValue<=MAX_NB_MIXTURES )ploidyCounter[mostRightValue]++;//add mostright value of window
-					System.out.print("-");
+			
 					if(mostLeftValue!=mostRightValue){//if the removed and the added are different, get the mode of the curent vector ploidyCounter
 						for(int pc=0;pc<ploidyCounter.length;pc++){
 							if(ploidyCounter[pc]>ploidyCounter[currentMode])currentMode=pc;
@@ -477,38 +480,51 @@ public void displayPloidyAndCoveragePlotNaive()throws IOException{
 			}
 			System.out.println();
 		}
-		System.out.println("END");
-		return series;
+		System.out.print("END. NOW CHECK CoNTINUITY.  ");
+		if(series.getItemCount()>0){
+			return checkContinuity(series,20);
+		}else{
+			System.err.println("Error in contig :"+contigname+". This series have 0 values!!!");
+			return series;
+		}
+		
 	}
 	
-	public int getPointPloidyEstimationNaive(double ptCoverage){//computes the probability of the data point 
-		//belonging to all clusters and returns the best option
-
-		/*
-		
-		double [] pdfVals=new double[clusterMus.length];
-		for (int mm=0;mm<clusterMus.length;mm++){//for all mixtures computes the probability pdfVal of the data point belonging to it
-			pdfVals[mm]=NaivePDF.pdf(ptCoverage,clusterMus[mm]);
-		}
-		double min=pdfVals[0];
-		int minInd=0;
-		
-		for (int mm=0;mm<pdfVals.length;mm++){//search for the highest pdfVal
-			//System.out.print(" //mm:"+mm +" pdfVal:"+pdfVals[mm]);
-			if(pdfVals[mm]<min){
-				min=pdfVals[mm];
-				minInd=mm;
+	private XYSeries checkContinuity(XYSeries series, int continuityLength) {
+		XYSeries result=new XYSeries(" Ploidy Estimation");
+		int [] yvalues=new int[series.getItemCount()];
+		Number currentY=series.getY(0);//current Y value being counted
+		int continousCurrents=0;//nb of contiguous observed values of the current Y value
+		Number[] firstObservedValues=new Number[continuityLength];//first observed values are stored while verifying that there are at least continuityLength contiguous observations
+		for (int i=0;i<series.getItemCount();i++){
+			if( currentY.equals(series.getY(i) )){//if Y values is currently being observed
+				continousCurrents++;
+				if (continousCurrents>continuityLength){//if the continuity length is respected
+					result.add(series.getX(i),currentY);//add to series
+				}else if (continousCurrents==continuityLength){//the following 2 'else if' allows the first continuityLength observed values to be taken into account 
+					firstObservedValues[0]=currentY;
+					for (int j=0;j<continuityLength;j++){//add the stored first continuityLength observed values
+						result.add((series.getX(i).intValue()-continuityLength+j+1),firstObservedValues[j]);//add to series	
+					}
+				}else if (continousCurrents<continuityLength){
+					firstObservedValues[continousCurrents]=currentY;
+				}
+				
+			}else{//new Y values observed
+				
+				continousCurrents=0;//reset counter
+				currentY=series.getY(i);//reset observed Y
 			}
 		}
-		//if(rt.bestScore.bestCNVIndexes[minInd]!=Math.round(ptCoverage/RatioFindNaive.candUnit)){
-			//System.out.println(" ** ptCoverage:"+ptCoverage+" rt.bestScore.bestCNVIndexes[minInd]:"+rt.bestScore.bestCNVIndexes[minInd]+" Math.round:"+Math.round(ptCoverage/RatioFindNaive.candUnit));
-		//}
-		return rt.bestScore.bestCNVIndexes[minInd];//returns the best CN estimation (1-10) to which this points x belongs
-		*/
-		
-			return(int) Math.round(ptCoverage/RatioFindNaive.candUnit);
+		System.out.println("END CoNTINUITY CHECK");
+		return result;
+	}
 
-		
+
+
+
+	public int getPointPloidyEstimationNaive(double ptCoverage){
+			return(int) Math.round(ptCoverage/RatioFindNaive.candUnit);
 	}
 
 

@@ -43,6 +43,9 @@ public class RatioFindNaive
 			scores[i-1]=nextNearestMeans(productsVect,i);
 		}
 		bestScore=findMinScore(scores);
+		candUnit=bestScore.candidateUnit;
+		System.out.println("+++++++++++  bestScore.candidateUnit:"+bestScore.candidateUnit+" ++++++++++ candUnit:"+candUnit);
+		
 	
 	}
 	

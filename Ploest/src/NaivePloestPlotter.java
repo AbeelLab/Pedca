@@ -51,7 +51,7 @@ public class NaivePloestPlotter {
 
 	static int finalNumberOfMixtures;
 	RatioFindNaive rt;//contains the ratio of each cluster to the ploidy-unit which allows computation of ploidy from contig coverage
-	
+	String writeoutStringLog="";
 	
 	public NaivePloestPlotter(Map<String,ContigData> contList,int maxWindows, float[] rc) {
 		readCounts=rc;
@@ -78,17 +78,17 @@ public class NaivePloestPlotter {
 	private void writeOutPloEstByFragment(PrintWriter writer , XYSeries series, String contigname ) {
 		System.out.println("-------------writeOutPloEstByFragment------------------");
 		writer.println("Detailed ploidy estimation for "+contigname);
-		System.out.print("Detailed ploidy estimation for "+contigname);
+		//System.out.print("Detailed ploidy estimation for "+contigname);
 		if(series.getItemCount()>0){
 			Number prevPloidy=series.getMinY();//series.getY(0);
 			Number prevPos=0;
 			int ItemsSize=series.getItems().size();
-			System.out.println("prevPloidy "+prevPloidy+" ItemsSize:"+ItemsSize);
+			//System.out.println("prevPloidy "+prevPloidy+" ItemsSize:"+ItemsSize);
 			for (int yv=1;yv<ItemsSize;yv++){
-				System.out.print(" "+yv+","+series.getY(yv));
+				//System.out.print(" "+yv+","+series.getY(yv));
 				if(!series.getY(yv).equals(prevPloidy)){//segmentation point
 					writer.println(" Ploidy: "+prevPloidy+" from +/- "+((int)prevPos*SamParser.windowLength/2)+" bp to +/- "+(yv*SamParser.windowLength/2)+" bp");
-					System.out.println(" Ploidy: "+prevPloidy+" from +/- "+((int)prevPos*SamParser.windowLength/2)+" bp to +/- "+(yv*SamParser.windowLength/2)+" bp");
+					//System.out.println(" Ploidy: "+prevPloidy+" from +/- "+((int)prevPos*SamParser.windowLength/2)+" bp to +/- "+(yv*SamParser.windowLength/2)+" bp");
 					prevPloidy=series.getY(yv);
 					prevPos=yv;
 				}
@@ -96,12 +96,13 @@ public class NaivePloestPlotter {
 				
 			}
 
-			System.out.println(" Ploidy: "+prevPloidy+" from +/- "+((int)prevPos*SamParser.windowLength/2)+" bp to +/- "+(    (ItemsSize*SamParser.windowLength/2)+(SamParser.windowLength/2)  )+" bp");
+			//System.out.println(" Ploidy: "+prevPloidy+" from +/- "+((int)prevPos*SamParser.windowLength/2)+" bp to +/- "+(    (ItemsSize*SamParser.windowLength/2)+(SamParser.windowLength/2)  )+" bp");
 			writer.println(" Ploidy: "+prevPloidy+" from +/- "+((int)prevPos*SamParser.windowLength/2)+" bp to +/- "+(    (ItemsSize*SamParser.windowLength/2)+(SamParser.windowLength/2)  )+" bp");
 			writer.println();
-			System.out.println();
+			//System.out.println();
 		}else{
 			writer.println("  Not enough information to determine ploidy for "+contigname);
+			writer.println();
 			System.out.println("  Not enough information to determine ploidy for "+contigname);
 		}
 		
@@ -140,40 +141,47 @@ public class NaivePloestPlotter {
 		ContigData contigD;
 		for (int c=0;c<contigsList.size();c++){//for each contig
 			contigD=contigsList.get(contArrList.get(c));
-
 			XYDataset data1=createPlotDataset(contigD);
-			chart = ChartFactory.createScatterPlot(
-					("Genome Coverage "+contigD.contigName), // chart title
-					"Genome Position (x " +(contigD.windLength/2)+" bp)", // x axis label
-					"Coverage", // y axis label
-					data1, // XYDataset 
-					PlotOrientation.VERTICAL,
-					true, // include legend
-					true, // tooltips
-					false // urls
-					);
-			//Set range
-			XYPlot xyPlot = (XYPlot) chart.getPlot();
-			NumberAxis domain = (NumberAxis) xyPlot.getDomainAxis();
-			domain.setRange(0.00, maxX);
-			ValueAxis rangeAxis = xyPlot.getRangeAxis();	
-			//rangeAxis.setRange(0.00, SamParser.readsDistributionMaxCoverage);
-			if(contigD.maxY>0){
-				rangeAxis.setRange(0.00,contigD.maxY);
-			}else {
-				rangeAxis.setRange(0.00,10);
-				System.err.println(contigD.contigName+" doesn't have any coverage. Contig is Removed");
+			if(maxX>0){
+				chart = ChartFactory.createScatterPlot(
+						("Genome Coverage "+contigD.contigName), // chart title
+						"Genome Position (x " +(contigD.windLength/2)+" bp)", // x axis label
+						"Coverage", // y axis label
+						data1, // XYDataset 
+						PlotOrientation.VERTICAL,
+						true, // include legend
+						true, // tooltips
+						false // urls
+						);
+				//Set range
+				XYPlot xyPlot = (XYPlot) chart.getPlot();
+				NumberAxis domain = (NumberAxis) xyPlot.getDomainAxis();
+				domain.setRange(0.00, maxX);
+				ValueAxis rangeAxis = xyPlot.getRangeAxis();	
+			
+				//rangeAxis.setRange(0.00, SamParser.readsDistributionMaxCoverage);
+				if(contigD.maxY>0){
+					rangeAxis.setRange(0.00,contigD.maxY);
+				}else {
+					rangeAxis.setRange(0.00,10);
+					System.err.println(contigD.contigName+" doesn't have any coverage. Contig is Removed");
+					
+					contigsList.remove(contArrList.get(c));
+					contArrList.remove(c);
+					c--;
+				}
 				
-				contigsList.remove(contArrList.get(c));
-				contArrList.remove(c);
-				c--;
+				
+				
+				ChartUtilities.saveChartAsJPEG(new File(Ploest.outputFile + "//" + Ploest.projectName+ "//Contig_Coverage_Charts//Chart_Contig_"+c+".jpg"), chart, 1000, 600);
+				
+			}else {
+				System.err.println(contigD.contigName+" is too short ("+contigD.maxLength+"bp ) for the length of the sliding window (winLength="+contigD.windLength+" bp). Contig is Removed");
+				writeoutStringLog+= contigD.contigName+" is too short ("+contigD.maxLength+"bp ) for the length of the sliding window (winLength="+contigD.windLength+" bp). Contig is Removed\r\n";
 			}
 			
-			
-
-			ChartUtilities.saveChartAsJPEG(new File(Ploest.outputFile + "//" + Ploest.projectName+ "//Contig_Coverage_Charts//Chart_Contig_"+c+".jpg"), chart, 1000, 600);
-			
 		}
+		System.out.println("ScatterPlots displayed");
 
 	}
 
@@ -186,6 +194,8 @@ public void displayPloidyAndCoveragePlotNaive()throws IOException{
 		ContigData contigD;
 		PrintWriter writer = rt.writer;
 		writer.println();
+		writer.println("*********************************************************");
+		writer.println(writeoutStringLog);
 		writer.println("*********************************************************");
 		writer.println(" Ploidy estimation detailed by fragments.  Precision: +/-"+(SamParser.windowLength/2)+" bp");
 		writer.println();
@@ -416,7 +426,7 @@ public void displayPloidyAndCoveragePlotNaive()throws IOException{
 					}
 					if (currentMode!=0){
 						series.add(xValues[v], currentMode);
-						System.out.print(" "+(int)xValues[v]+","+currentMode);
+						//System.out.print(" "+(int)xValues[v]+","+currentMode);
 					}
 				}
 				
@@ -442,7 +452,7 @@ public void displayPloidyAndCoveragePlotNaive()throws IOException{
 					}
 					if (currentMode!=0){
 						series.add(xValues[v], currentMode);
-						System.out.print(" "+(int)xValues[v]+","+currentMode);
+						//System.out.print(" "+(int)xValues[v]+","+currentMode);
 					}
 				}
 			}
@@ -458,7 +468,7 @@ public void displayPloidyAndCoveragePlotNaive()throws IOException{
 					}
 					if (currentMode!=0){
 						series.add(xValues[v], currentMode);
-						System.out.print(" "+(int)xValues[v]+","+currentMode);
+						//System.out.print(" "+(int)xValues[v]+","+currentMode);
 					}
 				}
 			}
@@ -474,7 +484,7 @@ public void displayPloidyAndCoveragePlotNaive()throws IOException{
 					
 					if (currentMode!=0){
 						series.add(xValues[v], currentMode);
-						System.out.print(" "+(int)xValues[v]+","+currentMode);
+						//System.out.print(" "+(int)xValues[v]+","+currentMode);
 					}
 				}
 			}

@@ -48,14 +48,25 @@ public class SamParser {
 		//readCounts = new int[nc];
 		nbSeq = inputSam.getFileHeader().getSequenceDictionary().size();// nb of sequences in the FileHeader
 		contigsList = new HashMap<String, ContigData>(nbSeq);// Map of  ContigDatas(value) and their name (key)
-
+		ArrayList<Integer> contigLengths = new ArrayList<Integer> ();
 		// fill the contigsList
 		for (int i = 0; i < nbSeq; i++) {
 			contigsList.put(inputSam.getFileHeader().getSequenceDictionary().getSequence(i).getSequenceName(),
 					new ContigData(inputSam.getFileHeader().getSequenceDictionary().getSequence(i).getSequenceName(),
 							inputSam.getFileHeader().getSequenceDictionary().getSequence(i).getSequenceLength()));
+			contigLengths.add(inputSam.getFileHeader().getSequenceDictionary().getSequence(i).getSequenceLength());
 		}
-
+		
+		
+		
+		//get N50
+		/*
+		System.out.println("Shortest Contig : "+findMinimumContigLength(contigLengths)+" bp");
+		for (double n=0.980;n<0.9999;n+=0.0005){
+			System.out.print(" "+n+" "+n98(contigLengths,n)+";");
+		}
+		System.out.println();
+		*/
 		inputSam.setValidationStringency(ValidationStringency.SILENT);
 		SAMRecordIterator iter = inputSam.iterator();
 	//PrintWriter writer = new PrintWriter(Ploest.outputFile + "//" + Ploest.projectName+ "//"+Ploest.projectName+"SamParsed.txt", "UTF-8");
@@ -168,63 +179,37 @@ public class SamParser {
 	}
 
 
-
-
-	public void cleanContigList(){//To clean outliers -- TURNED OUT TO BE A BAD iDEA (could still be useful to show windows with irregular coverage -transforms it to zero in the plot-)
-		//CLEAN READ COUNTS with non significant presence (outliers)
-		//first clean in readCounts
-		int ctrDELETEME=0;
-		double minThreshold=0.0035;
-		int totalSumOfReads=0;
-
-		for (int r = 0; r < readCounts.length; r++) {//get total sum of reads
-			totalSumOfReads+=readCounts[r];
-		}
-		int minYCorrectedValue=1;
-		System.out.print("Relative readcounts (!=0) above threshold: ");
-		for (int r = 0; r < readCounts.length; r++) {//check if relative readcounts is above threshold
-			if(readCounts[r]!=0 && ((double)readCounts[r])/totalSumOfReads < minThreshold){//if a read count !=0 is still below threshold
-				System.out.print(" "+r);
-				readCounts[r]=minYCorrectedValue;
-			}
-			readCounts[0]=0;//to avoid a false peak at 0 which tells us nothing about the real read counts distribution
-		}
-		System.out.println();
-		//next clean in contigsList
-		ctrDELETEME=0;
-		int nbOFChangesDELETEME=0;//nb of changed contigs
-		boolean hasChanged=false; 
-		for (int i = 0; i < contArrList.size(); i++) {//for each contig
-			ContigData currentContig = contigsList.get(contArrList.get(i));//get the contig from contigsList
-			for (int w = 0; w < currentContig.windPos.size(); w++) {//check all readCounts of every window position 
-				if(readCounts[currentContig.windPos.get(w)]==minYCorrectedValue){
-					currentContig.windPos.set(w, 0);//[w]=0;//(int) (currentContig.windPos[w]/10);//instead of putting 0 we reduce keeping the proportions, so that the curve mins are respected
-					ctrDELETEME++;
-					hasChanged=true;
-				}
-			}
-			if(hasChanged){
-				contigsList.replace(currentContig.contigName, currentContig);	
-				nbOFChangesDELETEME++;
-			}
-		}
-		System.out.println("Window position with ReadCounts above threshold:"+ctrDELETEME);
-		System.out.println("Contigs Changed inContigList:"+nbOFChangesDELETEME);
-		//WARNING: DELETE THIS. IT IS A TEST: REDO READCOUNTS
-
-		totalSumOfReads=0;
-		contArrList = new ArrayList<String>(contigsList.keySet());
-		for (int i = 0; i < contArrList.size(); i++) {//for each contig
-			ContigData currentContig = contigsList.get(contArrList.get(i));
-			for (int w = 0; w < currentContig.windPos.size(); w++) {//store all readCounts of every window position 
-				readCounts[currentContig.windPos.get(w)] ++;
-			}
-		}
-		readCounts[0]=0;//to avoid a false peak at 0 which tells us nothing about the real read counts distribution
-
-	}
-
-
+	public  int findMinimumContigLength(ArrayList<Integer> contLengt){ 
+		  int minL=contLengt.get(0);
+		  for (int i = 0;i< contLengt.size();i++){
+			  if (contLengt.get(i)<minL)minL=contLengt.get(i);
+		  }
+		   
+		  return minL; 
+	} 
+	
+	
+	 public double n98(ArrayList<Integer> lenghts, double n){ 
+		  Collections.sort(lenghts); 
+		  Collections.reverse(lenghts); 
+		  int total = 0; 
+		  int partial =0; 
+		  int index=0; 
+		  for(int i : lenghts){ 
+		   total+=i; 
+		  } 
+		  //Defined accordingly to Assemlathon 2 definition. 
+		  //For the Assemplaton 1 definition "<="---> "<"; 
+		  while(index < lenghts.size() && partial+lenghts.get(index) <= (total*n)){ 
+		   partial += lenghts.get(index); 
+		   index++; 
+		  } 
+		   
+		  return lenghts.get(index); 
+	} 
+	
+	
+	
 	public void windowSlideContigList() throws FileNotFoundException, UnsupportedEncodingException {
 		
 		findMaxWindows();
@@ -257,7 +242,7 @@ public class SamParser {
 			}
 		}
 
-		insureReadCountsRange();//excludes outliers values (very high and non significant) form readCount
+		insureReadCountsRange();//excludes outliers values (very high and non significant) from readCount
 
 		//PRINT OUT readCounts
 		PrintWriter writer = new PrintWriter(Ploest.outputFile + "//" + Ploest.projectName+ "//readCounts.txt", "UTF-8");
@@ -283,20 +268,20 @@ public class SamParser {
 		}
 
 		//redo readCounts with proper range if necesary
-		int SAFE_RANGE=2;
-		if((readCounts.length-midPoint)>(SAFE_RANGE*midPoint)){
+		int SAFE_RANGE=(int) Math.ceil(midPoint*2);
+		if((readCounts.length-midPoint)>SAFE_RANGE){
 
 			System.out.println("reaffecting ReadCounts range. Old:"+readCounts.length+ " new:"+(int)Math.ceil(midPoint*SAFE_RANGE));
 			totalDataPoints=0;
-			readCounts = new int[(int)Math.ceil(midPoint*SAFE_RANGE)];
+			readCounts = new int[(int)SAFE_RANGE];
 			int nbNullVals=0;
 			//fill readCounts without zero values nor extralarge values
 			for (int i = 0; i < contArrList.size(); i++) {//for each contig
 				ContigData currentContig = contigsList.get(contArrList.get(i));
 				for (int w = 0; w < currentContig.windPos.size(); w++) {//store all readCounts of every window position 
-					if (currentContig.windPos.get(w)<midPoint*SAFE_RANGE && currentContig.windPos.get(w)!=0){//but only if they are inside the new range
+					if (currentContig.windPos.get(w)<SAFE_RANGE && currentContig.windPos.get(w)!=0){//but only if they are inside the new range
 						readCounts[currentContig.windPos.get(w)] += 1;//readCounts[0] is goign to be kept zero since it doesn't add info to our problem
-					}else if (currentContig.windPos.get(w)>=midPoint*SAFE_RANGE){
+					}else if (currentContig.windPos.get(w)>=SAFE_RANGE){
 						currentContig.windPos.set(w, null);
 						nbNullVals++;
 					}

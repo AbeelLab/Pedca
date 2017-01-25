@@ -43,7 +43,7 @@ public class BarChart {
 			if(normReadCounts[r]>maxY)maxY=normReadCounts[r];
 		}
 
-		histChart = ChartFactory.createBarChart("Read Count Distribution", "Reads Count", "%Contigs", histDataset,
+		histChart = ChartFactory.createBarChart("Read Count Distribution. Window length: "+Ploest.windowLength, "Reads Count", "%Contigs", histDataset,
 				PlotOrientation.VERTICAL, false, true, false);
 
 		try {
@@ -155,7 +155,7 @@ public void BarChartWithFit (NaivePDF naivePDF, String title) {
 
 		plot.setDatasetRenderingOrder(DatasetRenderingOrder.REVERSE);
 		// return a new chart containing the overlaid plot...
-		overlaidChart=new JFreeChart("Naive Smoothed Fit of Reads Distribution", JFreeChart.DEFAULT_TITLE_FONT, plot, true);
+		overlaidChart=new JFreeChart("Naive Smoothed Fit of Reads Distribution. Window length: "+Ploest.windowLength, JFreeChart.DEFAULT_TITLE_FONT, plot, true);
 
 
 		try {

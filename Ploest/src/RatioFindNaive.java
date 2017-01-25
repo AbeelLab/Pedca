@@ -213,6 +213,7 @@ public class RatioFindNaive
 			writer.println("\n");
 			
 			writer.println("> PLOIDY ESTIMATION :"+ Ploest.projectName);
+			writer.println("> WINDOW LENGTH FOR PLOIDY ESTIMATION :"+ Ploest.windowLength);
 			writer.println("> CLUSTER_NUMBER \tCOPY_NUMBER_ESTIMATION \t DISTANCE_ERROR (% MAX reads counts) ");
 			for(int d=0;d<ds.length;d++){
 				writer.println("\t\t"+d+" \t\t\t"+bestScore.bestCNVIndexes[d]+" \t\t\t"+bestScore.bestMinDistances[d]);

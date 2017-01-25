@@ -595,11 +595,14 @@ public void displayPloidyAndCoveragePlotNaive()throws IOException{
 						//System.out.println("     ib:" + ib + " Xindex:" + Xindex + " maxval:" + maxVal+ " readCounts[ib]:" + readCounts[ib]);
 
 					}
+					if(!xMinList.contains(naivePDF.xDataPoints[Xindex])){
+						yMinList.add(maxVal);
+						xMinList.add(naivePDF.xDataPoints[Xindex]);
+						System.out.println(" ****    max in :" + naivePDF.xDataPoints[Xindex] + " = " + maxVal);
+						sigMaxs++;
+					}else System.out.println(" REPEATED max in :" + naivePDF.xDataPoints[Xindex] + " = " + maxVal+"  ...VALUE DISCARDED...!");
 
-					yMinList.add(maxVal);
-					xMinList.add(naivePDF.xDataPoints[Xindex]);
-					System.out.println(" ****    max in :" + naivePDF.xDataPoints[Xindex] + " = " + maxVal);
-					sigMaxs++;
+					
 
 				}
 			} else {

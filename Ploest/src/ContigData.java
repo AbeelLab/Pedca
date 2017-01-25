@@ -6,12 +6,14 @@ import java.util.ArrayList;
 public class ContigData {
 
 	String contigName;
-	int maxLength;
+	int maxLength;//contig length in basepairs
 	int[] startPos ;
 	ArrayList<Integer>  windPos;
 	int windLength;
 	int maxWindows;
 	int maxY=0;
+	int[] basecalls;
+
 	
 	static double COV_RATE;//10 default ratio by which the average coverage of each sliding window  is mutiplied
 						  //the bigger, the more detailed will be the readsDistribution bar chart
@@ -64,11 +66,6 @@ public class ContigData {
 		}
 	
 		maxWindows=maxX;
-	
-		
-		
-		
-		
 		return maxX;
 	}
 	

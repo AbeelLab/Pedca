@@ -37,7 +37,7 @@ public class NaivePDF {
 		readCounts=rc;
 		maxXvalue=readCounts.length;
 		
-		smootherLength=(int) (maxXvalue/(3*NaivePloestPlotter.MAX_NB_MIXTURES));//the window of our smoother must be able to discretize over at least 10 different clusters (MAX_NB_MIXTURES). The minimum length should be 2X. We go for a safer 3X
+		smootherLength=(int) (maxXvalue/(Math.round(3*NaivePloestPlotter.MAX_NB_MIXTURES)));//the window of our smoother must be able to discretize over at least 10 different clusters (MAX_NB_MIXTURES). The minimum length should be 2X. We go for a safer 3X
 		if((smootherLength & 1) == 0   ){//if even number
 			smootherLength++;//must be odd number
 		}

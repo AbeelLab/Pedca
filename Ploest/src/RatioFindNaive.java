@@ -30,9 +30,10 @@ public class RatioFindNaive
 		
 		double product=00;
 		double[] productsVect;
-		for (int i=(MAX_NB_MIXTURES+1-ds.length);i>0;i--){//TODO: I'would rewrite this section to start evaluating the candidate unit 
-															//from the bigger cluster, instead of the smallest, which will give a higher 
-															//accuracy estimation of candUnit
+		for (int i=(MAX_NB_MIXTURES+1-ds.length);i>0;i--){// I was tempted to rewrite this section to start evaluating the candidate unit 
+															//from the bigger cluster, instead of the smallest, which I thought would give a higher 
+															//accuracy estimation of candUnit. Turns out that the the cluster gaussian bell is less defined 
+															//as it gets higher so I stick to this method
 			candUnit=ds[0]/i;
 			
 			productsVect=new double[MAX_NB_MIXTURES];
@@ -43,8 +44,10 @@ public class RatioFindNaive
 			scores[i-1]=nextNearestMeans(productsVect,i);
 		}
 		bestScore=findMinScore(scores);
-		candUnit=bestScore.candidateUnit;
-		System.out.println("+++++++++++  bestScore.candidateUnit:"+bestScore.candidateUnit+" ++++++++++ candUnit:"+candUnit);
+		if(bestScore!=null){
+			candUnit=bestScore.candidateUnit;
+			System.out.println("+++++++++++  bestScore.candidateUnit:"+bestScore.candidateUnit+" ++++++++++ candUnit:"+candUnit);
+		}else	System.out.println("+++++++++++  bestScore.candidateUnit: No CN mixture was able to satisfy the constraints. Result == null");
 		
 	
 	}
@@ -61,7 +64,7 @@ public class RatioFindNaive
 			if (productsVect[i]!=0.0){//start with THIS value
 				minDist=productsVect[i]*MAX_NB_MIXTURES;
 				for (int nd=1;nd<ds.length;nd++){
-					candDist=round(100*Math.abs(ds[nd]-productsVect[i])/SamParser.readsDistributionMaxCoverage,3);//get distance to all next means values (divided by maxWindows to normalize)
+					candDist=100*Math.abs(ds[nd]-productsVect[i])/SamParser.readsDistributionMaxCoverage;//get distance to all next means values (divided by maxWindows to normalize)
 					if (candDist<minDist){
 						minDist=candDist;
 						minInd=nd;
@@ -203,29 +206,40 @@ public class RatioFindNaive
 	public void writeOut() {
 		
 		try {
+
 			writer = new PrintWriter(Ploest.outputFile + "//" + Ploest.projectName+ "//"+Ploest.projectName+"PloidyEstimation.txt", "UTF-8");
 			writer.println(">FINAL NUMBER OF CLUSTERS: "+NaivePloestPlotter.clusterMus.length );
 			writer.println("\n");
-	
+		
 			for (int g=0;g<NaivePloestPlotter.clusterMus.length;g++){
 				writer.println("cluster center ["+g+"]:\t"+NaivePloestPlotter.clusterMus[g]);		
 			}
 			writer.println("\n");
-			
 			writer.println("> PLOIDY ESTIMATION :"+ Ploest.projectName);
 			writer.println("> WINDOW LENGTH FOR PLOIDY ESTIMATION :"+ Ploest.windowLength);
 			writer.println("> CLUSTER_NUMBER \tCOPY_NUMBER_ESTIMATION \t DISTANCE_ERROR (% MAX reads counts) ");
-			for(int d=0;d<ds.length;d++){
-				writer.println("\t\t"+d+" \t\t\t"+bestScore.bestCNVIndexes[d]+" \t\t\t"+bestScore.bestMinDistances[d]);
+		
+			if(bestScore!=null){
+				for(int d=0;d<ds.length;d++){
+					writer.println("\t\t"+d+" \t\t\t"+bestScore.bestCNVIndexes[d]+" \t\t\t"+bestScore.bestMinDistances[d]);
+				}
+				writer.println("\n");
+				writer.println(">Estimation distance score: "+bestScore.score);
+				//writer.println(">Estimation consensus: "+consensus+" %");
+				writer.println(">Maximum Nb Of Mixtures respected = "+bestScore.respectsMaxNbOfMixtures);
+				//writer.close();
+
+			}else{
+				writer.println(">No CN mixture was able to satisfy the constraints. Result == null");
+				writer.println(">Try running the program with a different window length.");
+
+				if(writer!=null)writer.close();
 			}
-	
-			writer.println("\n");
-			writer.println(">Estimation distance score: "+bestScore.score);
-			//writer.println(">Estimation consensus: "+consensus+" %");
-			writer.println(">Maximum Nb Of Mixtures respected = "+bestScore.respectsMaxNbOfMixtures);
-			//writer.close();
+			
 		} catch (FileNotFoundException | UnsupportedEncodingException e) {
+
 			if(writer!=null)writer.close();
+			
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}		

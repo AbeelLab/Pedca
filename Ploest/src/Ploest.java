@@ -24,7 +24,7 @@ public class Ploest {
 	static String outputFile ="C://Users//Mel//Documents//BIOINFORMATICS//DELFT_Research//Data//SimulatedReads//CBS_1483";
 	static File fin=new File("C://Users//Mel//Documents//BIOINFORMATICS//DELFT_Research//Data//CBS_1483//sorted_CBS1483.bam");
 
-	static int windowLength=50;
+	static int windowLength=500;
 	static File currentFolder;
 	static int COV_RATE=100;
 	static double SIGNIFICANT_MIN=0.01;//threshold to calculate the minimal points in the gaussian mixture plot to be considered significant (in PloestPlotter.significantMin)

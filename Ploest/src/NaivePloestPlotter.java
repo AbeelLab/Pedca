@@ -598,7 +598,7 @@ public void displayPloidyAndCoveragePlotNaive()throws IOException{
 					if(!xMinList.contains(naivePDF.xDataPoints[Xindex])){
 						yMinList.add(maxVal);
 						xMinList.add(naivePDF.xDataPoints[Xindex]);
-						System.out.println(" ****    max in :" + naivePDF.xDataPoints[Xindex] + " = " + maxVal);
+						System.out.println(" ****    max in :" + naivePDF.xDataPoints[Xindex] + " = " + maxVal+ " lastLeftIndex:"+lastLeftIndex+" lastRightIndex:"+lastRightIndex+" (+ "+naivePDF.smootherLength+" = "+(lastRightIndex + naivePDF.smootherLength)+")");
 						sigMaxs++;
 					}else System.out.println(" REPEATED max in :" + naivePDF.xDataPoints[Xindex] + " = " + maxVal+"  ...VALUE DISCARDED...!");
 

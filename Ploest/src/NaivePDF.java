@@ -32,8 +32,8 @@ public class NaivePDF {
 			System.out.print(p+" "+rc[p]+" ;");
 		}
 		System.out.println("]");
-		
 		*/
+		
 		readCounts=rc;
 		maxXvalue=readCounts.length;
 		
@@ -50,6 +50,7 @@ public class NaivePDF {
 		for (int p=0;p<readCounts.length;p++){//for each point
 			double sum=0;
 			int substract=0;//substract these bins (for begining and end of genome)
+			
 			for(int cp=(p-smootherWing);cp<(p+smootherWing);cp++){//average over the smoother window
 				
 				if(cp>0 && cp<readCounts.length){
@@ -71,20 +72,18 @@ public class NaivePDF {
 					
 				}
 			}
-			p=p+smootherWing;
+			p=p+smootherWing-1;
 
 		}
 	
 		/*
-		System.out.println();
+		System.out.println(" smootherLength:"+smootherLength);
 		System.out.print("naivepdf SOFT readcounts =[");
 		for (int p=0;p<readCounts.length;p++){//for each param extract mu and sigma
 			System.out.print(xDataPoints[p]+" "+yDataPoints[p]+" ;");
 		}
 		System.out.println("]");
 		*/
-
-	
 	}
 	
 	

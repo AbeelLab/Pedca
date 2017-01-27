@@ -23,12 +23,13 @@ import jMEF.PVector;
 
 public class SamParser {
 	int nbSeq=0;// nb of sequences in the FileHeader
-	Map<String, ContigData> contigsList;// Map of ContigDatas(value) and their
-	// name (key)
+	Map<String, ContigData> contigsList;// Map of ContigDatas(value) and their  name (key)
 	static int[] readCounts;
 
 	static PVector[] fitPoints;//all the points of all windows positions (coverages) in all contigs. Used to fit the read counts distribution chart
-
+	
+	static boolean RUN_SECOND_ROUND=false;
+	
 	static int windowLength ;
 	List<String> contArrList;
 	static int readsDistributionMaxCoverage;//max coverage found in all contigs (to be used in x axis reads counts)
@@ -100,6 +101,16 @@ public class SamParser {
 		readDistributionMaxY=barchart.maxY;
 		
 		myploter = new NaivePloestPlotter(contigsList,readsDistributionMaxCoverage, barchart.normReadCounts);//plotter = new PloestPlotter(contigsList,maxWindows);
+		
+		if (RUN_SECOND_ROUND){
+			Map<String, ContigData> newContigsList=new HashMap <String, ContigData> ();
+			for (int c=0;c<myploter.unsolvedPloidyContigs.size();c++){
+				newContigsList.put(myploter.unsolvedPloidyContigs.get(c).contigName, myploter.unsolvedPloidyContigs.get(c));
+			}
+			contigsList=newContigsList;
+		}
+		System.err.println(" Continue HERE, at end of SamParser constructor, with newContigsList running a second round");
+
 		
 	}
 

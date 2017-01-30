@@ -204,10 +204,12 @@ public class RatioFindNaive
 	}
 	
 	public void writeOut() {
-		
+		System.out.println("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%");
+		System.out.println("%%%%%%%%%%%%%%%%%%%%%%%%% writeOut()"+SamParser.stringSecondRound+ "%%%%%%%%%%%%");
+		System.out.println("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%");
 		try {
 
-			writer = new PrintWriter(Ploest.outputFile + "//" + Ploest.projectName+ "//"+Ploest.projectName+"PloidyEstimation.txt", "UTF-8");
+			writer = new PrintWriter(Ploest.outputFile + "//" + Ploest.projectName+ "//"+Ploest.projectName+"PloidyEstimation"+SamParser.stringSecondRound+".txt", "UTF-8");
 			writer.println(">FINAL NUMBER OF CLUSTERS: "+NaivePloestPlotter.clusterMus.length );
 			writer.println("\n");
 		

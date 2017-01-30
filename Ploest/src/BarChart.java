@@ -43,15 +43,15 @@ public class BarChart {
 			if(normReadCounts[r]>maxY)maxY=normReadCounts[r];
 		}
 
-		histChart = ChartFactory.createBarChart("Read Count Distribution. Window length: "+Ploest.windowLength, "Reads Count", "%Contigs", histDataset,
+		histChart = ChartFactory.createBarChart("Read Count Distribution. Window length: "+Ploest.windowLength+" "+SamParser.stringSecondRound, "Reads Count", "%Contigs", histDataset,
 				PlotOrientation.VERTICAL, false, true, false);
 
 		try {
-			ChartUtilities.saveChartAsJPEG(new File(Ploest.outputFile + "//" + Ploest.projectName+ "//readsDistribution.jpg"), histChart, 2000, 1200);
+			ChartUtilities.saveChartAsJPEG(new File(Ploest.outputFile + "//" + Ploest.projectName+ "//readsDistribution"+SamParser.stringSecondRound+".jpg"), histChart, 2000, 1200);
 		} catch (IOException e) {
 			System.err.println("Problem occurred creating chart.");
 		}
-		System.out.println("BarChar printed. maxY="+maxY);
+		System.out.println("BarChar printed "+SamParser.stringSecondRound+". maxY="+maxY);
 	}
 
 	//@SuppressWarnings("deprecation")

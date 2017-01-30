@@ -63,7 +63,7 @@ public class NaivePloestPlotter {
 
 		
 		try{
-			displayScatterPlots();//Scatterplot containing the contig coverage (per slided window)		
+			//displayScatterPlots();//Scatterplot containing the contig coverage (per slided window)		
 			createFitterDataset() ;
 			fitNaiveMixtureModel();	//approximate the distribution by naive smoother and infere max points				
 			displayPloidyAndCoveragePlotNaive();//Plot containng both the coverage and the ploidy estimation
@@ -76,7 +76,23 @@ public class NaivePloestPlotter {
 	}
 
 
-	
+	public void naivePloestPlotter2ndRound(Map<String,ContigData> contList,int maxWindows, float[] rc) {
+		readCounts=rc;
+		contigsList=contList;
+		contArrList = new ArrayList<String>(contigsList.keySet());
+		unsolvedPloidyContigs=new ArrayList<ContigData> () ;//reinitialize unsolvedPloidyContigs
+		
+		try{
+			//displayScatterPlots();//Scatterplot containing the contig coverage (per slided window)		
+			//createFitterDataset() ;
+			//fitNaiveMixtureModel();	//approximate the distribution by naive smoother and infere max points				
+			rt.writeOut();
+			displayPloidyAndCoveragePlotNaive();//Plot containng both the coverage and the ploidy estimation
+		}catch (Exception e){
+			System.err.println("Error in PloestPlotter constructor");
+		}
+		
+	}
 	
 	private void writeOutPloEstByFragment(PrintWriter writer , XYSeries series, String contigname ) {
 		//System.out.println("-------------writeOutPloEstByFragment------------------");
@@ -147,8 +163,8 @@ public class NaivePloestPlotter {
 			XYDataset data1=createPlotDataset(contigD);
 			if(maxX>0){
 				chart = ChartFactory.createScatterPlot(
-						("Genome Coverage "+contigD.contigName), // chart title
-						"Genome Position (x " +(contigD.windLength/2)+" bp)", // x axis label
+						("Genome Coverage "+contigD.contigName+ SamParser.stringSecondRound), // chart title
+						"Genome Position (x " +(SamParser.windowLength/2)+" bp)", // x axis label
 						"Coverage", // y axis label
 						data1, // XYDataset 
 						PlotOrientation.VERTICAL,
@@ -174,9 +190,9 @@ public class NaivePloestPlotter {
 					c--;
 				}
 				
+				String correctedContigName = contigD.contigName.replaceAll("[^a-zA-Z0-9.-]", "_");
 				
-				
-				ChartUtilities.saveChartAsJPEG(new File(Ploest.outputFile + "//" + Ploest.projectName+ "//Contig_Coverage_Charts//Chart_Contig_"+c+".jpg"), chart, 1000, 600);
+				ChartUtilities.saveChartAsJPEG(new File(Ploest.outputFile + "//" + Ploest.projectName+ "//Contig_Coverage_Charts//Chart_Contig_"+correctedContigName+".jpg"), chart, 1000, 600);
 				
 			}else {
 				System.err.println(contigD.contigName+" is too short ("+contigD.maxLength+"bp ) for the length of the sliding window (winLength="+contigD.windLength+" bp). Contig is Removed");
@@ -247,12 +263,13 @@ public void displayPloidyAndCoveragePlotNaive()throws IOException{
 				// Create the chart with the plot and a legend
 				JFreeChart chart = new JFreeChart("Coverage and Ploidy Estimation :"+contigD.contigName, JFreeChart.DEFAULT_TITLE_FONT, xyPlot, true);
 				String correctedContigName = contigD.contigName.replaceAll("[^a-zA-Z0-9.-]", "_");
-				ChartUtilities.saveChartAsJPEG(new File(Ploest.outputFile + "//" + Ploest.projectName+ "//Ploidy_Estimation_Charts//Ploidy_Estimation_"+correctedContigName+".jpg"),chart, 1500, 900);
+				ChartUtilities.saveChartAsJPEG(new File(Ploest.outputFile + "//" + Ploest.projectName+ "//Ploidy_Estimation_Charts//Ploidy_Estimation_"+correctedContigName+"_"+SamParser.stringSecondRound+".jpg"),chart, 1500, 900);
 			}
 		}
-		if (unsolvedPloidyContigs.size()>0){
+		if (unsolvedPloidyContigs.size()>0 && !SamParser.RUN_SECOND_ROUND){
 			int minLength=unsolvedPloidyContigs.get(0).maxLength;
 			writer.println("> The following contigs could not be solved with the current window length of "+Ploest.windowLength+" bp : ");
+			//compute new window length
 			for (int u=0;u<unsolvedPloidyContigs.size();u++){
 				writer.println("  "+unsolvedPloidyContigs.get(u).contigName);
 				if (minLength>=unsolvedPloidyContigs.get(u).maxLength){
@@ -260,7 +277,12 @@ public void displayPloidyAndCoveragePlotNaive()throws IOException{
 				}
 			}
 			writer.println(" A new estimation will be attempted with a shorter window length of "+minLength/10);
-			Ploest.windowLength=minLength/10;
+			Ploest.windowLength=minLength/15;
+			SamParser.RUN_SECOND_ROUND=true;	
+			//update contigs info
+			for (int u=0;u<unsolvedPloidyContigs.size();u++){
+				unsolvedPloidyContigs.get(u).windLength=Ploest.windowLength;
+			}
 		}
 		
 		
@@ -271,7 +293,7 @@ public void displayPloidyAndCoveragePlotNaive()throws IOException{
 				writer.println("  "+removedContigs.get(u).contigName);
 			}
 			writer.println(" ");
-			SamParser.RUN_SECOND_ROUND=true;	
+			
 		}
 		
 		writer.close();

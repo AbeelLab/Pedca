@@ -25,11 +25,11 @@ public class SamParser {
 	int nbSeq=0;// nb of sequences in the FileHeader
 	Map<String, ContigData> contigsList;// Map of ContigDatas(value) and their  name (key)
 	static int[] readCounts;
-
+	
 	static PVector[] fitPoints;//all the points of all windows positions (coverages) in all contigs. Used to fit the read counts distribution chart
 	
 	static boolean RUN_SECOND_ROUND=false;
-	
+	static String stringSecondRound="";
 	static int windowLength ;
 	List<String> contArrList;
 	static int readsDistributionMaxCoverage;//max coverage found in all contigs (to be used in x axis reads counts)
@@ -103,14 +103,21 @@ public class SamParser {
 		myploter = new NaivePloestPlotter(contigsList,readsDistributionMaxCoverage, barchart.normReadCounts);//plotter = new PloestPlotter(contigsList,maxWindows);
 		
 		if (RUN_SECOND_ROUND){
+			
+			System.out.println("-*-*-*-*-*-*-RUN_SECOND_ROUND*-*-*-*-*-*-*-*-*-*-*");
+			System.out.println("-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*");
 			Map<String, ContigData> newContigsList=new HashMap <String, ContigData> ();
 			for (int c=0;c<myploter.unsolvedPloidyContigs.size();c++){
 				newContigsList.put(myploter.unsolvedPloidyContigs.get(c).contigName, myploter.unsolvedPloidyContigs.get(c));
 			}
 			contigsList=newContigsList;
 		}
-		System.err.println(" Continue HERE, at end of SamParser constructor, with newContigsList running a second round");
-
+		windowLength=Ploest.windowLength;
+		windowSlideContigList();
+		barchart = new BarChart(readCounts);
+		readDistributionMaxY=barchart.maxY;
+		myploter.naivePloestPlotter2ndRound(contigsList,readsDistributionMaxCoverage, barchart.normReadCounts);//plotter = new PloestPlotter(contigsList,maxWindows);
+		
 		
 	}
 
@@ -252,11 +259,15 @@ public class SamParser {
 				}			
 			}
 		}
-
 		insureReadCountsRange();//excludes outliers values (very high and non significant) from readCount
 
+		if(RUN_SECOND_ROUND)  {
+			stringSecondRound="_2nd_Round_";		
+		}
+
 		//PRINT OUT readCounts
-		PrintWriter writer = new PrintWriter(Ploest.outputFile + "//" + Ploest.projectName+ "//readCounts.txt", "UTF-8");
+		
+		PrintWriter writer = new PrintWriter(Ploest.outputFile + "//" + Ploest.projectName+ "//readCounts"+stringSecondRound+".txt", "UTF-8");
 		for (int r = 0; r < readCounts.length; r++) {
 			writer.println(r + " " + readCounts[r] + "; ");
 		}

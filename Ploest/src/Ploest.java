@@ -24,6 +24,8 @@ public class Ploest {
 	static String outputFile ="C://Users//Mel//Documents//BIOINFORMATICS//DELFT_Research//Data//SimulatedReads//CBS_1483";
 	static File fin=new File("C://Users//Mel//Documents//BIOINFORMATICS//DELFT_Research//Data//CBS_1483//sorted_CBS1483.bam");
 
+	static File vcfFile;
+	static boolean baseCallIsOn=false;
 	static int windowLength=500;
 	static File currentFolder;
 	static int COV_RATE=100;
@@ -36,7 +38,7 @@ public class Ploest {
 	public static void main(String[] args) {
 		//printHelp();
 		int argsIndex[]=new int[10];  //0:-p,projectName 
-								     //1:-i,inputFile
+								     //1:-i,inputFile (bam)
 								     //2:-s,SIGNIFICANT_MIN
 								     //3:-w,windowLength
 								     //4:-c,COV_RATE
@@ -44,6 +46,7 @@ public class Ploest {
 								     //6:-o,outputFile
 									 //7:-k,force nbOfMixtures
 									 //8:-m,multiple files is set
+									 //9:-v, vcf inpuyt file
 	
 		if (args.length > 0) {
 			System.out.print(" Ploest "); for(int i=0;i<args.length;i++){System.out.print(" " +args[i]+" "+args[++i]);} System.out.println();
@@ -66,6 +69,7 @@ public class Ploest {
 					case "-o": argsIndex[6]=i+1; break;
 					case "-k": argsIndex[7]=i+1; break;
 					case "-m":argsIndex[8]=i+1; break;
+					case "-v":argsIndex[9]=i+1; break;
 					default: break;
 					}					
 				}
@@ -83,6 +87,10 @@ public class Ploest {
 						inputFile=args[ argsIndex[1]];
 					}else{
 						fin=new File(args[argsIndex[8]]);
+					}
+					if(argsIndex[9]!=0){
+						vcfFile=new File(args[argsIndex[9]]);
+						baseCallIsOn=true;
 					}
 				} catch (Error e) {
 					

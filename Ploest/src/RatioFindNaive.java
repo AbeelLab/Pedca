@@ -210,30 +210,31 @@ public class RatioFindNaive
 		try {
 
 			writer = new PrintWriter(Ploest.outputFile + "//" + Ploest.projectName+ "//"+Ploest.projectName+"PloidyEstimation"+SamParser.stringSecondRound+".txt", "UTF-8");
-			writer.println(">FINAL NUMBER OF CLUSTERS: "+NaivePloestPlotter.clusterMus.length );
-			writer.println("\n");
-		
+			writer.println("#> PLOIDY ESTIMATION FOR PROJECT:"+ Ploest.projectName);
+			writer.println("FINAL_NUMBER_OF_CLUSTERS="+NaivePloestPlotter.clusterMus.length );
+			writer.println("#\n");
+			writer.println("#>CLUSTER CENTERS AT READ COUNTS:");
+			writer.println("CLUSTER_CENTERS=");
 			for (int g=0;g<NaivePloestPlotter.clusterMus.length;g++){
-				writer.println("cluster center ["+g+"]:\t"+NaivePloestPlotter.clusterMus[g]);		
+				writer.println(NaivePloestPlotter.clusterMus[g]);		
 			}
-			writer.println("\n");
-			writer.println("> PLOIDY ESTIMATION :"+ Ploest.projectName);
-			writer.println("> WINDOW LENGTH FOR PLOIDY ESTIMATION :"+ Ploest.windowLength);
-			writer.println("> CLUSTER_NUMBER \tCOPY_NUMBER_ESTIMATION \t DISTANCE_ERROR (% MAX reads counts) ");
-		
+			writer.println("#\n");
+			writer.println("#>WINDOW LENGTH USED FOR PLOIDY ESTIMATION:");
+			writer.println("WINDOW_LENGTH="+ Ploest.windowLength);
+			writer.println("#> CLUSTER_NUMBER \tCOPY_NUMBER_ESTIMATION \t DISTANCE_ERROR (% MAX reads counts) ");
+			writer.println("CLUSTERS=");
 			if(bestScore!=null){
 				for(int d=0;d<ds.length;d++){
-					writer.println("\t\t"+d+" \t\t\t"+bestScore.bestCNVIndexes[d]+" \t\t\t"+bestScore.bestMinDistances[d]);
+					writer.println(d+"\t"+bestScore.bestCNVIndexes[d]+" \t"+bestScore.bestMinDistances[d]);
 				}
-				writer.println("\n");
-				writer.println(">Estimation distance score: "+bestScore.score);
-				//writer.println(">Estimation consensus: "+consensus+" %");
-				writer.println(">Maximum Nb Of Mixtures respected = "+bestScore.respectsMaxNbOfMixtures);
-				//writer.close();
+				writer.println("#\n");
+				writer.println("ESTIMATION_DISTANCE_SCORE="+bestScore.score);
+				writer.println("#>Maximum Nb Of Mixtures respected = "+bestScore.respectsMaxNbOfMixtures);
+				writer.println("#");
 
 			}else{
-				writer.println(">No CN mixture was able to satisfy the constraints. Result == null");
-				writer.println(">Try running the program with a different window length.");
+				writer.println("#>No CN mixture was able to satisfy the constraints. Result == null");
+				writer.println("#>Try running the program with a different window length.");
 
 				if(writer!=null)writer.close();
 			}

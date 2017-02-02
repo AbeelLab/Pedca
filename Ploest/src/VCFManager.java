@@ -18,10 +18,10 @@ public class VCFManager {
 	String outputMatrixFile="Matrix.vcf" ;
 
 	
-	public VCFManager(String inputFile) throws FileNotFoundException, InterruptedException {//constructor from vcf file
-		File pilonFolder =	 new File(outputFileRoot + "\\BaseCall");
-		pilonFolder.mkdirs();
-		vcfExtractor(inputFile);	
+	public VCFManager(String inputVcf_file) throws FileNotFoundException, InterruptedException {//constructor from vcf file
+		File pilonOutFolder =	 new File(outputFileRoot + "\\BaseCall");
+		pilonOutFolder.mkdirs();
+		vcfExtractor(inputVcf_file);	
 	}
 
 	public VCFManager(String inputFile, boolean isVcfMatrix ) throws FileNotFoundException, InterruptedException {//constructor from matrix file

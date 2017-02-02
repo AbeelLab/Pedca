@@ -55,6 +55,7 @@ public class NaivePloestPlotter {
 	
 	ArrayList<ContigData>  unsolvedPloidyContigs=new ArrayList<ContigData> () ;
 	ArrayList<ContigData>  removedContigs=new ArrayList<ContigData> () ;
+	ArrayList<ContigData> continousPloidyContigs=new ArrayList<ContigData> () ;
 	
 	public NaivePloestPlotter(Map<String,ContigData> contList,int maxWindows, float[] rc) {
 		readCounts=rc;
@@ -67,6 +68,7 @@ public class NaivePloestPlotter {
 			createFitterDataset() ;
 			fitNaiveMixtureModel();	//approximate the distribution by naive smoother and infere max points				
 			displayPloidyAndCoveragePlotNaive();//Plot containng both the coverage and the ploidy estimation
+			System.out.println("PloestPlotter constructor continuous after break");
 			
 			
 		}catch (Exception e){
@@ -81,11 +83,8 @@ public class NaivePloestPlotter {
 		contigsList=contList;
 		contArrList = new ArrayList<String>(contigsList.keySet());
 		unsolvedPloidyContigs=new ArrayList<ContigData> () ;//reinitialize unsolvedPloidyContigs
-		
+		removedContigs=new ArrayList<ContigData> ();//reinitialize removedContigs
 		try{
-			//displayScatterPlots();//Scatterplot containing the contig coverage (per slided window)		
-			//createFitterDataset() ;
-			//fitNaiveMixtureModel();	//approximate the distribution by naive smoother and infere max points				
 			rt.writeOut();
 			displayPloidyAndCoveragePlotNaive();//Plot containng both the coverage and the ploidy estimation
 		}catch (Exception e){
@@ -94,39 +93,29 @@ public class NaivePloestPlotter {
 		
 	}
 	
-	private void writeOutPloEstByFragment(PrintWriter writer , XYSeries series, String contigname ) {
-		//System.out.println("-------------writeOutPloEstByFragment------------------");
-		writer.println("Detailed ploidy estimation for "+contigname);
-		//System.out.print("Detailed ploidy estimation for "+contigname);
+	private void writeOutPloEstByFragment(PrintWriter writer , XYSeries series, ContigData contigD ) {
+		String contigname =contigD.contigName;
 		if(series.getItemCount()>0){
+			boolean thisContigHasContinousPloidy=true;
 			Number prevPloidy=series.getMinY();//series.getY(0);
 			Number prevPos=0;
 			int ItemsSize=series.getItems().size();
-			//System.out.println("prevPloidy "+prevPloidy+" ItemsSize:"+ItemsSize);
 			for (int yv=1;yv<ItemsSize;yv++){
-				//System.out.print(" "+yv+","+series.getY(yv));
 				if(!series.getY(yv).equals(prevPloidy)){//segmentation point
-					writer.println(" Ploidy: "+prevPloidy+" from +/- "+((int)prevPos*SamParser.windowLength/2)+" bp to +/- "+(yv*SamParser.windowLength/2)+" bp");
-					//System.out.println(" Ploidy: "+prevPloidy+" from +/- "+((int)prevPos*SamParser.windowLength/2)+" bp to +/- "+(yv*SamParser.windowLength/2)+" bp");
+					thisContigHasContinousPloidy=false;
+					writer.println(contigname+"\t"+((int)prevPos*SamParser.windowLength/2)+"\t"+(yv*SamParser.windowLength/2)+"\t"+prevPloidy);
 					prevPloidy=series.getY(yv);
 					prevPos=yv;
 				}
-		
-				
 			}
-
-			//System.out.println(" Ploidy: "+prevPloidy+" from +/- "+((int)prevPos*SamParser.windowLength/2)+" bp to +/- "+(    (ItemsSize*SamParser.windowLength/2)+(SamParser.windowLength/2)  )+" bp");
-			writer.println(" Ploidy: "+prevPloidy+" from +/- "+((int)prevPos*SamParser.windowLength/2)+" bp to +/- "+(    (ItemsSize*SamParser.windowLength/2)+(SamParser.windowLength/2)  )+" bp");
-			writer.println();
-			//System.out.println();
+			if(Ploest.baseCallIsOn && thisContigHasContinousPloidy && prevPloidy.intValue()==rt.bestScore.bestCNVIndexes[0]){
+				continousPloidyContigs.add(contigD);
+			}
+			writer.println(contigname+"\t"+((int)prevPos*SamParser.windowLength/2)+"\t"+(    (ItemsSize*SamParser.windowLength/2)+(SamParser.windowLength/2)  )+"\t"+prevPloidy);
 		}else{
-			writer.println("  Not enough information to determine ploidy for "+contigname);
-			writer.println();
+			writer.println(contigname+"\t-\t-\t-");
 			System.out.println("  Not enough information to determine ploidy for "+contigname);
 		}
-		
-
-		//System.out.println("-------------writeOutPloEstByFragment END------------------");
 		
 	}
 
@@ -212,12 +201,15 @@ public void displayPloidyAndCoveragePlotNaive()throws IOException{
 
 		ContigData contigD;
 		PrintWriter writer = rt.writer;
-		writer.println();
-		writer.println("*********************************************************");
-		writer.println(writeoutStringLog);
-		writer.println("*********************************************************");
-		writer.println(" Ploidy estimation detailed by fragments.  Precision: +/-"+(SamParser.windowLength/2)+" bp");
-		writer.println();
+		                                                                      
+		writer.println("#**************************************************************************************");
+		writer.println("#*Ploidy estimation detailed by fragments.  Precision: +/-"+(SamParser.windowLength/2)+" bp                      *");
+		writer.println("#*Only detects fragments with different ploidy when they expands over a sequence of +/-"+((PLOIDY_SMOOTHER_WIDTH/2)*(SamParser.windowLength/2) )+" bp *");
+		writer.println("#***************************************************************************************");
+		writer.println("#");
+		writer.println("PRECISION="+(SamParser.windowLength/2));
+		writer.println("#>CONTIG NAME\tFROM\tTO\tPLOIDY ESTIMATION");
+		writer.println("PLOIDY=");
 		for (int c=0;c<contigsList.size();c++){//for each contig
 			
 			contigD=contigsList.get(contArrList.get(c));
@@ -266,9 +258,16 @@ public void displayPloidyAndCoveragePlotNaive()throws IOException{
 				ChartUtilities.saveChartAsJPEG(new File(Ploest.outputFile + "//" + Ploest.projectName+ "//Ploidy_Estimation_Charts//Ploidy_Estimation_"+correctedContigName+"_"+SamParser.stringSecondRound+".jpg"),chart, 1500, 900);
 			}
 		}
+		if(Ploest.baseCallIsOn && rt.bestScore.score>0.1){
+			//runBaseCallCheck();
+			//return ;
+		}
+		//if a second run is needed... (there'are unsolved contigs)
 		if (unsolvedPloidyContigs.size()>0 && !SamParser.RUN_SECOND_ROUND){
 			int minLength=unsolvedPloidyContigs.get(0).maxLength;
-			writer.println("> The following contigs could not be solved with the current window length of "+Ploest.windowLength+" bp : ");
+			writer.println("#");
+			writer.println("#> The following contigs could not be solved with the current window length of "+Ploest.windowLength+" bp : ");
+			writer.println("CONTIGS_TO_BE_SOLVED=");
 			//compute new window length
 			for (int u=0;u<unsolvedPloidyContigs.size();u++){
 				writer.println("  "+unsolvedPloidyContigs.get(u).contigName);
@@ -276,7 +275,7 @@ public void displayPloidyAndCoveragePlotNaive()throws IOException{
 					minLength=unsolvedPloidyContigs.get(u).maxLength;
 				}
 			}
-			writer.println(" A new estimation will be attempted with a shorter window length of "+minLength/10);
+			writer.println("#>A new estimation will be attempted with a shorter window length of "+minLength/10);
 			Ploest.windowLength=minLength/15;
 			SamParser.RUN_SECOND_ROUND=true;	
 			//update contigs info
@@ -285,19 +284,30 @@ public void displayPloidyAndCoveragePlotNaive()throws IOException{
 			}
 		}
 		
-		
+		//if some contigs CAN NOT BE SOLVED --> remove them
 		if (removedContigs.size()>0){
-			writer.println();
-			writer.println("> The following contigs were removed because of lack of data values: ");
+			writer.println("#");
+			writer.println("#> The following contigs were removed because of lack of data values: ");
+			writer.println("REMOVED_CONTIGS=");
 			for (int u=0;u<removedContigs.size();u++){
-				writer.println("  "+removedContigs.get(u).contigName);
+				writer.println(removedContigs.get(u).contigName);
 			}
-			writer.println(" ");
-			
+			writer.println("#");
 		}
 		
 		writer.close();
 	}
+
+
+	private void runBaseCallCheck() throws FileNotFoundException, InterruptedException {
+		System.out.println("runBaseCall on these contigs:");
+		for (int i =0 ;i<continousPloidyContigs.size();i++){
+			System.out.println(continousPloidyContigs.get(i).contigName);
+		}
+		VCFManager vcfManager=new VCFManager(Ploest.vcfFile.getAbsolutePath());
+		
+	
+    }
 
 
 	public int findIndexOfMin(double[] bicVector){
@@ -381,7 +391,6 @@ public void displayPloidyAndCoveragePlotNaive()throws IOException{
 		if(AVG_PLOIDY ){		//smooth the ploidy plot by averaging the values over a window of PLOIDY_SMOOTHER_WIDTH points
 			series=averagePloidyMode(contigD,series,wInd,xValues,yValues);//uses the mode over PLOIDY_SMOOTHER points
 		}
-		System.out.println();
 		if(series.getItemCount()<5 && !removedContigs.contains(contigD)){
 			unsolvedPloidyContigs.add(contigD);
 			System.err.println(" CONTIG :"+contigD.contigName+" added to list for new window length ploidy estimation.");
@@ -392,7 +401,7 @@ public void displayPloidyAndCoveragePlotNaive()throws IOException{
 	
 		//
 	
-		writeOutPloEstByFragment(writer, series,contigD.contigName );//writes out the ploidy estimation detailed by fragment
+		writeOutPloEstByFragment(writer, series,contigD );//writes out the ploidy estimation detailed by fragment
 
 		
 		return result;
@@ -402,7 +411,7 @@ public void displayPloidyAndCoveragePlotNaive()throws IOException{
 	public XYSeries averagePloidyMode(ContigData contigD,XYSeries series, int wInd,double [] xValues,int [] yValues){
 		String contigname=contigD.contigName;
 		
-		System.out.println(" AVERAGE PLOIDY MODE. wInd="+wInd+" (PLOIDY_SMOOTHER_WIDTH/2):"+(PLOIDY_SMOOTHER_WIDTH/2));
+		//System.out.println(" AVERAGE PLOIDY MODE. wInd="+wInd+" (PLOIDY_SMOOTHER_WIDTH/2):"+(PLOIDY_SMOOTHER_WIDTH/2));
 		
 		//wInd == size of x data
 		int currentMode=0;//the most observed ploidy value over the PLOIDY_SMOOTHER_WIDTH
@@ -411,62 +420,66 @@ public void displayPloidyAndCoveragePlotNaive()throws IOException{
 		if (wInd > PLOIDY_SMOOTHER_WIDTH) {//we need a minimum of points to average the ploidy
 			
 			// solve the first  positions of the plot
-			for (int v = 0; v < PLOIDY_SMOOTHER_WIDTH/2; v++) {
+			for (int v = 0; v < PLOIDY_SMOOTHER_WIDTH; v++) {
 				if(yValues[v]<=MAX_NB_MIXTURES ){
 					ploidyCounter[yValues[v]]++;
 					if (ploidyCounter[currentMode]<ploidyCounter[yValues[v]]){
 						currentMode=yValues[v];
 					}
-					if (currentMode!=0){
-						series.add(xValues[v], currentMode);
-						//System.out.print(" "+(int)xValues[v]+","+currentMode);
-					}
 				}
-				
+			}//now store the mode over the first positions
+			for (int v = 0; v < PLOIDY_SMOOTHER_WIDTH/2; v++) {
+				if (currentMode!=0){
+					series.add(xValues[v], currentMode);
+				}
 			}
-			//solve the rest of the genome until the last positions-PLOIDY_SMOOTHER_WIDTH/2
+			
+			//solve the core of the genome until the last positions-PLOIDY_SMOOTHER_WIDTH/2
 			int mostRightValue;//value at the right end of the ploidy-smoother window
 			int mostLeftValue=0;//value at the left end of the ploidy-smoother window
 			for(int v=(PLOIDY_SMOOTHER_WIDTH/2);v<(wInd-(PLOIDY_SMOOTHER_WIDTH/2));v++){
 				if(yValues[v]<=MAX_NB_MIXTURES ){
-		
 					mostLeftValue=yValues[v-(PLOIDY_SMOOTHER_WIDTH/2)];
-					if(mostLeftValue>0 && mostLeftValue<=MAX_NB_MIXTURES ){
-						ploidyCounter[mostLeftValue]--;//remove mostleft value of window
-					}
-		
+				    /*if(mostLeftValue>0 && mostLeftValue<=MAX_NB_MIXTURES ){	ploidyCounter[mostLeftValue]--;}//remove mostleft value of window	*/
 					mostRightValue=yValues[v+(PLOIDY_SMOOTHER_WIDTH/2)];
-					if (mostRightValue>0 && mostRightValue<=MAX_NB_MIXTURES )ploidyCounter[mostRightValue]++;//add mostright value of window
-			
-					if(mostLeftValue!=mostRightValue){//if the removed and the added are different, get the mode of the curent vector ploidyCounter
+					/*if (mostRightValue>0 && mostRightValue<=MAX_NB_MIXTURES )ploidyCounter[mostRightValue]++;//add mostright value of window*/
+					if(mostLeftValue!=mostRightValue){//if the removed and the added are different, update the mode
+						if(mostLeftValue>0 && mostLeftValue<=MAX_NB_MIXTURES ){	ploidyCounter[mostLeftValue]--;	}//remove mostleft value of window
+						if (mostRightValue>0 && mostRightValue<=MAX_NB_MIXTURES )ploidyCounter[mostRightValue]++;//add mostright value of window
+						//update the mode
 						for(int pc=0;pc<ploidyCounter.length;pc++){
 							if(ploidyCounter[pc]>ploidyCounter[currentMode])currentMode=pc;
-						}
+						}//else the mode is the same
 					}
 					if (currentMode!=0){
 						series.add(xValues[v], currentMode);
-						//System.out.print(" "+(int)xValues[v]+","+currentMode);
 					}
 				}
 			}
-			
+			if (contigD.contigName=="scaffold35|size117957")System.out.println("scaffold35|size117957 wInd="+wInd+" vals   (PLOIDY_SMOOTHER_WIDTH/2)="+(PLOIDY_SMOOTHER_WIDTH/2));
+
 			//solve the very last positions PLOIDY_SMOOTHER_WIDTH/2
 			for(int v=(wInd-(PLOIDY_SMOOTHER_WIDTH/2));v<wInd;v++){
 				if(yValues[v]<=MAX_NB_MIXTURES ){
-					if(yValues[v]>0 && yValues[v]<=MAX_NB_MIXTURES)ploidyCounter[yValues[v]]--;
+					mostLeftValue=yValues[v-(PLOIDY_SMOOTHER_WIDTH/2)];
+					if (contigD.contigName=="scaffold35|size117957")System.out.print(" 1 "+mostLeftValue/*+"/"+ploidyCounter[mostLeftValue]*/);
+
+					if(mostLeftValue>0 && mostLeftValue<=MAX_NB_MIXTURES && ploidyCounter[mostLeftValue]>0 ){	ploidyCounter[mostLeftValue]--;	}//remove mostleft value of window
+					if (contigD.contigName=="scaffold33|size147914")System.out.print(" 2");
+					//if(yValues[v]>0 && yValues[v]<=MAX_NB_MIXTURES)ploidyCounter[yValues[v]]++;//if(yValues[v]>0 && yValues[v]<=MAX_NB_MIXTURES)ploidyCounter[yValues[v]]--;??
 					if (ploidyCounter[currentMode]<ploidyCounter[yValues[v]]){
 						for(int pc=0;pc<ploidyCounter.length;pc++){
 							if(ploidyCounter[pc]>ploidyCounter[currentMode])currentMode=pc;
 						}
 					}
+					if (contigD.contigName=="scaffold35|size117957")System.out.print(" 3");
 					if (currentMode!=0){
 						series.add(xValues[v], currentMode);
-						//System.out.print(" "+(int)xValues[v]+","+currentMode);
+						if (contigD.contigName=="scaffold35|size117957")System.out.print(" v:"+v+"=("+(int)xValues[v]+","+currentMode+")");
 					}
+					if (contigD.contigName=="scaffold35|size117957")System.out.print(" 4");
 				}
 			}
-			
-			System.out.println("");
 		}else{//not enough points, simply average over the available points
 			for (int v = 0; v < wInd; v++) {
 				if(yValues[v]<=MAX_NB_MIXTURES ){
@@ -474,16 +487,13 @@ public void displayPloidyAndCoveragePlotNaive()throws IOException{
 					if (ploidyCounter[currentMode]<ploidyCounter[yValues[v]]){
 						currentMode=yValues[v];
 					}
-					
 					if (currentMode!=0){
 						series.add(xValues[v], currentMode);
-						//System.out.print(" "+(int)xValues[v]+","+currentMode);
 					}
 				}
 			}
-			System.out.println();
 		}
-		System.out.print("END. NOW CHECK CoNTINUITY.  ");
+		if (contigD.contigName=="scaffold33|size147914")System.out.println(" end");
 		if(series.getItemCount()>0){
 			return checkContinuity(series,20);
 		}else{
@@ -521,7 +531,6 @@ public void displayPloidyAndCoveragePlotNaive()throws IOException{
 				currentY=series.getY(i);//reset observed Y
 			}
 		}
-		System.out.println("END CoNTINUITY CHECK");
 		return result;
 	}
 

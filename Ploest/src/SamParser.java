@@ -43,7 +43,7 @@ public class SamParser {
 
 	public SamParser(String inputFile, String outputfile)
 			throws FileNotFoundException, UnsupportedEncodingException {
-		
+		System.out.println("VCF option on. vcf file="+Ploest.vcfFile);
 		this.windowLength=Ploest.windowLength;
 		SAMFileReader inputSam = new SAMFileReader(new File(inputFile));
 		//readCounts = new int[nc];

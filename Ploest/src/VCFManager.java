@@ -257,13 +257,13 @@ public class VCFManager {
 				
 				for (int i = 0; i < vcfMatrix.size(); i++) {
 					currentLine=vcfMatrix.get(i);
-					for(int j =0;j<lineSize-2;j++){
+					for(int j =0;j<lineSize-1;j++){
 						System.out.print(currentLine.get(j)+" ");
 					}
 					System.out.println(currentLine.get(lineSize-1));
 				}
 			}
-			System.out.println("# Total nb of variation positions =  "+vcfMatrix.size()+" over "+NaivePloestPlotter.LENGTH_OF_BASIC_UNIT_CONTIGS);
+			System.out.println("# Total nb of variation positions =  "+vcfMatrix.size()+" over "+NaivePloestPlotter.LENGTH_OF_BASIC_UNIT_CONTIGS+ "bp which is "+(100*(double)vcfMatrix.size()/NaivePloestPlotter.LENGTH_OF_BASIC_UNIT_CONTIGS)+" % of the length of all contigs with that ploidy");
 			myConsole.close();
 		}  catch (Exception e) {
 			System.err.println("Error trying to write outputMatrixFile ");

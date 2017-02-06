@@ -419,12 +419,8 @@ public void displayPloidyAndCoveragePlotNaive()throws IOException{
 		}
 
 		result.addSeries(series);
-	
-		//
-	
 		writeOutPloEstByFragment(writer, series,contigD );//writes out the ploidy estimation detailed by fragment
 
-		
 		return result;
 	}
 

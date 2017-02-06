@@ -35,7 +35,7 @@ public class NaivePloestPlotter {
 	static boolean PLOIDY_CONTINUITY=false;//TO DO smooths the ploidy estimation by continuity filter
 	static boolean AVG_PLOIDY=true;//smooths the ploidy estimation by averaging over a window of length: PLOIDY_SMOOTHER_WIDTH
 	static int PLOIDY_SMOOTHER_WIDTH=49;//preferably odd number
-	
+	static int CONTINUITY_POINTS=20;//minimum datapoints (windows) required to evaluate the continuity of the ploidy estimation
 	static float[] readCounts;
 	static final int MAX_NB_MIXTURES=10;
 	Map<String,ContigData> contigsList;
@@ -55,7 +55,9 @@ public class NaivePloestPlotter {
 	
 	ArrayList<ContigData>  unsolvedPloidyContigs=new ArrayList<ContigData> () ;
 	ArrayList<ContigData>  removedContigs=new ArrayList<ContigData> () ;
-	ArrayList<ContigData> continousPloidyContigs=new ArrayList<ContigData> () ;
+    private ArrayList<ContigData> continousPloidyContigsWithBasicUnit=new ArrayList<ContigData> () ;
+	static ArrayList<String> continousPloidyContigsNamesWithBasicUnit=new ArrayList<String> () ;
+	static int LENGTH_OF_BASIC_UNIT_CONTIGS=0;
 	
 	public NaivePloestPlotter(Map<String,ContigData> contList,int maxWindows, float[] rc) {
 		readCounts=rc;
@@ -109,9 +111,13 @@ public class NaivePloestPlotter {
 				}
 			}
 			if(Ploest.baseCallIsOn && thisContigHasContinousPloidy && prevPloidy.intValue()==rt.bestScore.bestCNVIndexes[0]){
-				continousPloidyContigs.add(contigD);
+				continousPloidyContigsWithBasicUnit.add(contigD);
+				continousPloidyContigsNamesWithBasicUnit.add(contigD.contigName);
+				LENGTH_OF_BASIC_UNIT_CONTIGS+=contigD.maxLength;
+				System.out.println("LENGTH_OF_BASIC_UNIT_CONTIGS "+LENGTH_OF_BASIC_UNIT_CONTIGS);
+
 			}
-			writer.println(contigname+"\t"+((int)prevPos*SamParser.windowLength/2)+"\t"+(    (ItemsSize*SamParser.windowLength/2)+(SamParser.windowLength/2)  )+"\t"+prevPloidy);
+		
 		}else{
 			writer.println(contigname+"\t-\t-\t-");
 			System.out.println("  Not enough information to determine ploidy for "+contigname);
@@ -236,6 +242,7 @@ public void displayPloidyAndCoveragePlotNaive()throws IOException{
 
 			// Create the line data, renderer, and axis
 			XYDataset collection2 = createPloidyEstimationDatasetNaive(contigD,writer);
+			
 			if(!unsolvedPloidyContigs.contains(contigD)){
 				XYItemRenderer renderer2 = new XYLineAndShapeRenderer(false , true);   // Lines only
 				ValueAxis domain2 = new NumberAxis("Genome Position (x " +(contigD.windLength/2)+" bp)");
@@ -258,10 +265,19 @@ public void displayPloidyAndCoveragePlotNaive()throws IOException{
 				ChartUtilities.saveChartAsJPEG(new File(Ploest.outputFile + "//" + Ploest.projectName+ "//Ploidy_Estimation_Charts//Ploidy_Estimation_"+correctedContigName+"_"+SamParser.stringSecondRound+".jpg"),chart, 1500, 900);
 			}
 		}
+
 		if(Ploest.baseCallIsOn && rt.bestScore.score>0.1){
-			//runBaseCallCheck();
+			
+			try {
+				runBaseCallCheck();
+			} catch (InterruptedException e) {
+				System.err.println("runBaseCall error exception in NaivePloestPlotter.displayPloidyAndCoveragePlotNaive()");
+				e.printStackTrace();
+			}
+			
 			//return ;
 		}
+		
 		//if a second run is needed... (there'are unsolved contigs)
 		if (unsolvedPloidyContigs.size()>0 && !SamParser.RUN_SECOND_ROUND){
 			int minLength=unsolvedPloidyContigs.get(0).maxLength;
@@ -300,12 +316,16 @@ public void displayPloidyAndCoveragePlotNaive()throws IOException{
 
 
 	private void runBaseCallCheck() throws FileNotFoundException, InterruptedException {
-		System.out.println("runBaseCall on these contigs:");
-		for (int i =0 ;i<continousPloidyContigs.size();i++){
-			System.out.println(continousPloidyContigs.get(i).contigName);
+		if (Ploest.baseCallIsOn){
+			System.out.println("runBaseCall on these contigs:");
+			for (int i =0 ;i<continousPloidyContigsWithBasicUnit.size();i++){
+				System.out.println(continousPloidyContigsWithBasicUnit.get(i).contigName);
+			}
+			VCFManager vcfManager=new VCFManager(Ploest.vcfFile.getAbsolutePath());
 		}
-		VCFManager vcfManager=new VCFManager(Ploest.vcfFile.getAbsolutePath());
 		
+		Ploest.baseCallIsOn=false;
+
 	
     }
 
@@ -387,10 +407,11 @@ public void displayPloidyAndCoveragePlotNaive()throws IOException{
 		if (--wInd>maxX){
 			maxX=(int) wInd;
 		}
-		System.out.println("createPloidyEstimationDatasetNaive :"+contigD.contigName);
+	
 		if(AVG_PLOIDY ){		//smooth the ploidy plot by averaging the values over a window of PLOIDY_SMOOTHER_WIDTH points
 			series=averagePloidyMode(contigD,series,wInd,xValues,yValues);//uses the mode over PLOIDY_SMOOTHER points
 		}
+		
 		if(series.getItemCount()<5 && !removedContigs.contains(contigD)){
 			unsolvedPloidyContigs.add(contigD);
 			System.err.println(" CONTIG :"+contigD.contigName+" added to list for new window length ploidy estimation.");
@@ -456,28 +477,23 @@ public void displayPloidyAndCoveragePlotNaive()throws IOException{
 					}
 				}
 			}
-			if (contigD.contigName=="scaffold35|size117957")System.out.println("scaffold35|size117957 wInd="+wInd+" vals   (PLOIDY_SMOOTHER_WIDTH/2)="+(PLOIDY_SMOOTHER_WIDTH/2));
-
 			//solve the very last positions PLOIDY_SMOOTHER_WIDTH/2
 			for(int v=(wInd-(PLOIDY_SMOOTHER_WIDTH/2));v<wInd;v++){
 				if(yValues[v]<=MAX_NB_MIXTURES ){
 					mostLeftValue=yValues[v-(PLOIDY_SMOOTHER_WIDTH/2)];
-					if (contigD.contigName=="scaffold35|size117957")System.out.print(" 1 "+mostLeftValue/*+"/"+ploidyCounter[mostLeftValue]*/);
 
 					if(mostLeftValue>0 && mostLeftValue<=MAX_NB_MIXTURES && ploidyCounter[mostLeftValue]>0 ){	ploidyCounter[mostLeftValue]--;	}//remove mostleft value of window
-					if (contigD.contigName=="scaffold33|size147914")System.out.print(" 2");
+
 					//if(yValues[v]>0 && yValues[v]<=MAX_NB_MIXTURES)ploidyCounter[yValues[v]]++;//if(yValues[v]>0 && yValues[v]<=MAX_NB_MIXTURES)ploidyCounter[yValues[v]]--;??
 					if (ploidyCounter[currentMode]<ploidyCounter[yValues[v]]){
 						for(int pc=0;pc<ploidyCounter.length;pc++){
 							if(ploidyCounter[pc]>ploidyCounter[currentMode])currentMode=pc;
 						}
 					}
-					if (contigD.contigName=="scaffold35|size117957")System.out.print(" 3");
+
 					if (currentMode!=0){
 						series.add(xValues[v], currentMode);
-						if (contigD.contigName=="scaffold35|size117957")System.out.print(" v:"+v+"=("+(int)xValues[v]+","+currentMode+")");
 					}
-					if (contigD.contigName=="scaffold35|size117957")System.out.print(" 4");
 				}
 			}
 		}else{//not enough points, simply average over the available points
@@ -495,7 +511,7 @@ public void displayPloidyAndCoveragePlotNaive()throws IOException{
 		}
 		if (contigD.contigName=="scaffold33|size147914")System.out.println(" end");
 		if(series.getItemCount()>0){
-			return checkContinuity(series,20);
+			return checkContinuity(series,CONTINUITY_POINTS);
 		}else{
 			removedContigs.add(contigD);
 			

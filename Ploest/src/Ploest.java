@@ -26,7 +26,7 @@ public class Ploest {
 
 	static File vcfFile;
 	static boolean baseCallIsOn=false;
-	static int windowLength=500;
+	static int windowLength=2000;
 	static File currentFolder;
 	static int COV_RATE=100;
 	static double SIGNIFICANT_MIN=0.01;//threshold to calculate the minimal points in the gaussian mixture plot to be considered significant (in PloestPlotter.significantMin)
@@ -42,11 +42,11 @@ public class Ploest {
 								     //2:-s,SIGNIFICANT_MIN
 								     //3:-w,windowLength
 								     //4:-c,COV_RATE
-								     //5:-r,numberOfRuns
+								     //5:-r,numberOfRuns//deprecated
 								     //6:-o,outputFile
-									 //7:-k,force nbOfMixtures
+									 //7:-k,force nbOfMixtures//deprecated
 									 //8:-m,multiple files is set
-									 //9:-v, vcf inpuyt file
+									 //9:-v, vcf input file
 	
 		if (args.length > 0) {
 			System.out.print(" Ploest "); for(int i=0;i<args.length;i++){System.out.print(" " +args[i]+" "+args[++i]);} System.out.println();

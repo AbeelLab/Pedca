@@ -11,241 +11,149 @@ import java.util.Scanner;
 
 public class VCFManager {
 	List<String> humanLines = new ArrayList<String>();
-	ArrayList<ArrayList<Integer>> vcfMatrix = new ArrayList<ArrayList<Integer>>();
-	String outputFileRoot=Ploest.outputFile+"\\"+Ploest.projectName;
+	ArrayList<ArrayList<Double>> vcfMatrix = new ArrayList<ArrayList<Double>>();
+	String outputFileRoot=Ploest.outputFile+"\\"+Ploest.projectName+ "\\BaseCall";
 	String endFix="";
 	String outputHumanFile="" ;
 	String outputMatrixFile="Matrix.vcf" ;
-
+	
 	
 	public VCFManager(String inputVcf_file) throws FileNotFoundException, InterruptedException {//constructor from vcf file
-		File pilonOutFolder =	 new File(outputFileRoot + "\\BaseCall");
+		
+		File pilonOutFolder =	 new File(outputFileRoot);
 		pilonOutFolder.mkdirs();
 		vcfExtractor(inputVcf_file);	
 	}
 
-	public VCFManager(String inputFile, boolean isVcfMatrix ) throws FileNotFoundException, InterruptedException {//constructor from matrix file
-		if(isVcfMatrix){
-			//solve the paths
-			int lastIndex = inputFile.lastIndexOf("/");
-			if (lastIndex ==-1) {
-				lastIndex = inputFile.lastIndexOf("\\");
-				if (lastIndex ==-1) {
-					lastIndex = 0;
-				} 
-
-			}
-			outputFileRoot = inputFile.substring(0, lastIndex);
-			endFix=inputFile.substring(lastIndex+1, inputFile.length()-4);		
-			outputHumanFile = outputFileRoot + "\\"+ endFix + "HumFileOut.txt";
-			outputMatrixFile = outputFileRoot  + "\\"+ endFix + "MatFileOut.txt";
-			
-			//extract the file to vcfMatrix
-			String line = "";
-			Scanner MatSc = new Scanner(new File(inputFile));
-			MatSc.useDelimiter("[ ,\r\n\t]");int ppp=0;
-			try{
-				int nextInt;
-				while (MatSc.hasNextLine()) { ;	
-					if (ppp<200000){
-					ArrayList<Integer> intArrayLine=new ArrayList<Integer>();
-					line = MatSc.nextLine();   // read full line
-					Scanner lineScan = new Scanner(line);
-					lineScan.useDelimiter("[ ,\r\n\t]");;
-					//System.out.println("line="+line);
-					for (int i=0;i<=15;i++){
-											
-						nextInt=lineScan.nextInt();
-						//System.out.print("ppp="+ppp+" i:"+i+" nextInt:"+nextInt+" lineScan.next:"+lineScan.next()+"-");	
-						//System.out.print(" nextInt:"+nextInt);
-						intArrayLine.add(nextInt);
-					}
-					vcfMatrix.add(intArrayLine);
-					ppp++;
-					}else {
-						break;
-					}
-									
-					//vcfMatrix.add(new ArrayList<Integer>());
-				}				
-			}catch (Exception e) {
-				System.out.println("!*$! Error constructing VCFManager from Matrix file at ppp="+ppp);
-			}
-			printVCFmatrix();
-			
-		}
-	}
 	
 	public void vcfExtractor(String inputFile) throws FileNotFoundException, InterruptedException {
-
+		System.out.println("--------------------     vcfExtractor    ----------------------");
+		String currentChromosome="";
+		double chromNumber=0;
+		double nbOfVars=0;
 		//solve the paths
-		int lastIndex = inputFile.lastIndexOf("/");
-		if (lastIndex ==-1) {
-			lastIndex = inputFile.lastIndexOf("\\");
-			if (lastIndex ==-1) {
-				lastIndex = 0;
-			} 
-
-		}
-		outputFileRoot = inputFile.substring(0, lastIndex);
-		endFix=inputFile.substring(lastIndex+1, inputFile.length()-4);		
-		outputHumanFile = outputFileRoot + "\\"+ endFix + "HumFileOut.txt";
-		outputMatrixFile = outputFileRoot  + "\\"+ endFix + "MatFileOut.txt";
-		//System.out.println("outputHumanFile" +outputHumanFile + "   outputMatrixFile" + outputMatrixFile );		
-		// We are interested in the 6th and 7th column:
+			
+		outputMatrixFile = outputFileRoot  + "\\"+"MatFileOut.txt";
+		System.out.println( "   outputMatrixFile" + outputMatrixFile );		
+		// We are interested in the 6th column and the DEPTH column:
 		// 6th="Count of As, Cs, Gs, Ts at locus"
-		// 7th="="Percentage of As, Cs, Gs, Ts weighted by Q & MQ at locus"
+
 		String line = "";
 		Scanner sc = new Scanner(new File(inputFile));
 		int ct = 0;
-		int chrom=0;
+	String chrom="";
+	String id="";
 		int pos = 0;
-		int depth = 0;// depth
-		int bcA = 0;
-		int bcC = 0;
-		int bcG = 0;
-		int bcT = 0;
-		int qpA = 0;
-		int qpC = 0;
-		int qpG = 0;
-		int qpT = 0;
-		int sv;// structural variance (boolean)
-		int svLength;// length of the sv
-		String ref = "";// reference allele
-		String alt;// alternative allele
-		//System.out.println("POS" + "\t" + "REF" + "\t" + "ALT" + "\t" + "FILTER" + "\t" + "INFO");
+		double  depth = 0;// depth
+		double bcA = 0;
+		double bcC = 0;
+		double bcG = 0;
+		double bcT = 0;
+
 		List<String> formatSample;
 		List<String> baseCalls;
-		List<String> qPercentages;
 		String nextFilter;
-		String currentHumanLine = "";
-		String previousHumanLine = "";
-		ArrayList<Integer> currentMatrixLine;
-		ArrayList<Integer> previousMatrixLine = new ArrayList<Integer>(16);
+		boolean currentContigIsInBaseCallList=false;
+		ArrayList<Double> currentMatrixLine = new ArrayList<Double>();
 		String next;
+
 		try {
 			// skip the header			
 			do{
 				line = sc.nextLine();
 				next=sc.next();
 			}while (next.substring(0, 1).equals("#")); 
-
-			chrom=Integer.parseInt(next.substring(5,11));
-
-			//get the values
-			while (sc.hasNextLine() /* && ct < 34000 */) {
-				next=sc.next();				
-				pos = Integer.parseInt(next);// get pos
-				sc.next();// skip id
-				ref = sc.next();// get reference allele
-				alt = sc.next();// get alternative allele
-				sc.next();// skip qual
-				nextFilter = sc.next();// get the filter call. Ambiguous and
-				// Deletions are the interesting ones
-
-				formatSample = Arrays.asList(sc.next().split(";"));// split all
-				// fields in
-				// the info
-				// line
-
-				if (!formatSample.get(0).substring(0, 2).equals("DP")) {// Special vcf line ("STRUCTURAL VARIATION" )
-
-					depth = 0;
-					bcA = 0;
-					bcC = 0;
-					bcG = 0;
-					bcT = 0;
-					qpA = 0;
-					qpC = 0;
-					qpG = 0;
-					qpT = 0;
-					sv = 1;
-					svLength = Integer.parseInt(formatSample.get(1).substring(6, formatSample.get(1).length())) ;
-					//System.out.println(" formatSample.get(2):"+formatSample+ " LENGTH:" + svLength);
-					currentHumanLine = "chrom:"+chrom+"pos" + pos + " " + "ref:" + ref + " " + "alt:" + alt + " " + nextFilter + " "
-							+ formatSample.get(0) + " LENGTH:" + svLength;
-				} else {// ...regular vcf line
-					depth = Integer.parseInt(formatSample.get(0).substring(3, formatSample.get(0).length()));
-					baseCalls = Arrays
-							.asList(formatSample.get(5).substring(3, formatSample.get(5).length()).split(","));
-
-					bcA = Integer.parseInt(baseCalls.get(0));
-					bcC = Integer.parseInt(baseCalls.get(1));
-					bcG = Integer.parseInt(baseCalls.get(2));
-					bcT = Integer.parseInt(baseCalls.get(3));
-
-					qPercentages = Arrays
-							.asList(formatSample.get(6).substring(3, formatSample.get(6).length()).split(","));
-
-					qpA = Integer.parseInt(qPercentages.get(0));
-					qpC = Integer.parseInt(qPercentages.get(1));
-					qpG = Integer.parseInt(qPercentages.get(2));
-					qpT = Integer.parseInt(qPercentages.get(3));
-					sv = 0;
-					svLength = 0;
-					currentHumanLine = "chrom:"+chrom+" pos" + pos + " ref:" + ref + " alt:" + alt + " " + nextFilter + " "
-							+ formatSample.get(0).substring(3, formatSample.get(0).length()) + " "
-							+ formatSample.get(5).substring(3, formatSample.get(5).length()) + " "
-							+ formatSample.get(6).substring(3, formatSample.get(6).length());
-				}
-				currentMatrixLine = new ArrayList<Integer>();
-				currentMatrixLine.add(chrom);//1
-				currentMatrixLine.add(pos);//2
-				currentMatrixLine.add(bitSequence(ref));//3
-				currentMatrixLine.add(bitSequence(alt));//4
-				currentMatrixLine.add(codeFilter(nextFilter));//5
-				currentMatrixLine.add(depth);//6
-				currentMatrixLine.add(bcA);//7
-				currentMatrixLine.add(bcC);//8
-				currentMatrixLine.add(bcG);//9
-				currentMatrixLine.add(bcT);//10
-				currentMatrixLine.add(qpA);//11
-				currentMatrixLine.add(qpC);//12
-				currentMatrixLine.add(qpG);//13
-				currentMatrixLine.add(qpT);//14
-
-				currentMatrixLine.add(sv);//15
-				currentMatrixLine.add(svLength);//16
-				/*
-				// if deletion or ambiguous only
-				if (nextFilter.substring(0, 3).equals("Amb") || nextFilter.substring(0, 3).equals("Del")) {
-
-					codeFilter(nextFilter);
-					if (nextFilter.substring(0, 3).equals("Del")
-							&& !previousMatrixLine.equals(vcfMatrix.get(vcfMatrix.size() - 1))) {
-						// store the previous line avoiding repeats
-						vcfMatrix.add(previousMatrixLine);
-						humanLines.add(previousHumanLine);
-					}
-					humanLines.add(currentHumanLine);
-					vcfMatrix.add(currentMatrixLine);
-				}*/
-				humanLines.add(currentHumanLine);
-				vcfMatrix.add(currentMatrixLine);
-
-				previousMatrixLine = currentMatrixLine;
-				previousHumanLine = currentHumanLine;
-
-
-
-				line = sc.nextLine();
-				if (sc.hasNextLine()) { // 'if' to avoid error at end of file
-					//String eraseme=sc.next().substring(5,11);
-					//System.out.println("sc.next():"+eraseme+":");
-					chrom=Integer.parseInt(sc.next().substring(5,11));// contig name 
-					//System.out.println("chrom:"+chrom);
-				}
-				ct++;
+			chrom=next;
+			if(!currentChromosome.equals(chrom)){
+				currentChromosome=chrom;
+				chromNumber++;
+				if(NaivePloestPlotter.continousPloidyContigsNamesWithBasicUnit.contains(currentChromosome)){//check if new currentContig Is In BaseCall List
+					currentContigIsInBaseCallList=true;
+				}else currentContigIsInBaseCallList=false;
 			}
+			//get the values
+			while (sc.hasNextLine()  /*&& ct < 340*/ ) {
+				
+				if(currentContigIsInBaseCallList){
+					
+					next=sc.next();	pos = Integer.parseInt(next);// get pos//sc.next();	//skip pos  //
 
-			printHumanLines();
-			printVCFmatrix();
+					sc.next();// skip id// id=sc.next();
+					sc.next();///skip ref//ref = sc.next();// get reference allele
+					sc.next();//skip alt//alt = sc.next();// get alternative allele
+					sc.next();// skip qual
+					nextFilter = sc.next();// get the filter call. Ambiguous and Deletions are the interesting ones
 
+					formatSample = Arrays.asList(sc.next().split(";"));// split all fields in the info line
+
+					if (!formatSample.get(0).substring(0, 2).equals("DP")) {// Special vcf line ("STRUCTURAL VARIATION" )
+						// DO NOTHING. If need to do something recover code from project SequenceSimulator. Class: VCFManager
+					} else {// ...regular vcf line
+						depth = (double)Integer.parseInt(formatSample.get(0).substring(3, formatSample.get(0).length()));
+						baseCalls = Arrays
+								.asList(formatSample.get(5).substring(3, formatSample.get(5).length()).split(","));
+						if(depth!=0.0){
+							bcA = Integer.parseInt(baseCalls.get(0))/depth;					
+							bcC = Integer.parseInt(baseCalls.get(1))/depth; 
+							bcG = Integer.parseInt(baseCalls.get(2))/depth; 	
+							bcT = Integer.parseInt(baseCalls.get(3))/depth;	
+						}
+					
+					}
+					
+					currentMatrixLine = new ArrayList<Double>();
+					currentMatrixLine.add(depth);//6
+					currentMatrixLine.add(bcA);//7
+					currentMatrixLine.add(bcC);//8
+					currentMatrixLine.add(bcG);//9
+					currentMatrixLine.add(bcT);//10
+				
+
+					if (nextFilter.substring(0, 3).equals("Amb") || nextFilter.substring(0, 3).equals("Del")) {
+						vcfMatrix.add(currentMatrixLine);
+						nbOfVars++;
+					}
+					//previousMatrixLine = currentMatrixLine;
+					
+					
+					if (sc.hasNextLine()) { // 'if' to avoid error at end of file
+						line = sc.nextLine();
+						chrom=sc.next();// contig name 
+						if(!currentChromosome.equals(chrom)){//if change in chrom
+							currentChromosome=chrom;
+							chromNumber++;
+							if(NaivePloestPlotter.continousPloidyContigsNamesWithBasicUnit.contains(currentChromosome)){//check if new currentContig Is In BaseCall List
+								currentContigIsInBaseCallList=true;
+							}else currentContigIsInBaseCallList=false;
+						}
+					}
+					ct++;
+				}else{
+				
+					line=sc.nextLine();
+					if (sc.hasNextLine()) { // 'if' to avoid error at end of file					
+						chrom=sc.next();// contig name 
+						if(!currentChromosome.equals(chrom)){//if change in chrom
+							currentChromosome=chrom;
+							chromNumber++;
+							if(NaivePloestPlotter.continousPloidyContigsNamesWithBasicUnit.contains(currentChromosome)){//check if new currentContig Is In BaseCall List
+								currentContigIsInBaseCallList=true;
+							}else currentContigIsInBaseCallList=false;
+						}
+					}else 
+					ct++;
+				}
+				
+			}
+		    
+			System.out.println("ready for printVCFmatrix:" );
+
+			printVCFmatrix(nbOfVars);
 
 			if (sc != null)
 				sc.close();
 		} catch (Exception e) {
-			System.out.println("error at ct:" + ct + " pos:" + pos+" current:  "+currentHumanLine);
+			System.err.println("error at ct:" + ct +" chrom:"+chrom+ " id:"+id+" pos:" + pos+" current:  "+currentMatrixLine);
 		}
 
 	}
@@ -333,16 +241,29 @@ public class VCFManager {
 		return num;
 	}
 
-	public void printVCFmatrix() {
+	public void printVCFmatrix(double nbOfVars) {
 		System.out.println("Destination path of outputMatrixFile: "+outputMatrixFile);
 		PrintStream stdout = System.out;
 		PrintStream myConsole = null;
 		try {
 			myConsole = new PrintStream(new File(outputMatrixFile));
 			System.setOut(myConsole);
-			for (int i = 0; i < vcfMatrix.size(); i++) {
-				System.out.println(vcfMatrix.get(i));
+			ArrayList<Double> currentLine;
+			int lineSize=0;
+			
+			if(vcfMatrix.size()>0) {
+				lineSize=vcfMatrix.get(0).size();//should always be 5
+				
+				
+				for (int i = 0; i < vcfMatrix.size(); i++) {
+					currentLine=vcfMatrix.get(i);
+					for(int j =0;j<lineSize-2;j++){
+						System.out.print(currentLine.get(j)+" ");
+					}
+					System.out.println(currentLine.get(lineSize-1));
+				}
 			}
+			System.out.println("# Total nb of variation positions =  "+vcfMatrix.size()+" over "+NaivePloestPlotter.LENGTH_OF_BASIC_UNIT_CONTIGS);
 			myConsole.close();
 		}  catch (Exception e) {
 			System.err.println("Error trying to write outputMatrixFile ");

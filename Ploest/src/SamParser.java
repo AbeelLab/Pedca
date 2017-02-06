@@ -111,12 +111,15 @@ public class SamParser {
 				newContigsList.put(myploter.unsolvedPloidyContigs.get(c).contigName, myploter.unsolvedPloidyContigs.get(c));
 			}
 			contigsList=newContigsList;
+			//THIS BLOCK INSIDE THIS LOOP? OR RIGHT AFTER
+			windowLength=Ploest.windowLength;
+			windowSlideContigList();
+			barchart = new BarChart(readCounts);
+			readDistributionMaxY=barchart.maxY;
+		    myploter.naivePloestPlotter2ndRound(contigsList,readsDistributionMaxCoverage, barchart.normReadCounts);
+		    //END BLOCK		
+			
 		}
-		windowLength=Ploest.windowLength;
-		windowSlideContigList();
-		barchart = new BarChart(readCounts);
-		readDistributionMaxY=barchart.maxY;
-		myploter.naivePloestPlotter2ndRound(contigsList,readsDistributionMaxCoverage, barchart.normReadCounts);//plotter = new PloestPlotter(contigsList,maxWindows);
 		
 		
 	}

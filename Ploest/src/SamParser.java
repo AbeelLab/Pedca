@@ -58,20 +58,10 @@ public class SamParser {
 			contigLengths.add(inputSam.getFileHeader().getSequenceDictionary().getSequence(i).getSequenceLength());
 		}
 		
-		
-		
-		//get N50
-		/*
-		System.out.println("Shortest Contig : "+findMinimumContigLength(contigLengths)+" bp");
-		for (double n=0.980;n<0.9999;n+=0.0005){
-			System.out.print(" "+n+" "+n98(contigLengths,n)+";");
-		}
-		System.out.println();
-		*/
+
 		inputSam.setValidationStringency(ValidationStringency.SILENT);
 		SAMRecordIterator iter = inputSam.iterator();
-	//PrintWriter writer = new PrintWriter(Ploest.outputFile + "//" + Ploest.projectName+ "//"+Ploest.projectName+"SamParsed.txt", "UTF-8");
-	//String line = "";
+
 		int i = 1;
 		System.out.println("Analyzing "+contigsList.size()+" contigs");
 		String refName = "";// for debugging a bad line in the .sam file
@@ -82,9 +72,6 @@ public class SamParser {
 			SAMRecord rec = iter.next();
 			refName = rec.getReferenceName();
 			alStart = rec.getAlignmentStart();
-	//line = (i + " " + rec.getReadName() + " " + refName + " " + alStart + " " + rec.getAlignmentEnd() + " "
-	//+ rec.getReadLength() + " " + rec.getMappingQuality() + " ;");
-	//writer.println(line);
 
 			try {
 				contigsList.get(refName).setPos(alStart);//storing the starting positions in the corresponing contig
@@ -95,7 +82,7 @@ public class SamParser {
 		}
 		iter.close();
 		inputSam.close();
-	//writer.close();
+
 		windowSlideContigList();
 		barchart = new BarChart(readCounts);
 		readDistributionMaxY=barchart.maxY;

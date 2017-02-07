@@ -113,25 +113,26 @@ public class VCFManager {
 						vcfMatrix.add(currentMatrixLine);
 						nbOfVars++;
 					}
-					//previousMatrixLine = currentMatrixLine;
-					
-					
+						
 					if (sc.hasNextLine()) { // 'if' to avoid error at end of file
 						line = sc.nextLine();
-						chrom=sc.next();// contig name 
-						if(!currentChromosome.equals(chrom)){//if change in chrom
-							currentChromosome=chrom;
-							chromNumber++;
-							if(NaivePloestPlotter.continousPloidyContigsNamesWithBasicUnit.contains(currentChromosome)){//check if new currentContig Is In BaseCall List
-								currentContigIsInBaseCallList=true;
-							}else currentContigIsInBaseCallList=false;
+						if(sc.hasNextLine()){//avoid last line empty (sic!)
+							chrom=sc.next();// contig name 
+							if(!currentChromosome.equals(chrom)){//if change in chrom
+								currentChromosome=chrom;
+								chromNumber++;
+								if(NaivePloestPlotter.continousPloidyContigsNamesWithBasicUnit.contains(currentChromosome)){//check if new currentContig Is In BaseCall List
+									currentContigIsInBaseCallList=true;
+								}else currentContigIsInBaseCallList=false;
+							}
 						}
+						
 					}
 					ct++;
 				}else{
 				
 					line=sc.nextLine();
-					if (sc.hasNextLine()) { // 'if' to avoid error at end of file					
+					if (sc.hasNextLine() ) { // 'if' to avoid error at end of file					
 						chrom=sc.next();// contig name 
 						if(!currentChromosome.equals(chrom)){//if change in chrom
 							currentChromosome=chrom;

@@ -32,32 +32,41 @@ import jMEF.MixtureModel;
 import jMEF.PVector;
 
 public class NaivePloestPlotter {
-	static boolean PLOIDY_CONTINUITY=false;//TO DO smooths the ploidy estimation by continuity filter
+	
+	//static variable for smoothing the ploidy estimation
 	static boolean AVG_PLOIDY=true;//smooths the ploidy estimation by averaging over a window of length: PLOIDY_SMOOTHER_WIDTH
 	static int PLOIDY_SMOOTHER_WIDTH=49;//preferably odd number
 	static int CONTINUITY_POINTS=20;//minimum datapoints (windows) required to evaluate the continuity of the ploidy estimation
+	
+	//variable for the read count distribution
 	static float[] readCounts;
 	static final int MAX_NB_MIXTURES=10;
 	Map<String,ContigData> contigsList;
 	List<String> contArrList;
 	static double[] clusterMus;//final result of the MEANS (mus) of the clusters in the mixture model fitting
-	static PoissonMixturePDF pmPDFResult;//final POISSON Mixture PDF
+	
+	//variables for the naive smooth
 	static NaivePDF npdf;//Naive Smoothed Density Function
 	PVector[] fitPoints;
 	JFreeChart chart;
 	static int maxX=0;
-	//static int maxY=0;
 	static int totalDataPoints=0;//total number of input datapoints (coverage for all windows)
-
 	static int finalNumberOfMixtures;
 	RatioFindNaive rt;//contains the ratio of each cluster to the ploidy-unit which allows computation of ploidy from contig coverage
 	String writeoutStringLog="";
 	
+	//variable for plotting the ploidy estimation
+	//variables for managing unsolved ploidy contigs and run a second round with a smaller window length
 	ArrayList<ContigData>  unsolvedPloidyContigs=new ArrayList<ContigData> () ;
 	ArrayList<ContigData>  removedContigs=new ArrayList<ContigData> () ;
+	
+	//variable for base calling upon the contigs with ploidy from the first cluster
     private ArrayList<ContigData> continousPloidyContigsWithBasicUnit=new ArrayList<ContigData> () ;
 	static ArrayList<String> continousPloidyContigsNamesWithBasicUnit=new ArrayList<String> () ;
 	static int LENGTH_OF_BASIC_UNIT_CONTIGS=0;
+	int CLUSTER_TO_VCF_ANALYZE=1;//by default, the first cluster (1) is analyzed for basecall
+	
+	
 	
 	public NaivePloestPlotter(Map<String,ContigData> contList,int maxWindows, float[] rc) {
 		readCounts=rc;
@@ -71,8 +80,7 @@ public class NaivePloestPlotter {
 			fitNaiveMixtureModel();	//approximate the distribution by naive smoother and infere max points				
 			displayPloidyAndCoveragePlotNaive();//Plot containng both the coverage and the ploidy estimation
 			System.out.println("PloestPlotter constructor continuous after break");
-			
-			
+	
 		}catch (Exception e){
 			System.err.println("Error in PloestPlotter constructor");
 		}
@@ -96,6 +104,7 @@ public class NaivePloestPlotter {
 	}
 	
 	private void writeOutPloEstByFragment(PrintWriter writer , XYSeries series, ContigData contigD ) {
+		//System.out.println("writeOutPloEstByFragment contig:"+contigD.contigName);
 		String contigname =contigD.contigName;
 		if(series.getItemCount()>0){
 			boolean thisContigHasContinousPloidy=true;
@@ -110,36 +119,37 @@ public class NaivePloestPlotter {
 					prevPos=yv;
 				}
 			}
-			if(Ploest.baseCallIsOn && thisContigHasContinousPloidy && prevPloidy.intValue()==rt.bestScore.bestCNVIndexes[0]){
+			
+			if (thisContigHasContinousPloidy){
+				writer.println(contigname+"\t"+((int)prevPos*SamParser.windowLength/2)+"\t"+contigD.maxLength+"\t"+prevPloidy);
+			}
+			
+			if(Ploest.baseCallIsOn && thisContigHasContinousPloidy && prevPloidy.intValue()==rt.bestScore.bestCNVIndexes[(CLUSTER_TO_VCF_ANALYZE - 1)]){
 				continousPloidyContigsWithBasicUnit.add(contigD);
 				continousPloidyContigsNamesWithBasicUnit.add(contigD.contigName);
 				LENGTH_OF_BASIC_UNIT_CONTIGS+=contigD.maxLength;
 				System.out.println("LENGTH_OF_BASIC_UNIT_CONTIGS "+LENGTH_OF_BASIC_UNIT_CONTIGS);
-
 			}
 		
 		}else{
 			writer.println(contigname+"\t-\t-\t-");
 			System.out.println("  Not enough information to determine ploidy for "+contigname);
 		}
-		
 	}
 
-
-
-
+	//Smoothing the data by averaging values in bins
 	public void fitNaiveMixtureModel(){
-		System.out.println("-------------Smoothing the data by averaging values in bins------------------");
-		
+
 		npdf=new NaivePDF(readCounts);
-		int k=significantMaxsInPDF(npdf);
+		significantMaxsInPDF(npdf);
 		SamParser.barchart.BarChartWithFit(npdf,"FINALRESULT");
 		rt=new RatioFindNaive(clusterMus);
 		rt.writeOut();
 	}
 	
-	
-	public int indexOfMode(int[] vector){//finds the index of the most represented result in this vector
+	//finds the index of the most represented result in this vector
+	public int indexOfMode(int[] vector){
+		
 		double max=vector[0] ;
 		int maxIndex=0;
 		for (int ktr = 0; ktr < vector.length; ktr++) {
@@ -151,6 +161,7 @@ public class NaivePloestPlotter {
 		return maxIndex;
 	}
 
+	
 	public void displayScatterPlots() throws IOException{
 		ContigData contigD;
 		for (int c=0;c<contigsList.size();c++){//for each contig
@@ -172,38 +183,29 @@ public class NaivePloestPlotter {
 				NumberAxis domain = (NumberAxis) xyPlot.getDomainAxis();
 				domain.setRange(0.00, maxX);
 				ValueAxis rangeAxis = xyPlot.getRangeAxis();	
-			
-				//rangeAxis.setRange(0.00, SamParser.readsDistributionMaxCoverage);
+	
 				if(contigD.maxY>0){
 					rangeAxis.setRange(0.00,contigD.maxY);
 				}else {
 					rangeAxis.setRange(0.00,10);
 					System.err.println(contigD.contigName+" doesn't have any coverage. Contig is Removed");
-					
 					contigsList.remove(contArrList.get(c));
 					contArrList.remove(c);
 					c--;
 				}
-				
 				String correctedContigName = contigD.contigName.replaceAll("[^a-zA-Z0-9.-]", "_");
-				
 				ChartUtilities.saveChartAsJPEG(new File(Ploest.outputFile + "//" + Ploest.projectName+ "//Contig_Coverage_Charts//Chart_Contig_"+correctedContigName+".jpg"), chart, 1000, 600);
-				
 			}else {
 				System.err.println(contigD.contigName+" is too short ("+contigD.maxLength+"bp ) for the length of the sliding window (winLength="+contigD.windLength+" bp). Contig is Removed");
 				writeoutStringLog+= contigD.contigName+" is too short ("+contigD.maxLength+"bp ) for the length of the sliding window (winLength="+contigD.windLength+" bp). Contig is Removed\r\n";
 			}
-			
 		}
-		System.out.println("ScatterPlots displayed");
-
 	}
 
 
 	
 
-public void displayPloidyAndCoveragePlotNaive()throws IOException{
-		
+public void displayPloidyAndCoveragePlotNaive()throws IOException{	
 
 		ContigData contigD;
 		PrintWriter writer = rt.writer;
@@ -219,6 +221,7 @@ public void displayPloidyAndCoveragePlotNaive()throws IOException{
 		for (int c=0;c<contigsList.size();c++){//for each contig
 			
 			contigD=contigsList.get(contArrList.get(c));
+			System.out.println("displayPloidyAndCoveragePlotNaive contig:"+contigD.contigName);
 			XYPlot xyPlot = new XYPlot();
 			/* SETUP SCATTER */
 
@@ -237,8 +240,6 @@ public void displayPloidyAndCoveragePlotNaive()throws IOException{
 			// Map the scatter to the first Domain and first Range
 			xyPlot.mapDatasetToDomainAxis(0, 0);
 			xyPlot.mapDatasetToRangeAxis(0, 0);
-
-			/* SETUP LINE */
 
 			// Create the line data, renderer, and axis
 			XYDataset collection2 = createPloidyEstimationDatasetNaive(contigD,writer);
@@ -274,8 +275,6 @@ public void displayPloidyAndCoveragePlotNaive()throws IOException{
 				System.err.println("runBaseCall error exception in NaivePloestPlotter.displayPloidyAndCoveragePlotNaive()");
 				e.printStackTrace();
 			}
-			
-			//return ;
 		}
 		
 		//if a second run is needed... (there'are unsolved contigs)
@@ -562,8 +561,7 @@ public void displayPloidyAndCoveragePlotNaive()throws IOException{
 
 	private int significantMaxsInPDF(NaivePDF naivePDF) {
 		int sigMaxs = 0;//nb of significant maximums
-		double threshold = SamParser.readDistributionMaxY * 0.001;// discards the values that are
-													// below this threshold
+		double threshold = SamParser.readDistributionMaxY * 0.002;// discards the values that are below this threshold
 		System.out.println(" SamParser.maxYh :" + SamParser.readDistributionMaxY + " Y min threshold:" + threshold);
 
 		ArrayList<Double> yMinList = new ArrayList<Double>();

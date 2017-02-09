@@ -90,9 +90,8 @@ public class SamParser {
 		myploter = new NaivePloestPlotter(contigsList,readsDistributionMaxCoverage, barchart.normReadCounts);//plotter = new PloestPlotter(contigsList,maxWindows);
 		
 		if (RUN_SECOND_ROUND){
-			
 			System.out.println("-*-*-*-*-*-*-RUN_SECOND_ROUND*-*-*-*-*-*-*-*-*-*-*");
-			System.out.println("-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*");
+		
 			Map<String, ContigData> newContigsList=new HashMap <String, ContigData> ();
 			for (int c=0;c<myploter.unsolvedPloidyContigs.size();c++){
 				newContigsList.put(myploter.unsolvedPloidyContigs.get(c).contigName, myploter.unsolvedPloidyContigs.get(c));
@@ -105,10 +104,7 @@ public class SamParser {
 			readDistributionMaxY=barchart.maxY;
 		    myploter.naivePloestPlotter2ndRound(contigsList,readsDistributionMaxCoverage, barchart.normReadCounts);
 		    //END BLOCK		
-			
 		}
-		
-		
 	}
 
 

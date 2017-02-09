@@ -26,7 +26,7 @@ public class Ploest {
 
 	static File vcfFile;
 	static boolean baseCallIsOn=false;
-	static int windowLength=500;
+	static int windowLength=5500;
 	static File currentFolder;
 	static int COV_RATE=100;
 	static double SIGNIFICANT_MIN=0.01;//threshold to calculate the minimal points in the gaussian mixture plot to be considered significant (in PloestPlotter.significantMin)
@@ -102,8 +102,8 @@ public class Ploest {
 
 			}
 		}
-		currentFolder =	 new File(outputFile + "//" + projectName+ "//Contig_Coverage_Charts//");
-		currentFolder.mkdirs();
+		//currentFolder =	 new File(outputFile + "//" + projectName+ "//Contig_Coverage_Charts//");
+		//currentFolder.mkdirs();
 		currentFolder =	 new File(outputFile + "//" + projectName+ "//Ploidy_Estimation_Charts//");
 		currentFolder.mkdirs();
 

@@ -60,12 +60,13 @@ public class NaivePloestPlotter {
 	ArrayList<ContigData>  unsolvedPloidyContigs=new ArrayList<ContigData> () ;
 	ArrayList<ContigData>  removedContigs=new ArrayList<ContigData> () ;
 	
-	//variable for base calling upon the contigs with ploidy from the first cluster
-    private ArrayList<ContigData> continousPloidyContigsWithBasicUnit=new ArrayList<ContigData> () ;
-	static ArrayList<String> continousPloidyContigsNamesWithBasicUnit=new ArrayList<String> () ;
-	static int LENGTH_OF_BASIC_UNIT_CONTIGS=0;
-	int CLUSTER_TO_VCF_ANALYZE=1;//by default, the first cluster (1) is analyzed for basecall
-	
+	//variable for base calling upon the contigs with ploidy from the first and second cluster
+    private ArrayList<ContigData> continousPloidyContigsCluster1=new ArrayList<ContigData> () ; 
+    private ArrayList<ContigData> continousPloidyContigsCluster2=new ArrayList<ContigData> () ;
+	static ArrayList<String> continousPloidyContigsNamesCluster1=new ArrayList<String> () ;
+	static ArrayList<String> continousPloidyContigsNamesCluster2=new ArrayList<String> () ;
+	static int LENGTH_OF_CLUSTER_ONE_CONTIGS=0;
+	static int LENGTH_OF_CLUSTER_TWO_CONTIGS=0;	
 	
 	
 	public NaivePloestPlotter(Map<String,ContigData> contList,int maxWindows, float[] rc) {
@@ -78,9 +79,7 @@ public class NaivePloestPlotter {
 			//displayScatterPlots();//Scatterplot containing the contig coverage (per slided window)		
 			createFitterDataset() ;
 			fitNaiveMixtureModel();	//approximate the distribution by naive smoother and infere max points				
-			displayPloidyAndCoveragePlotNaive();//Plot containng both the coverage and the ploidy estimation
-			System.out.println("PloestPlotter constructor continuous after break");
-	
+			displayPloidyAndCoveragePlotNaive();//Plot containng both the coverage and the ploidy estimation	
 		}catch (Exception e){
 			System.err.println("Error in PloestPlotter constructor");
 		}
@@ -96,6 +95,7 @@ public class NaivePloestPlotter {
 		removedContigs=new ArrayList<ContigData> ();//reinitialize removedContigs
 		try{
 			rt.writeOut();
+			
 			displayPloidyAndCoveragePlotNaive();//Plot containng both the coverage and the ploidy estimation
 		}catch (Exception e){
 			System.err.println("Error in PloestPlotter constructor");
@@ -123,13 +123,20 @@ public class NaivePloestPlotter {
 			if (thisContigHasContinousPloidy){
 				writer.println(contigname+"\t"+((int)prevPos*SamParser.windowLength/2)+"\t"+contigD.maxLength+"\t"+prevPloidy);
 			}
-			
-			if(Ploest.baseCallIsOn && thisContigHasContinousPloidy && prevPloidy.intValue()==rt.bestScore.bestCNVIndexes[(CLUSTER_TO_VCF_ANALYZE - 1)]){
-				continousPloidyContigsWithBasicUnit.add(contigD);
-				continousPloidyContigsNamesWithBasicUnit.add(contigD.contigName);
-				LENGTH_OF_BASIC_UNIT_CONTIGS+=contigD.maxLength;
-				System.out.println("LENGTH_OF_BASIC_UNIT_CONTIGS "+LENGTH_OF_BASIC_UNIT_CONTIGS);
+			//store all contigs with ploidy belonging to cluster 1 or 2
+			if(Ploest.baseCallIsOn && thisContigHasContinousPloidy /*&& prevPloidy.intValue()==rt.bestScore.bestCNVIndexes[0]*/){
+				
+				if( prevPloidy.intValue()==rt.bestScore.bestCNVIndexes[0]){//contigs from cluster 1
+					continousPloidyContigsCluster1.add(contigD);
+					continousPloidyContigsNamesCluster1.add(contigD.contigName);
+					LENGTH_OF_CLUSTER_ONE_CONTIGS+=contigD.maxLength;
+				}else if(prevPloidy.intValue()==rt.bestScore.bestCNVIndexes[1]){//contigs from cluster 2
+					continousPloidyContigsCluster2.add(contigD);
+					continousPloidyContigsNamesCluster2.add(contigD.contigName);
+					LENGTH_OF_CLUSTER_TWO_CONTIGS+=contigD.maxLength;
+				}
 			}
+
 		
 		}else{
 			writer.println(contigname+"\t-\t-\t-");
@@ -221,7 +228,7 @@ public void displayPloidyAndCoveragePlotNaive()throws IOException{
 		for (int c=0;c<contigsList.size();c++){//for each contig
 			
 			contigD=contigsList.get(contArrList.get(c));
-			System.out.println("displayPloidyAndCoveragePlotNaive contig:"+contigD.contigName);
+		//System.out.println("displayPloidyAndCoveragePlotNaive contig:"+contigD.contigName);
 			XYPlot xyPlot = new XYPlot();
 			/* SETUP SCATTER */
 
@@ -236,6 +243,10 @@ public void displayPloidyAndCoveragePlotNaive()throws IOException{
 			xyPlot.setRenderer(0, renderer1);
 			xyPlot.setDomainAxis(0, domain1);
 			xyPlot.setRangeAxis(0, rangeAxis);
+
+			if(contigD.maxY>0 && contigD.maxY>rt.candUnit*15){
+				rangeAxis.setRange(0.00,rt.candUnit*15);
+			}
 
 			// Map the scatter to the first Domain and first Range
 			xyPlot.mapDatasetToDomainAxis(0, 0);
@@ -277,6 +288,15 @@ public void displayPloidyAndCoveragePlotNaive()throws IOException{
 			}
 		}
 		
+		
+		//if some contigs CAN NOT BE SOLVED --> remove them
+		if (removedContigs.size()>0 && unsolvedPloidyContigs.size()==0 ){ //if this is the first and only round
+			printRemovedContigs( writer);
+		}else if (removedContigs.size()>0 && SamParser.RUN_SECOND_ROUND ){//or if this is the second round
+			printRemovedContigs( writer);
+		}
+		
+
 		//if a second run is needed... (there'are unsolved contigs)
 		if (unsolvedPloidyContigs.size()>0 && !SamParser.RUN_SECOND_ROUND){
 			int minLength=unsolvedPloidyContigs.get(0).maxLength;
@@ -299,26 +319,35 @@ public void displayPloidyAndCoveragePlotNaive()throws IOException{
 			}
 		}
 		
-		//if some contigs CAN NOT BE SOLVED --> remove them
-		if (removedContigs.size()>0){
-			writer.println("#");
-			writer.println("#> The following contigs were removed because of lack of data values: ");
-			writer.println("REMOVED_CONTIGS=");
-			for (int u=0;u<removedContigs.size();u++){
-				writer.println(removedContigs.get(u).contigName);
-			}
-			writer.println("#");
-		}
+
 		
 		writer.close();
 	}
 
 
+	private void printRemovedContigs(PrintWriter writer){
+		
+		writer.println("#");
+		writer.println("#> The following contigs were removed because of lack of data values: ");
+		writer.println("REMOVED_CONTIGS=");
+		for (int u=0;u<removedContigs.size();u++){
+			writer.println(removedContigs.get(u).contigName);
+		}
+		writer.println("#");
+		
+}
+
+
 	private void runBaseCallCheck() throws FileNotFoundException, InterruptedException {
 		if (Ploest.baseCallIsOn){
 			System.out.println("runBaseCall on these contigs:");
-			for (int i =0 ;i<continousPloidyContigsWithBasicUnit.size();i++){
-				System.out.println(continousPloidyContigsWithBasicUnit.get(i).contigName);
+			System.out.println("cluster 1");
+			for (int i =0 ;i<continousPloidyContigsCluster1.size();i++){
+				System.out.println(continousPloidyContigsCluster1.get(i).contigName);
+			}
+			System.out.println("cluster 2");
+			for (int i =0 ;i<continousPloidyContigsCluster2.size();i++){
+				System.out.println(continousPloidyContigsCluster2.get(i).contigName);
 			}
 			VCFManager vcfManager=new VCFManager(Ploest.vcfFile.getAbsolutePath());
 		}
@@ -411,7 +440,7 @@ public void displayPloidyAndCoveragePlotNaive()throws IOException{
 			series=averagePloidyMode(contigD,series,wInd,xValues,yValues);//uses the mode over PLOIDY_SMOOTHER points
 		}
 		
-		if(series.getItemCount()<5 && !removedContigs.contains(contigD)){
+		if(series.getItemCount()<5 /*&& !removedContigs.contains(contigD)*/){
 			unsolvedPloidyContigs.add(contigD);
 			System.err.println(" CONTIG :"+contigD.contigName+" added to list for new window length ploidy estimation.");
 			
@@ -504,7 +533,7 @@ public void displayPloidyAndCoveragePlotNaive()throws IOException{
 				}
 			}
 		}
-		if (contigD.contigName=="scaffold33|size147914")System.out.println(" end");
+		
 		if(series.getItemCount()>0){
 			return checkContinuity(series,CONTINUITY_POINTS);
 		}else{

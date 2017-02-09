@@ -134,7 +134,7 @@ public class PloestPlotter {
 					bicsBSC[k]=bic;	
 					
 					PoissonMixturePDF pmPDFtemp=new PoissonMixturePDF(poissDF.getEMmodel(),0.0,(double)SamParser.readCounts.length);
-					SamParser.barchart.BarChartWithFit(pmPDFtemp,k,"tempFit");
+	//	SamParser.barchart.BarChartWithFit(pmPDFtemp,k,"tempFit");
 				}
 
 				System.out.println("  --");
@@ -213,7 +213,7 @@ public class PloestPlotter {
 		
 		pmPDFResult=new PoissonMixturePDF(pdfResult.getBSCModel(),0.0,(double)SamParser.readCounts.length);
 		System.out.println("Ready to print FINALRESULT");
-		SamParser.barchart.BarChartWithFit(pmPDFResult,finalNumberOfMixtures,"FINALRESULT");
+//SamParser.barchart.BarChartWithFit(pmPDFResult,finalNumberOfMixtures,"FINALRESULT");
 
 		rt=new RatioFind(gMMmus,100*correctedResults[finalNumberOfMixtures]/NbOfRuns);
 		

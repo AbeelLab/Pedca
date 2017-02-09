@@ -31,6 +31,7 @@ public class BarChart {
 	float [] normReadCounts;
 	int maxX;
 	float maxY=0;
+	int NB_OF_BASECALL_BiNS=20;
 	
 
 	public BarChart (int [] readCounts) {
@@ -52,6 +53,39 @@ public class BarChart {
 			System.err.println("Problem occurred creating chart.");
 		}
 		System.out.println("BarChar printed "+SamParser.stringSecondRound+". maxY="+maxY);
+	}
+	
+	public BarChart (double [] baseCalls,int cluster) {//baseCall chart constructor
+		System.out.println("BarChart call for cluster "+cluster);
+		int[] bins=new int [NB_OF_BASECALL_BiNS];
+		int bin;
+		Double product;
+		
+		for (int i=0;i<baseCalls.length;i++){//fill the bins
+			
+			product=baseCalls[i]*NB_OF_BASECALL_BiNS;
+			product=(product-(product%1));//(gets the right bin where this value goes)
+			bin=product.intValue();
+			bins[bin]++;
+		}
+
+		// Create a simple Bar chart
+		Double perc;
+		histDataset = new DefaultCategoryDataset();
+		for (int r=0;r<bins.length;r++){	
+			perc=(r*0.05);
+			histDataset.setValue(bins[r], "Base Call %",perc);
+		}
+
+		histChart = ChartFactory.createBarChart("BaseCall Distribution. Cluster nb:"+cluster+" ; depth>"+VCFManager.depthThreshold, "Base Call %", "Number of occurrences ", histDataset,
+				PlotOrientation.VERTICAL, false, true, false);
+		
+		try {
+			ChartUtilities.saveChartAsJPEG(new File(Ploest.outputFile + "//" + Ploest.projectName+ "//BaseCall//BaseCallHistogramCluster_"+cluster+".jpg"), histChart, 1500, 900);
+		} catch (IOException e) {
+			System.err.println("Problem occurred creating base call chart.");
+		}
+		System.out.println("BarChar BaseCall printed ");
 	}
 
 	//@SuppressWarnings("deprecation")
@@ -92,44 +126,7 @@ public class BarChart {
 		}
 	}
 
-public void BarChartWithFit (PoissonMixturePDF poissFit,int r, String title) {
-		
-		
 	
-		if (poissFit==null){
-			System.out.println("BarChartWithFit poissFit==null r:"+r);
-		}else{
-			
-			final XYDataset data1 = createHistDataset(poissFit) ;//histogram of readCounts
-			final XYItemRenderer renderer1 = new StandardXYItemRenderer();
-
-			final NumberAxis domainAxis = new NumberAxis("ReadsCounts");
-			//domainAxis.setTickMarkPosition(DateTickMarkPosition.MIDDLE);
-			final ValueAxis rangeAxis = new NumberAxis("%Contigs");
-			final XYPlot plot = new XYPlot  (data1, domainAxis, rangeAxis, renderer1);
-
-
-			// add a second dataset and renderer...
-			final XYDataset data2 = createFitCurveDataset(poissFit);
-			final XYItemRenderer renderer2 = new StandardXYItemRenderer();
-
-			plot.setDataset(1, data2);
-			plot.setRenderer(1, renderer2);
-
-			plot.setDatasetRenderingOrder(DatasetRenderingOrder.REVERSE);
-
-			// return a new chart containing the overlaid plot...
-			overlaidChart=new JFreeChart("Gauss Mixture Model Fit of Reads Distribution", JFreeChart.DEFAULT_TITLE_FONT, plot, true);
-
-
-			try {
-				ChartUtilities.saveChartAsJPEG(new File(Ploest.outputFile + "//" + Ploest.projectName+ "//readsDistributionPoissonFitted"+r+title+".jpg"), overlaidChart, 1000, 600);
-			} catch (IOException e) {
-				System.err.println("Problem occurred creating chart.");
-			}
-			System.out.println("BarChar of "+r+" poisson mixtures printed");
-		}
-	}
 	
 
 public void BarChartWithFit (NaivePDF naivePDF, String title) {

@@ -17,12 +17,8 @@ public class VCFManager {
 	String outputMatrixFile2 = "Matrix2ndCluster.vcf";
 	static int depthThreshold=10;//coverage threshold to consider a variation valid
 	
-	
-	public VCFManager(String inputVcf_file) throws FileNotFoundException, InterruptedException {// constructor
-																								// from
-																								// vcf
-																								// file
-
+	// constructor from vcf file
+	public VCFManager(String inputVcf_file) throws FileNotFoundException, InterruptedException {
 		File pilonOutFolder = new File(outputFileRoot);
 		pilonOutFolder.mkdirs();
 		vcfExtractor(inputVcf_file);

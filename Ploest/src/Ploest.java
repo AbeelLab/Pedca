@@ -7,14 +7,16 @@ import java.util.ArrayList;
 
 import dataFitters.GaussianDataFitter;
 public class Ploest {
-/*	
-	static String projectName="CBS_Novogene_";
-	static String inputFile ="C://Users//Mel//Documents//BIOINFORMATICS//DELFT_Research//Data//CBS_Novogene//sorted_CBS1483Novogene.bam";
-	static String outputFile ="C://Users//Mel//Documents//BIOINFORMATICS//DELFT_Research//Data//CBS_Novogene";
+/*	BASECLEAR
+	-p PloestBaseClear2000 -i C:\Users\Mel\Documents\BIOINFORMATICS\DELFT_Research\Data\PastorianusCBS_1483\BAM\sorted_CBS1483Pastorianus.bam
+-o C:\Users\Mel\Documents\BIOINFORMATICS\DELFT_Research\Data\PastorianusCBS_1483 -v C:\Users\Mel\Documents\BIOINFORMATICS\DELFT_Research\Data\PastorianusCBS_1483\VCF\PilonPastorianusCBS.vcf
 */	
-/*	
+/*	SIMULATEDDATASET
 
-	static String projectName="PloEst200";	
+	-p PloestSim500All -i C:\Users\Mel\Documents\BIOINFORMATICS\DELFT_Research\Data\Simulated\BAMs\AllSimLibs.bam
+-o C:\Users\Mel\Documents\BIOINFORMATICS\DELFT_Research\Data\Simulated\ -v C:\Users\Mel\Documents\BIOINFORMATICS\DELFT_Research\Data\Simulated\PhasingAndVCFs\AllChroms\Pilon200_500Sim.vcf
+
+
 	static String inputFile ="C://Users//Mel//Documents//BIOINFORMATICS//DELFT_Research//Data//CBS_Novogene//sorted_CBS1483Novogene.bam";
 	static String outputFile ="C://Users//Mel//Documents//BIOINFORMATICS//DELFT_Research//Data//SimulatedReads//CBS_Novogene";
 	static File fin=new File("C://Users//Mel//Documents//BIOINFORMATICS//DELFT_Research//Data//SimulatedReads//samFiles");
@@ -26,7 +28,7 @@ public class Ploest {
 
 	static File vcfFile;
 	static boolean baseCallIsOn=false;
-	static int windowLength=5500;
+	static int windowLength=500;
 	static File currentFolder;
 	static int COV_RATE=100;
 	static double SIGNIFICANT_MIN=0.01;//threshold to calculate the minimal points in the gaussian mixture plot to be considered significant (in PloestPlotter.significantMin)
@@ -36,6 +38,7 @@ public class Ploest {
 	
 	
 	public static void main(String[] args) {
+		long startTime = System.currentTimeMillis();
 		//printHelp();
 		int argsIndex[]=new int[10];  //0:-p,projectName 
 								     //1:-i,inputFile (bam)
@@ -132,7 +135,9 @@ public class Ploest {
 			e.printStackTrace();
 		}
 
-
+		long endTime   = System.currentTimeMillis();
+		long totalTime = endTime - startTime;
+		System.out.println("TOTAL TIME : "+totalTime/1000);
 	}
 	//0:-p,projectName 
     //1:-i,inputFile

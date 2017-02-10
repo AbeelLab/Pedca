@@ -46,13 +46,12 @@ public class ContigData {
 		for (int i=0;i<((startPos.length / wl) * 2);i++){//initialize the list with zeros
 			windPos.add( 0);
 		}
-	
-		
-		
+
+
 		int stIndex = 0;// index in startPos array
 		int wdIndex = 0;
 		int wsum = 0;// window sum
-		while (stIndex < (startPos.length-windLength) && (wdIndex<windPos.size()-1)) {
+		while (stIndex < (startPos.length-windLength) && (wdIndex<windPos.size())) {//wdIndex<windPos.size()-1
 			for (int i = 0; i < windLength; i++) {
 				wsum += startPos[stIndex++];		
 			}
@@ -64,7 +63,7 @@ public class ContigData {
 			wsum=0;
 	
 		}
-	
+
 		maxWindows=maxX;
 		return maxX;
 	}

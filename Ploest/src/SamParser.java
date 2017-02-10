@@ -29,6 +29,7 @@ public class SamParser {
 	static PVector[] fitPoints;//all the points of all windows positions (coverages) in all contigs. Used to fit the read counts distribution chart
 	
 	static boolean RUN_SECOND_ROUND=false;
+//static boolean thisIsTheFirstRun=true;
 	static String stringSecondRound="";
 	static int windowLength ;
 	List<String> contArrList;
@@ -100,7 +101,7 @@ public class SamParser {
 			//THIS BLOCK INSIDE THIS LOOP? OR RIGHT AFTER
 			windowLength=Ploest.windowLength;
 			windowSlideContigList();
-			barchart = new BarChart(readCounts);
+	//barchart = new BarChart(readCounts);
 			readDistributionMaxY=barchart.maxY;
 		    myploter.naivePloestPlotter2ndRound(contigsList,readsDistributionMaxCoverage, barchart.normReadCounts);
 		    //END BLOCK		
@@ -294,6 +295,7 @@ public class SamParser {
 						nbNullVals++;
 					}
 				}
+
 				totalDataPoints+= (currentContig.windPos.size()-nbNullVals);
 				nbNullVals=0;
 			}
@@ -310,8 +312,10 @@ public class SamParser {
 						curVec.array[0]=currentContig.windPos.get(w);//coverage per window position
 						fitPoints[ind++]=curVec; 
 					}			
-				}		
+				}
+
 			}
+			
 
 
 

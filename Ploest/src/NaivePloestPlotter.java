@@ -35,7 +35,7 @@ public class NaivePloestPlotter {
 	
 	//static variable for smoothing the ploidy estimation
 	static boolean AVG_PLOIDY=true;//smooths the ploidy estimation by averaging over a window of length: PLOIDY_SMOOTHER_WIDTH
-	static int PLOIDY_SMOOTHER_WIDTH=49;//preferably odd number
+	static int PLOIDY_SMOOTHER_WIDTH=Ploest.k;//preferably odd number
 	static int CONTINUITY_POINTS=20;//minimum datapoints (windows) required to evaluate the continuity of the ploidy estimation
 	
 	//variable for the read count distribution
@@ -111,28 +111,38 @@ public class NaivePloestPlotter {
 			Number prevPloidy=series.getY(0);//series.getMinY();
 			//if (prevPloidy.intValue()!=0)
 			Number prevPos=0;
+			//Number lastZeroPosStored=0;//last position ==0
 			int ItemsSize=series.getItems().size();
 
 			for (int yv=1;yv<ItemsSize;yv++){
-				
-
-				if(!series.getY(yv).equals(prevPloidy) && (prevPloidy.intValue()!=0) ){//segmentation point
-
+				if(!series.getY(yv).equals(prevPloidy)  ){//segmentation point
 					thisContigHasContinousPloidy=false;
-					writer.println(contigname+"\t"+((int)prevPos*SamParser.windowLength/2)+"\t"+(yv*SamParser.windowLength/2)+"\t"+prevPloidy);
-					prevPloidy=series.getY(yv);
-					prevPos=yv;
+					if(prevPloidy.intValue()!=0){
+						
+						writer.println(contigname+"\t"+((int)prevPos*SamParser.windowLength/2)+"\t"+(yv*SamParser.windowLength/2)+"\t"+prevPloidy);
+						prevPloidy=series.getY(yv);
+						prevPos=yv;
+					}else{
+						thisContigHasContinousPloidy=false;
+						//writer.println(contigname+"\t"+((int)prevPos*SamParser.windowLength/2)+"\t"+(yv*SamParser.windowLength/2)+"\t"+prevPloidy);
+						prevPloidy=series.getY(yv);
+						prevPos=yv;
+					}
+					
+					//lastZeroPosStored=yv;
 				}
+				
 			}
 
-			if (thisContigHasContinousPloidy && (prevPloidy.intValue()!=0) ){
+			if (thisContigHasContinousPloidy && (prevPloidy.intValue()!=0) ){//coninuous contig with valid ploidy
 				writer.println(contigname+"\t"+((int)prevPos*SamParser.windowLength/2)+"\t"+contigD.maxLength+"\t"+prevPloidy);
-			}else{//writeout last fragment 
+			}else{//fragmented ploidy... writeout last fragment 
 				
-				if(prevPloidy.intValue()!=0){
+				if(!series.getY(ItemsSize-1).equals(0)){//last frag has valid ploidy
 					writer.println(contigname+"\t"+((int)prevPos*SamParser.windowLength/2)+"\t"+(ItemsSize*SamParser.windowLength/2)+"\t"+prevPloidy);
-				}else 	writer.println(contigname+"\t"+((int)prevPos*SamParser.windowLength/2)+"\t"+(ItemsSize*SamParser.windowLength/2)+"\t -");
-				//writer.println(contigname+"\t"+((int)prevPos*SamParser.windowLength/2)+"\t"+(ItemsSize*SamParser.windowLength/2)+"\t"+prevPloidy);
+				}else 	if(series.getY(ItemsSize-1).equals(0)){//last frag has invalid ploidy
+					writer.println(contigname+"\t"+((int)prevPos*SamParser.windowLength/2)+"\t"+(ItemsSize*SamParser.windowLength/2)+"\t"+prevPloidy);
+				}else writer.println(contigname+"\t"+((int)prevPos*SamParser.windowLength/2)+"\t"+(ItemsSize*SamParser.windowLength/2)+"\t"+prevPloidy);
 			}
 			//store all contigs with ploidy belonging to cluster 1 or 2
 			if(Ploest.baseCallIsOn && thisContigHasContinousPloidy /*&& prevPloidy.intValue()==rt.bestScore.bestCNVIndexes[0]*/){
@@ -228,8 +238,8 @@ public void displayPloidyAndCoveragePlotNaive()throws IOException{
 		PrintWriter writer = rt.writer;
 		                                                                      
 		writer.println("#**************************************************************************************");
-		writer.println("#*Ploidy estimation detailed by fragments.  Precision: +/-"+(SamParser.windowLength/2)+" bp                      *");
-		writer.println("#*Only detects fragments with different ploidy when they expands over a sequence of +/-"+((PLOIDY_SMOOTHER_WIDTH/2)*(SamParser.windowLength/2) )+" bp *");
+		writer.println("#*Ploidy estimation detailed by fragments.  Precision: +/-"+(PLOIDY_SMOOTHER_WIDTH*SamParser.windowLength/(2*MAX_NB_MIXTURES))+" bp                      *");
+		writer.println("#*Only detects fragments with continuous ploidy over a sequence >"+(CONTINUITY_POINTS*(SamParser.windowLength/2) )+" bp *");
 		writer.println("#***************************************************************************************");
 		writer.println("#");
 		writer.println("PRECISION="+(SamParser.windowLength/2));
@@ -542,7 +552,7 @@ public void displayPloidyAndCoveragePlotNaive()throws IOException{
 		}
 
 		if(series.getItemCount()>0){
-			System.out.println("SIZE OF pre checkContinuity in average WINDPOS contig "+contigD.contigName+" = "+(series.getItemCount())*contigD.windLength/2);	
+			//System.out.println("SIZE OF pre checkContinuity in average WINDPOS contig "+contigD.contigName+" = "+(series.getItemCount())*contigD.windLength/2);	
 
 			return checkContinuity(series,CONTINUITY_POINTS);
 		}else{
@@ -556,71 +566,54 @@ public void displayPloidyAndCoveragePlotNaive()throws IOException{
 	}
 	
 	private XYSeries checkContinuity(XYSeries series, int continuityLength) {
+		//check that at least continuityLength points have the same copy number estimation before deciding if a fragment has a certain ploidy
 		int ctr=0;
 		XYSeries result=new XYSeries(" Ploidy Estimation");
 		int [] yvalues=new int[series.getItemCount()];
 		Number currentY=series.getY(0);//current Y value being counted
 		int continousCurrents=0;//nb of contiguous observed values of the current Y value
 		Number[] firstObservedValues=new Number[continuityLength];//first observed values are stored while verifying that there are at least continuityLength contiguous observations
-		System.out.println("checkContinuity:"+series.getItemCount());
+		//System.out.println("checkContinuity:"+series.getItemCount());
 
 		for (int i=0;i<series.getItemCount();i++){
-			System.out.print(" :"+i);
-
 			if( currentY.equals(series.getY(i) )){//if Y values is currently being observed
 				continousCurrents++;
 				if (continousCurrents>continuityLength){//if the continuity length is respected
-					
 					result.add(series.getX(i),currentY);//add to series
-					System.out.print(" -"+(ctr++));
 				}else if (continousCurrents==continuityLength){//the following 2 'else if' allows the first continuityLength observed values to be taken into account 
 					firstObservedValues[0]=currentY;
-					System.out.println();
 					for (int j=0;j<continuityLength;j++){//add the stored first continuityLength observed values
 						result.add((series.getX(i).intValue()-continuityLength+j+1),firstObservedValues[j]);//add to series	
-						System.out.print(" +"+(ctr++));
-					}System.out.println();
+					}//System.out.println();
 				}else if (continousCurrents<continuityLength){
 					firstObservedValues[continousCurrents]=currentY;
-					
 					//result.add((series.getX(i).intValue()),0);//add to series as 0
-
 				}
 				
 			}else{//new Y values observed
 				if (continousCurrents<=continuityLength){
-					System.out.println("---checkContinuity new Y value:"+series.getY(i)+" at x="+series.getX(i).intValue()+" old y value:"+currentY+" continousCurrents:"+continousCurrents);
+					//System.out.println("---checkContinuity new Y value:"+series.getY(i)+" at x="+series.getX(i).intValue()+" old y value:"+currentY+" continousCurrents:"+continousCurrents);
 					for (int j=0;j<continousCurrents;j++){//add the stored first continuityLength observed values
-						//System.out.print(" "+(series.getX(i).intValue()-continousCurrents+j+1));
-						//System.out.print(","+firstObservedValues[j]);
 						result.add((series.getX(i).intValue()-continousCurrents+j+1),firstObservedValues[j]);//add to series	
-						System.out.print(" *"+(ctr++));
-
+						//System.out.print(" *"+(ctr++));
 					}//System.out.println();
 				}
-				//System.out.println(" new Y value:"+series.getY(i)+" at x="+series.getX(i).intValue()+" old y value:"+currentY+" continousCurrents:"+continousCurrents+ " DIFF = "+(continousCurrents-continuityLength));
 				result.add((series.getX(i).intValue()),0);//add to series	
-				System.out.print(" %"+(ctr++));
-				System.out.println();
+				//System.out.print(" %"+(ctr++));	System.out.println();
 				continousCurrents=0;//reset counter
 				currentY=series.getY(i);//reset observed Y
 				
 			}
 		}
-		System.out.println();
-		
+		//System.out.println();
 		if (continousCurrents<=continuityLength){
 			for (int j=0;j<continousCurrents;j++){//add the stored first continuityLength observed values
-
 				result.add((series.getItemCount()-continousCurrents+j+1),firstObservedValues[j]);//add to series	
-				System.out.print(" *"+(ctr++));
+				//System.out.print(" *"+(ctr++));
 
 			}//System.out.println();
 		}
-		
-		
-		
-		System.out.println("SIZE OF post checkContinuity in average WINDPOS                                "+(result.getItemCount())*Ploest.windowLength/2);	
+		//System.out.println("SIZE OF post checkContinuity in average WINDPOS                                "+(result.getItemCount())*Ploest.windowLength/2);	
 
 		return result;
 	}

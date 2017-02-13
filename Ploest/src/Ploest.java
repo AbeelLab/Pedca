@@ -28,11 +28,12 @@ public class Ploest {
 
 	static File vcfFile;
 	static boolean baseCallIsOn=false;
+	static int forceK=0;//deprecated (for gaussian and poisson fitting)
 	static int windowLength=500;
+	static int k=49;//default 49 , mode smoother window
 	static File currentFolder;
 	static int COV_RATE=100;
 	static double SIGNIFICANT_MIN=0.01;//threshold to calculate the minimal points in the gaussian mixture plot to be considered significant (in PloestPlotter.significantMin)
-	static int forceK=0;//optional: force this nb Of Gaussian Mixtures
 	static int nbOfRuns=100;//nb of runs of
 	
 	
@@ -47,12 +48,17 @@ public class Ploest {
 								     //4:-c,COV_RATE
 								     //5:-r,numberOfRuns//deprecated
 								     //6:-o,outputFile
-									 //7:-k,force nbOfMixtures//deprecated
+									 //7:-k,mode average window
 									 //8:-m,multiple files is set
 									 //9:-v, vcf input file
+							
 	
 		if (args.length > 0) {
-			System.out.print(" Ploest "); for(int i=0;i<args.length;i++){System.out.print(" " +args[i]+" "+args[++i]);} System.out.println();
+			System.out.print(" Ploest "); 
+			for(int i=0;i<args.length;i++){
+				System.out.print(" " +args[i]+" "+args[++i]);
+			} 
+			System.out.println();
 			//-help
 			if ((args[0]).equals("-h") || (args[0]).equals("-help") || (args[0]).equals("help") || (args[0]).equals("help")){
 				printHelp();
@@ -78,14 +84,15 @@ public class Ploest {
 				}
 			
 				try {
-					projectName=args[argsIndex[0]];						
+										
 					outputFile = args[argsIndex[6]];
 					
 					if(argsIndex[2]!=0)	SIGNIFICANT_MIN=Double.parseDouble(args[argsIndex[2]]);
 					if(argsIndex[3]!=0)	windowLength=Integer.parseInt(args[argsIndex[3]]);
+					projectName=args[argsIndex[0]]+windowLength;	
 					if(argsIndex[4]!=0)COV_RATE=Integer.parseInt(args[argsIndex[4]]);//bigger, more detail . Default 10
 					if(argsIndex[5]!=0)nbOfRuns=Integer.parseInt(args[argsIndex[5]]);
-					if(argsIndex[7]!=0)forceK=Integer.parseInt(args[argsIndex[7]]);
+					if(argsIndex[7]!=0)k=Integer.parseInt(args[argsIndex[7]]);
 					if (argsIndex[8]==0 ){
 						inputFile=args[ argsIndex[1]];
 					}else{

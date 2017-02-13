@@ -132,7 +132,7 @@ public class BarChart {
 public void BarChartWithFit (NaivePDF naivePDF, String title) {
 
 	if (naivePDF==null){
-		System.out.println("BarChartWithFit poissFit==null");
+		System.out.println("BarChartWithFit naive Fit==null");
 	}else{
 		
 		final XYDataset data1 = createHistDataset(naivePDF) ;//histogram of readCounts
@@ -156,7 +156,7 @@ public void BarChartWithFit (NaivePDF naivePDF, String title) {
 
 
 		try {
-			ChartUtilities.saveChartAsJPEG(new File(Ploest.outputFile + "//" + Ploest.projectName+ "//readsDistributionPoissonFitted"+title+".jpg"), overlaidChart, 1000, 600);
+			ChartUtilities.saveChartAsJPEG(new File(Ploest.outputFile + "//" + Ploest.projectName+ "//readsDistributionFitted"+title+".jpg"), overlaidChart, 1000, 600);
 		} catch (IOException e) {
 			System.err.println("Problem occurred creating chart.");
 		}
@@ -277,9 +277,9 @@ private XYDataset createHistDataset( GaussianMixturePDF gaussFit) {
 		for (int i=0;i<readCounts.length;i++){
 			sum+=readCounts[i];
 		}
-		//System.out.println("SUM:"+sum);
+		System.out.println("SUM:"+sum);
 		for (int i=0;i<readCounts.length;i++){
-			normalizedReadCounts[i]=(float)readCounts[i]/sum;
+			normalizedReadCounts[i]=100*(float)readCounts[i]/sum;
 		}
 		return normalizedReadCounts;
 	}

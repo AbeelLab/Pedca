@@ -42,7 +42,7 @@ public class VCFManager {
 		String line = "";
 		Scanner sc = new Scanner(new File(inputFile));
 		int ct = 0;
-		String chrom = "";
+		String chrom = "*";
 		String id = "";
 		int pos = 0;
 		double depth = 0;// depth
@@ -71,7 +71,6 @@ public class VCFManager {
 			if (!currentChromosome.equals(chrom)) {
 				currentChromosome = chrom;
 				chromNumber++;
-				
 				// check if first Contig is in BaseCall List: cluster1
 				if (NaivePloestPlotter.continousPloidyContigsNamesCluster1.contains(currentChromosome)) {
 					currentContigIsInBaseCall_CLUSTER_1_List = true;
@@ -86,9 +85,7 @@ public class VCFManager {
 			
 			// get the values
 			while (sc.hasNextLine() ) {
-
 				if (currentContigIsInBaseCall_CLUSTER_1_List) {// treates variations in contigs from cluster 1
-
 					next = sc.next();
 					pos = Integer.parseInt(next);// get pos//sc.next(); //skip pos //
 
@@ -135,11 +132,17 @@ public class VCFManager {
 							if (!currentChromosome.equals(chrom)) {// if change in chrom
 								currentChromosome = chrom;
 								chromNumber++;
-								// check if new currentContig is in BaseCall List: cluster1
+								// check if new currentContig is in BaseCall List:
 								if (NaivePloestPlotter.continousPloidyContigsNamesCluster1.contains(currentChromosome)) {
 									currentContigIsInBaseCall_CLUSTER_1_List = true;
-								} else
+								} else{
 									currentContigIsInBaseCall_CLUSTER_1_List = false;
+									if (NaivePloestPlotter.continousPloidyContigsNamesCluster2.contains(currentChromosome)) {
+										currentContigIsInBaseCall_CLUSTER_2_List = true;
+									} else{
+										currentContigIsInBaseCall_CLUSTER_2_List = false;
+									}
+								}
 							}
 						}
 
@@ -193,11 +196,18 @@ public class VCFManager {
 							if (!currentChromosome.equals(chrom)) {// if change in chrom
 								currentChromosome = chrom;
 								chromNumber++;
-								// check if new currentContig is in BaseCall List: cluster2
-								if (NaivePloestPlotter.continousPloidyContigsNamesCluster2.contains(currentChromosome)) {
-									currentContigIsInBaseCall_CLUSTER_2_List = true;
-								} else
-									currentContigIsInBaseCall_CLUSTER_2_List = false;
+								
+								// check if new currentContig is in BaseCall List: 
+								if (NaivePloestPlotter.continousPloidyContigsNamesCluster1.contains(currentChromosome)) {
+									currentContigIsInBaseCall_CLUSTER_1_List = true;
+								} else{
+									currentContigIsInBaseCall_CLUSTER_1_List = false;
+									if (NaivePloestPlotter.continousPloidyContigsNamesCluster2.contains(currentChromosome)) {
+										currentContigIsInBaseCall_CLUSTER_2_List = true;
+									} else{
+										currentContigIsInBaseCall_CLUSTER_2_List = false;
+									}
+								}
 							}
 						}
 					}
@@ -221,8 +231,7 @@ public class VCFManager {
 								} else{
 									currentContigIsInBaseCall_CLUSTER_2_List = false;
 								}
-							}
-								
+							}				
 						}
 					} else
 						ct++;
@@ -287,7 +296,6 @@ public class VCFManager {
 	}
 
 	private void BaseCallBarchar(ArrayList<ArrayList<Double>> vcfMatrix,int cluster) {
-		System.out.println("BaseCallBarchar called for  cluster "+cluster);
 		if (vcfMatrix.size() > 0) {
 			int lineSize = vcfMatrix.get(0).size();// should always be 5
 			ArrayList<Double> currentLine;
@@ -309,9 +317,8 @@ public class VCFManager {
 			for (int j = 0; j < baseCallsList.size(); j++) {
 				baseCalls[j]=baseCallsList.get(j);
 			}
-			System.out.println("BaseCallBarchar call 2");
 			BarChart barchart = new BarChart(baseCalls,cluster);
-			System.out.println("BaseCallBarchar END");
+			System.out.println("BaseCall bar chart printed for cluster "+cluster);
 		}	
 	}
 

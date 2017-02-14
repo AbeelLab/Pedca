@@ -104,22 +104,50 @@ public class NaivePloestPlotter {
 	}
 	
 	private void writeOutPloEstByFragment(PrintWriter writer , XYSeries series, ContigData contigD ) {
-		//System.out.println("writeOutPloEstByFragment contig:"+contigD.contigName);
-		String contigname =contigD.contigName;
-		if(series.getItemCount()>0){
-			boolean thisContigHasContinousPloidy=true;
-			Number prevPloidy=series.getY(0);//series.getMinY();
-			//if (prevPloidy.intValue()!=0)
-			Number prevPos=0;
-			//Number lastZeroPosStored=0;//last position ==0
-			int ItemsSize=series.getItems().size();
+System.out.println("writeOutPloEstByFragment contig:"+contigD.contigName+" series.size="+series.getItemCount());
 
-			for (int yv=1;yv<ItemsSize;yv++){
+
+		String contigname =contigD.contigName;
+		
+		Number prevPloidy=null;
+		int ItemsSize=0;
+		int firstPloidy=0;
+		boolean thisContigHasContinousPloidy=true;
+		
+		
+		if(series.getItemCount()>0){
+			ItemsSize=series.getItems().size();
+			prevPloidy=series.getY(firstPloidy);//series.getMinY();
+	/*		
+System.out.print(" ItemsSize="+series.getItemCount()+" prevPloidy"+prevPloidy+ " firstPloidy:"+firstPloidy+" Ploidies:");
+for (int yv=0;yv<ItemsSize;yv++){
+	System.out.print(" "+series.getY(yv));
+}System.out.println();
+		*/	
+
+//System.out.print("   trying prevPloidy="+prevPloidy);			
+			while(prevPloidy==null && firstPloidy<ItemsSize-1){
+				prevPloidy=series.getY(++firstPloidy);
+//System.out.print("   trying prevPloidy="+prevPloidy);
+			}
+		}
+		
+		
+		if(series.getItemCount()>0  && prevPloidy!=null){
+			Number prevPos=0;
+			//print out ploidies
+//System.out.print(" ItemsSize="+series.getItemCount()+" prevPloidy"+prevPloidy+ " firstPloidy:"+firstPloidy+" Ploidies:");
+
+
+
+			for (int yv=firstPloidy;yv<ItemsSize;yv++){
 				if(!series.getY(yv).equals(prevPloidy)  ){//segmentation point
 					thisContigHasContinousPloidy=false;
 					if(prevPloidy.intValue()!=0){
 						
 						writer.println(contigname+"\t"+((int)prevPos*SamParser.windowLength/2)+"\t"+(yv*SamParser.windowLength/2)+"\t"+prevPloidy);
+//System.out.println(contigname+"\t"+((int)prevPos*SamParser.windowLength/2)+"\t"+(yv*SamParser.windowLength/2)+"\t"+prevPloidy);
+
 						prevPloidy=series.getY(yv);
 						prevPos=yv;
 					}else{
@@ -133,16 +161,27 @@ public class NaivePloestPlotter {
 				}
 				
 			}
+//System.out.println("thisContigHasContinousPloidy"+thisContigHasContinousPloidy);
 
 			if (thisContigHasContinousPloidy && (prevPloidy.intValue()!=0) ){//coninuous contig with valid ploidy
 				writer.println(contigname+"\t"+((int)prevPos*SamParser.windowLength/2)+"\t"+contigD.maxLength+"\t"+prevPloidy);
+//System.out.println(contigname+"\t"+((int)prevPos*SamParser.windowLength/2)+"\t"+contigD.maxLength+"\t"+prevPloidy);
+
 			}else{//fragmented ploidy... writeout last fragment 
 				
 				if(!series.getY(ItemsSize-1).equals(0)){//last frag has valid ploidy
 					writer.println(contigname+"\t"+((int)prevPos*SamParser.windowLength/2)+"\t"+(ItemsSize*SamParser.windowLength/2)+"\t"+prevPloidy);
+//System.out.println(	contigname+"\t"+((int)prevPos*SamParser.windowLength/2)+"\t"+(ItemsSize*SamParser.windowLength/2)+"\t"+prevPloidy);
+
 				}else 	if(series.getY(ItemsSize-1).equals(0)){//last frag has invalid ploidy
+						writer.println(contigname+"\t"+((int)prevPos*SamParser.windowLength/2)+"\t"+(ItemsSize*SamParser.windowLength/2)+"\t"+prevPloidy);
+//System.out.println(contigname+"\t"+((int)prevPos*SamParser.windowLength/2)+"\t"+(ItemsSize*SamParser.windowLength/2)+"\t"+prevPloidy);
+			
+				}else {
 					writer.println(contigname+"\t"+((int)prevPos*SamParser.windowLength/2)+"\t"+(ItemsSize*SamParser.windowLength/2)+"\t"+prevPloidy);
-				}else writer.println(contigname+"\t"+((int)prevPos*SamParser.windowLength/2)+"\t"+(ItemsSize*SamParser.windowLength/2)+"\t"+prevPloidy);
+//System.out.println(contigname+"\t"+((int)prevPos*SamParser.windowLength/2)+"\t"+(ItemsSize*SamParser.windowLength/2)+"\t"+prevPloidy);
+
+				}
 			}
 			//store all contigs with ploidy belonging to cluster 1 or 2
 			if(Ploest.baseCallIsOn && thisContigHasContinousPloidy /*&& prevPloidy.intValue()==rt.bestScore.bestCNVIndexes[0]*/){
@@ -245,9 +284,13 @@ public void displayPloidyAndCoveragePlotNaive()throws IOException{
 		writer.println("PRECISION="+(SamParser.windowLength/2));
 		writer.println("#>CONTIG NAME\tFROM\tTO\tPLOIDY ESTIMATION");
 		writer.println("PLOIDY=");
+		
 		for (int c=0;c<contigsList.size();c++){//for each contig
 			
 			contigD=contigsList.get(contArrList.get(c));
+			
+			//System.out.println(" CONTIG :"+contigD.contigName+" displayPloidyAndCoveragePlotNaive");
+
 			XYPlot xyPlot = new XYPlot();
 
 			/* SETUP SCATTER */
@@ -270,7 +313,7 @@ public void displayPloidyAndCoveragePlotNaive()throws IOException{
 			// Map the scatter to the first Domain and first Range
 			xyPlot.mapDatasetToDomainAxis(0, 0);
 			xyPlot.mapDatasetToRangeAxis(0, 0);
-
+//System.out.println(" CONTIG :"+contigD.contigName+" displayPloidyAndCoveragePlotNaive");
 			// Create the line data, renderer, and axis
 			XYDataset collection2 = createPloidyEstimationDatasetNaive(contigD,writer);
 			
@@ -431,7 +474,7 @@ public void displayPloidyAndCoveragePlotNaive()throws IOException{
 
 	
 	private  XYDataset createPloidyEstimationDatasetNaive(ContigData contigD, PrintWriter writer ) {
-
+System.out.println(" CONTIG :"+contigD.contigName+" createPloidyEstimationDatasetNaive");
 		XYSeriesCollection result = new XYSeriesCollection();
 		XYSeries series = new XYSeries(" Ploidy Estimation 1");
 		
@@ -462,7 +505,7 @@ public void displayPloidyAndCoveragePlotNaive()throws IOException{
 
 		if(series.getItemCount()<5 /*&& !removedContigs.contains(contigD)*/){
 			unsolvedPloidyContigs.add(contigD);
-			System.err.println(" CONTIG :"+contigD.contigName+" added to list for new window length ploidy estimation.");
+			System.err.println(" CONTIG :"+contigD.contigName+" added to list for new window length ploidy estimation. series.size="+series.getItemCount());
 			
 		}
 
@@ -475,6 +518,7 @@ public void displayPloidyAndCoveragePlotNaive()throws IOException{
 	
 	public XYSeries averagePloidyMode(ContigData contigD,XYSeries series, int wInd,double [] xValues,int [] yValues){
 		String contigname=contigD.contigName;
+//System.out.println(" CONTIG :"+contigD.contigName+" averagePloidyMode");
 
 		int currentMode=0;//the most observed ploidy value over the PLOIDY_SMOOTHER_WIDTH
 		int PLOIDY_SMOOTHER_WING=PLOIDY_SMOOTHER_WIDTH/2; //length of each of the sides of the PLOIDY_SMOOTHER window before and after the position being evaluated
@@ -567,6 +611,8 @@ public void displayPloidyAndCoveragePlotNaive()throws IOException{
 	
 	private XYSeries checkContinuity(XYSeries series, int continuityLength) {
 		//check that at least continuityLength points have the same copy number estimation before deciding if a fragment has a certain ploidy
+//System.out.println(" checking Continuity");
+		
 		int ctr=0;
 		XYSeries result=new XYSeries(" Ploidy Estimation");
 		int [] yvalues=new int[series.getItemCount()];
@@ -613,7 +659,7 @@ public void displayPloidyAndCoveragePlotNaive()throws IOException{
 
 			}//System.out.println();
 		}
-		//System.out.println("SIZE OF post checkContinuity in average WINDPOS                                "+(result.getItemCount())*Ploest.windowLength/2);	
+//System.out.println("SIZE OF post checkContinuity in average WINDPOS                                "+(result.getItemCount())*Ploest.windowLength/2);	
 
 		return result;
 	}
@@ -634,8 +680,11 @@ public void displayPloidyAndCoveragePlotNaive()throws IOException{
 
 	private int significantMaxsInPDF(NaivePDF naivePDF) {
 		int sigMaxs = 0;//nb of significant maximums
-		double threshold = SamParser.readDistributionMaxY * 0.002;// discards the values that are below this threshold
-		System.out.println(" SamParser.maxYh :" + SamParser.readDistributionMaxY + " Y min threshold:" + threshold);
+	//	double FITthreshold = naivePDF.maxYFITvalue * 0.05;// discards the values that are below this threshold in the naive fit values
+		double ReadCountThreshold = SamParser.readDistributionMaxY * 0.05;// discards the values that are below this threshold in the original readCount Distribution
+		
+		System.out.println(" SamParser.maxYh :" + SamParser.readDistributionMaxY + " Y min ReadCountThreshold:" + ReadCountThreshold);
+		//System.out.println(" naivePDF.maxYFITvalue:" + naivePDF.maxYFITvalue+ " Y min FITthreshold:" + FITthreshold);
 
 		ArrayList<Double> yMinList = new ArrayList<Double>();
 		ArrayList<Double> xMinList = new ArrayList<Double>();
@@ -649,7 +698,7 @@ public void displayPloidyAndCoveragePlotNaive()throws IOException{
 		int lastMidIndex = 0;
 		int lastRightIndex = 0;
 
-		System.out.println(" pmf.yDataPoints.length :" + naivePDF.yDataPoints.length + " Y min threshold:" + threshold+ " \nSignificant maxima in NaivePDF:");
+		//System.out.println(" pmf.yDataPoints.length :" + naivePDF.yDataPoints.length + " Y min FITthreshold:" + FITthreshold+ " \nSignificant maxima in NaivePDF:");
 
 		while (ind < naivePDF.yDataPoints.length) {
 
@@ -663,7 +712,7 @@ public void displayPloidyAndCoveragePlotNaive()throws IOException{
 				lastRightIndex = ind;
 				//System.out.println(" .     ind :" + ind + " = " + mid + "  l:" + left + " m:" + mid+ " r:" + right );
 
-				if (right < mid && mid > left && mid > threshold) {// we count maxs only above threshold
+				if (right < mid && mid > left /*&& mid > FITthreshold*/) {// we count maxs only above threshold (deactivayted here, threshold is checked below) 
 					
 					// now that we encountered a max bin, we scan the previous
 					// and the following bins to find the exact maximum point in this area
@@ -671,7 +720,7 @@ public void displayPloidyAndCoveragePlotNaive()throws IOException{
 					double maxVal = 0;// precise max Y value in the corresponding bins
 					int Xindex = lastLeftIndex;//index (x value) of the maxVal
 
-					//System.out.println(" ....    max in :" + lastRightIndex + " = " + mid + "  l:" + left + " m:" + mid+ " r:" + right + "  between leftIn:" + lastLeftIndex + " midInd:" + lastMidIndex+ " rightInd:" + lastRightIndex + " \nSCANING from lastLeftIndex:" + lastLeftIndex+ " to  :" + (lastRightIndex + naivePDF.smootherLength));
+				//	System.out.println(" ....    max in :" + lastRightIndex + " = " + mid + "  l:" + left + " m:" + mid+ " r:" + right + "  between leftIn:" + lastLeftIndex + " midInd:" + lastMidIndex+ " rightInd:" + lastRightIndex + " \nSCANING from lastLeftIndex:" + lastLeftIndex+ " to  :" + (lastRightIndex + naivePDF.smootherLength));
 
 					for (int ib = lastLeftIndex; ib < (lastRightIndex + naivePDF.smootherLength); ib++) {
 
@@ -682,10 +731,12 @@ public void displayPloidyAndCoveragePlotNaive()throws IOException{
 						//System.out.println("     ib:" + ib + " Xindex:" + Xindex + " maxval:" + maxVal+ " readCounts[ib]:" + readCounts[ib]);
 
 					}
-					if(!xMinList.contains(naivePDF.xDataPoints[Xindex])){
+					if(!xMinList.contains(naivePDF.xDataPoints[Xindex]) && maxVal>ReadCountThreshold ){// we count maxs only above threshold
 						yMinList.add(maxVal);
 						xMinList.add(naivePDF.xDataPoints[Xindex]);
 						System.out.println(" ****    max in :" + naivePDF.xDataPoints[Xindex] + " = " + maxVal+ " lastLeftIndex:"+lastLeftIndex+" lastRightIndex:"+lastRightIndex+" (+ "+naivePDF.smootherLength+" = "+(lastRightIndex + naivePDF.smootherLength)+")");
+						//System.out.println(" ++++    max in :" + naivePDF.xDataPoints[Xindex] + " mid = " + mid);
+
 						sigMaxs++;
 					}else System.out.println(" REPEATED max in :" + naivePDF.xDataPoints[Xindex] + " = " + maxVal+"  ...VALUE DISCARDED...!");
 

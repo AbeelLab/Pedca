@@ -29,12 +29,11 @@ public class SamParser {
 	static PVector[] fitPoints;//all the points of all windows positions (coverages) in all contigs. Used to fit the read counts distribution chart
 	
 	static boolean RUN_SECOND_ROUND=false;
-//static boolean thisIsTheFirstRun=true;
 	static String stringSecondRound="";
 	static int windowLength ;
 	List<String> contArrList;
 	static int readsDistributionMaxCoverage;//max coverage found in all contigs (to be used in x axis reads counts)
-	static float readDistributionMaxY=0;//max normalized value in the y axis (to be used in y axis reads counts)
+    static float readDistributionMaxY=0;//max normalized value in the y axis (to be used in y axis reads counts)
 	PloestPlotter plotter;//ploidy estimation  plott and pdf gaussian fit data
 	NaivePloestPlotter myploter;
 	static BarChart barchart;

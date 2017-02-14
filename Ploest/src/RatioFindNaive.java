@@ -215,21 +215,27 @@ public class RatioFindNaive
 			writer.println("#\n");
 			writer.println("#>CLUSTER CENTERS AT READ COUNTS:");
 			writer.println("CLUSTER_CENTERS=");
+System.out.println("CLUSTER_CENTERS=");
 			for (int g=0;g<NaivePloestPlotter.clusterMus.length;g++){
-				writer.println(NaivePloestPlotter.clusterMus[g]);		
+				writer.println(NaivePloestPlotter.clusterMus[g]);	
+System.out.println(NaivePloestPlotter.clusterMus[g]);
 			}
 			writer.println("#\n");
 			writer.println("#>WINDOW LENGTH USED FOR PLOIDY ESTIMATION:");
 			writer.println("WINDOW_LENGTH="+ Ploest.windowLength);
 			writer.println("#> CLUSTER_NUMBER \tCOPY_NUMBER_ESTIMATION \t DISTANCE_ERROR (% MAX reads counts) ");
 			writer.println("CLUSTERS=");
+System.out.println("CLUSTERs=");
 			if(bestScore!=null){
 				for(int d=0;d<ds.length;d++){
 					writer.println(d+"\t"+bestScore.bestCNVIndexes[d]+" \t"+bestScore.bestMinDistances[d]);
+System.out.println(d+"\t"+bestScore.bestCNVIndexes[d]+" \t"+bestScore.bestMinDistances[d]);
 				}
 				writer.println("#\n");
 				writer.println("ESTIMATION_DISTANCE_SCORE="+bestScore.score);
+System.out.println("ESTIMATION_DISTANCE_SCORE="+bestScore.score);
 				writer.println("#>Maximum Nb Of Mixtures respected = "+bestScore.respectsMaxNbOfMixtures);
+System.out.println("#>Maximum Nb Of Mixtures respected = "+bestScore.respectsMaxNbOfMixtures);
 				writer.println("#");
 
 			}else{
@@ -240,7 +246,9 @@ public class RatioFindNaive
 			}
 			
 		} catch (FileNotFoundException | UnsupportedEncodingException e) {
+			
 
+			System.err.println("  writeOut() ERROR  ");
 			if(writer!=null)writer.close();
 			
 			// TODO Auto-generated catch block

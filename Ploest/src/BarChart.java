@@ -56,7 +56,7 @@ public class BarChart {
 	}
 	
 	public BarChart (double [] baseCalls,int cluster) {//baseCall chart constructor
-		System.out.println("BarChart call for cluster "+cluster);
+		//System.out.println("BarChart call for cluster "+cluster);
 		int[] bins=new int [NB_OF_BASECALL_BiNS];
 		int bin;
 		Double product;
@@ -85,7 +85,7 @@ public class BarChart {
 		} catch (IOException e) {
 			System.err.println("Problem occurred creating base call chart.");
 		}
-		System.out.println("BarChar BaseCall printed ");
+		//System.out.println("BarChar BaseCall printed ");
 	}
 
 	//@SuppressWarnings("deprecation")
@@ -150,7 +150,7 @@ public void BarChartWithFit (NaivePDF naivePDF, String title) {
 		plot.setDataset(1, data2);
 		plot.setRenderer(1, renderer2);
 
-		plot.setDatasetRenderingOrder(DatasetRenderingOrder.REVERSE);
+		plot.setDatasetRenderingOrder(DatasetRenderingOrder.FORWARD);
 		// return a new chart containing the overlaid plot...
 		overlaidChart=new JFreeChart("Naive Smoothed Fit of Reads Distribution. Window length: "+Ploest.windowLength, JFreeChart.DEFAULT_TITLE_FONT, plot, true);
 
@@ -229,7 +229,7 @@ private XYDataset createHistDataset( GaussianMixturePDF gaussFit) {
 		XYSeries series = new XYSeries("PDF Naive Smoother Fit");
 		
 		//correction for overlapping the 2 datasets
-		int xOffSet=naiveFit.smootherWing+1;//to correct for the bins width
+		int xOffSet=naiveFit.smootherWing;//to correct for the bins width
 		double yRatioCorrection=naiveFit.maxYHISTOGRAMvalue/naiveFit.maxYFITvalue;//to correct the y data normalization ratio
 		System.out.println("createFitCurveDataset naiveFit.maxy="+naiveFit.maxYFITvalue+" ");
 		//add to series

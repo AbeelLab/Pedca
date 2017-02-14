@@ -11,7 +11,7 @@ public class NaivePDF {
 	double [] xDataPoints;
 
 
-	float[] readCounts;
+	float[] readCounts;//normalized read counts
 
 	double beg;//bgining of x axis
 	double end;//end of x axis
@@ -46,26 +46,43 @@ public class NaivePDF {
 		yDataPoints=new double[readCounts.length];
 		xDataPoints=new double[readCounts.length];
 		
-		
+	//	System.out.println("NaivePDF readCounts.length"+readCounts.length+" smootherWing:"+smootherWing);
+
 		for (int p=0;p<readCounts.length;p++){//for each point
 			double sum=0;
 			int substract=0;//substract these bins (for begining and end of genome)
 			
-			for(int cp=(p-smootherWing);cp<(p+smootherWing);cp++){//average over the smoother window
+			for(int cp=(p-smootherWing);cp<(p+smootherWing);cp++){//sum over the smoother window
 				
 				if(cp>0 && cp<readCounts.length){
-					sum=readCounts[cp];
+					sum+=readCounts[cp];
 				}else {
-					substract++;	
+					substract++;	//but substract these points if the wind goes out of the existing range
 					//System.out.print(" cp"+cp+" sum:"+sum+ " subst:"+substract+" ");
 				}
 			}
+			double average=sum/(smootherLength-substract);
 			
-			for(int cp=(p-smootherWing);cp<(p+smootherWing);cp++){//
+			/*
+			if (average<0.01){
+				System.out.println("p:"+p+" average="+average+" sum"+sum+" (smootherLength-substract):"+(smootherLength-substract));
+				for(int cp=(p-smootherWing);cp<(p+smootherWing);cp++){
+					if(cp>0 && cp<readCounts.length){
+						System.out.print(" "+cp+","+readCounts[cp]);
+					}
+					
+				}
+				System.out.println("");
+			}else System.out.println("p:"+p+" average="+average);
+
+			*/
+			
+			for(int cp=(p-smootherWing);cp<(p+smootherWing);cp++){//average over the smoothing window
+				
 				
 				if(cp>0 && cp<readCounts.length){
 					xDataPoints[cp]=(double)cp;
-					yDataPoints[cp]=sum/(smootherLength-substract);
+					yDataPoints[cp]=average;//remove points that were outside of range
 					if(yDataPoints[cp]>maxYFITvalue){
 						maxYFITvalue=yDataPoints[cp];
 					}

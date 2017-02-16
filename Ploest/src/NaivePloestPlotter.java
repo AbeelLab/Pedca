@@ -49,8 +49,8 @@ public class NaivePloestPlotter {
 	static NaivePDF npdf;//Naive Smoothed Density Function
 	PVector[] fitPoints;
 	JFreeChart chart;
-	static int maxX=0;
-	static int totalDataPoints=0;//total number of input datapoints (coverage for all windows)
+	static int maxX;
+	static int totalDataPoints;//total number of input datapoints (coverage for all windows)
 	static int finalNumberOfMixtures;
 	RatioFindNaive rt;//contains the ratio of each cluster to the ploidy-unit which allows computation of ploidy from contig coverage
 	String writeoutStringLog="";
@@ -61,15 +61,27 @@ public class NaivePloestPlotter {
 	ArrayList<ContigData>  removedContigs=new ArrayList<ContigData> () ;
 	
 	//variable for base calling upon the contigs with ploidy from the first and second cluster
-    private ArrayList<ContigData> continousPloidyContigsCluster1=new ArrayList<ContigData> () ; 
-    private ArrayList<ContigData> continousPloidyContigsCluster2=new ArrayList<ContigData> () ;
-	static ArrayList<String> continousPloidyContigsNamesCluster1=new ArrayList<String> () ;
-	static ArrayList<String> continousPloidyContigsNamesCluster2=new ArrayList<String> () ;
-	static int LENGTH_OF_CLUSTER_ONE_CONTIGS=0;
-	static int LENGTH_OF_CLUSTER_TWO_CONTIGS=0;	
+    ArrayList<ContigData> continousPloidyContigsCluster1=new ArrayList<ContigData> () ; 
+    ArrayList<ContigData> continousPloidyContigsCluster2=new ArrayList<ContigData> () ;
+	 public ArrayList<String> continousPloidyContigsNamesCluster1;
+	 public ArrayList<String> continousPloidyContigsNamesCluster2 ;
+	 public int LENGTH_OF_CLUSTER_ONE_CONTIGS;
+	 public int LENGTH_OF_CLUSTER_TWO_CONTIGS;	
 	
 	
 	public NaivePloestPlotter(Map<String,ContigData> contList,int maxWindows, float[] rc) {
+		//reset static variables
+		clusterMus=null;
+		npdf=null;
+		maxX=0;
+		totalDataPoints=0;
+		rt=null;
+		LENGTH_OF_CLUSTER_ONE_CONTIGS=0;
+		LENGTH_OF_CLUSTER_TWO_CONTIGS=0;
+		continousPloidyContigsNamesCluster1=new ArrayList<String> () ; 
+		continousPloidyContigsNamesCluster2=new ArrayList<String> () ; 
+		System.out.println(" PloestPlotter constructor LENGTH_OF_CLUSTER_ONE_CONTIGS:"+LENGTH_OF_CLUSTER_ONE_CONTIGS+"  LENGTH_OF_CLUSTER_TWO_CONTIGS:"+LENGTH_OF_CLUSTER_TWO_CONTIGS);
+		
 		readCounts=rc;
 		contigsList=contList;
 		contArrList = new ArrayList<String>(contigsList.keySet());
@@ -79,7 +91,7 @@ public class NaivePloestPlotter {
 			//displayScatterPlots();//Scatterplot containing the contig coverage (per slided window)		
 			createFitterDataset() ;
 			fitNaiveMixtureModel();	//approximate the distribution by naive smoother and infere max points				
-			displayPloidyAndCoveragePlotNaive();//Plot containng both the coverage and the ploidy estimation	
+			displayPloidyAndCoveragePlotNaive(rt.writer);//Plot containng both the coverage and the ploidy estimation	
 		}catch (Exception e){
 			System.err.println("Error in PloestPlotter constructor");
 		}
@@ -94,9 +106,8 @@ public class NaivePloestPlotter {
 		unsolvedPloidyContigs=new ArrayList<ContigData> () ;//reinitialize unsolvedPloidyContigs
 		removedContigs=new ArrayList<ContigData> ();//reinitialize removedContigs
 		try{
-			rt.writeOut();
-			
-			displayPloidyAndCoveragePlotNaive();//Plot containng both the coverage and the ploidy estimation
+			rt.writeOut2ndRound();
+			displayPloidyAndCoveragePlotNaive(rt.writer2ndRun);//Plot containng both the coverage and the ploidy estimation
 		}catch (Exception e){
 			System.err.println("Error in PloestPlotter constructor");
 		}
@@ -104,87 +115,96 @@ public class NaivePloestPlotter {
 	}
 	
 	private void writeOutPloEstByFragment(PrintWriter writer , XYSeries series, ContigData contigD ) {
-System.out.println("writeOutPloEstByFragment contig:"+contigD.contigName+" series.size="+series.getItemCount());
+//System.out.println("writeOutPloEstByFragment contig:"+contigD.contigName+" series.size="+series.getItemCount());
 
 
 		String contigname =contigD.contigName;
 		
-		Number prevPloidy=null;
+		Number prevPloidy=0;
+		Number newPloidy=0;
 		int ItemsSize=0;
-		int firstPloidy=0;
+		int firstPloidyPos=0;
 		boolean thisContigHasContinousPloidy=true;
 		
-		
+		//get first valid ploidy point
 		if(series.getItemCount()>0){
 			ItemsSize=series.getItems().size();
-			prevPloidy=series.getY(firstPloidy);//series.getMinY();
-	/*		
-System.out.print(" ItemsSize="+series.getItemCount()+" prevPloidy"+prevPloidy+ " firstPloidy:"+firstPloidy+" Ploidies:");
+			prevPloidy=series.getY(firstPloidyPos);//series.getMinY();
+/*	
+System.out.print(" ItemsSize="+series.getItemCount()+" prevPloidy"+prevPloidy+ " firstPloidyPos:"+firstPloidyPos+" Ploidies:");
 for (int yv=0;yv<ItemsSize;yv++){
 	System.out.print(" "+series.getY(yv));
 }System.out.println();
-		*/	
+*/	
 
 //System.out.print("   trying prevPloidy="+prevPloidy);			
-			while(prevPloidy==null && firstPloidy<ItemsSize-1){
-				prevPloidy=series.getY(++firstPloidy);
+			while(prevPloidy.intValue()==0 && firstPloidyPos<ItemsSize-1){
+				prevPloidy=series.getY(++firstPloidyPos);
 //System.out.print("   trying prevPloidy="+prevPloidy);
 			}
+			newPloidy=prevPloidy;
 		}
 		
 		
-		if(series.getItemCount()>0  && prevPloidy!=null){
+		if(series.getItemCount()>0  && prevPloidy.intValue()!=0){
 			Number prevPos=0;
 			//print out ploidies
-//System.out.print(" ItemsSize="+series.getItemCount()+" prevPloidy"+prevPloidy+ " firstPloidy:"+firstPloidy+" Ploidies:");
+//System.out.println(" ItemsSize="+series.getItemCount()+" prevPloidy"+prevPloidy+ " firstPloidy:"+firstPloidyPos);
 
 
 
-			for (int yv=firstPloidy;yv<ItemsSize;yv++){
-				if(!series.getY(yv).equals(prevPloidy)  ){//segmentation point
+			for (int yv=firstPloidyPos;yv<ItemsSize;yv++){
+				newPloidy=series.getY(yv);
+				if(newPloidy==null)newPloidy=0;
+//System.out.print("  ("+yv+","+newPloidy+")");
+				if(!newPloidy.equals(prevPloidy)  ){//segmentation point
+//System.out.println();
+//System.out.print("  BREAK at:"+yv+" prevPloidy:"+prevPloidy+" new:"+newPloidy+" ");
 					thisContigHasContinousPloidy=false;
-					if(prevPloidy.intValue()!=0){
+					if(/*prevPloidy!=null && */prevPloidy.intValue()!=0){
 						
 						writer.println(contigname+"\t"+((int)prevPos*SamParser.windowLength/2)+"\t"+(yv*SamParser.windowLength/2)+"\t"+prevPloidy);
+						prevPloidy=newPloidy;
 //System.out.println(contigname+"\t"+((int)prevPos*SamParser.windowLength/2)+"\t"+(yv*SamParser.windowLength/2)+"\t"+prevPloidy);
-
-						prevPloidy=series.getY(yv);
+						
 						prevPos=yv;
 					}else{
 						thisContigHasContinousPloidy=false;
+//System.out.println(contigname+"--\t"+((int)prevPos*SamParser.windowLength/2)+"\t"+(yv*SamParser.windowLength/2)+"\t"+prevPloidy);
+
 						//writer.println(contigname+"\t"+((int)prevPos*SamParser.windowLength/2)+"\t"+(yv*SamParser.windowLength/2)+"\t"+prevPloidy);
-						prevPloidy=series.getY(yv);
+						prevPloidy=newPloidy;
 						prevPos=yv;
 					}
-					
-					//lastZeroPosStored=yv;
 				}
-				
 			}
-//System.out.println("thisContigHasContinousPloidy"+thisContigHasContinousPloidy);
+			
+//System.out.println(" thisContigHasContinousPloidy "+thisContigHasContinousPloidy);
 
 			if (thisContigHasContinousPloidy && (prevPloidy.intValue()!=0) ){//coninuous contig with valid ploidy
 				writer.println(contigname+"\t"+((int)prevPos*SamParser.windowLength/2)+"\t"+contigD.maxLength+"\t"+prevPloidy);
-//System.out.println(contigname+"\t"+((int)prevPos*SamParser.windowLength/2)+"\t"+contigD.maxLength+"\t"+prevPloidy);
+//System.out.print(contigname+"\t"+((int)prevPos*SamParser.windowLength/2)+"\t"+contigD.maxLength+"\t"+prevPloidy);
 
 			}else{//fragmented ploidy... writeout last fragment 
 				
 				if(!series.getY(ItemsSize-1).equals(0)){//last frag has valid ploidy
 					writer.println(contigname+"\t"+((int)prevPos*SamParser.windowLength/2)+"\t"+(ItemsSize*SamParser.windowLength/2)+"\t"+prevPloidy);
-//System.out.println(	contigname+"\t"+((int)prevPos*SamParser.windowLength/2)+"\t"+(ItemsSize*SamParser.windowLength/2)+"\t"+prevPloidy);
+//System.out.print(	contigname+"\t"+((int)prevPos*SamParser.windowLength/2)+"\t"+(ItemsSize*SamParser.windowLength/2)+"\t"+prevPloidy);
 
 				}else 	if(series.getY(ItemsSize-1).equals(0)){//last frag has invalid ploidy
 						writer.println(contigname+"\t"+((int)prevPos*SamParser.windowLength/2)+"\t"+(ItemsSize*SamParser.windowLength/2)+"\t"+prevPloidy);
-//System.out.println(contigname+"\t"+((int)prevPos*SamParser.windowLength/2)+"\t"+(ItemsSize*SamParser.windowLength/2)+"\t"+prevPloidy);
+//System.out.print(contigname+"\t"+((int)prevPos*SamParser.windowLength/2)+"\t"+(ItemsSize*SamParser.windowLength/2)+"\t"+prevPloidy);
 			
 				}else {
 					writer.println(contigname+"\t"+((int)prevPos*SamParser.windowLength/2)+"\t"+(ItemsSize*SamParser.windowLength/2)+"\t"+prevPloidy);
-//System.out.println(contigname+"\t"+((int)prevPos*SamParser.windowLength/2)+"\t"+(ItemsSize*SamParser.windowLength/2)+"\t"+prevPloidy);
+//System.out.print(contigname+"\t"+((int)prevPos*SamParser.windowLength/2)+"\t"+(ItemsSize*SamParser.windowLength/2)+"\t"+prevPloidy);
 
 				}
 			}
+//System.out.println("-- Ploest.baseCallIsOn "+Ploest.baseCallIsOn +" thisContigHasContinousPloidy"+thisContigHasContinousPloidy);
 			//store all contigs with ploidy belonging to cluster 1 or 2
 			if(Ploest.baseCallIsOn && thisContigHasContinousPloidy /*&& prevPloidy.intValue()==rt.bestScore.bestCNVIndexes[0]*/){
+//System.out.println("-- Ploest.baseCallIsOn  Ploidy:"+ prevPloidy.intValue()+" CNVIndexes[0]:"+rt.bestScore.bestCNVIndexes[0]+" CNVIndexes[1]:"+rt.bestScore.bestCNVIndexes[1]);
 				
 				if( prevPloidy.intValue()==rt.bestScore.bestCNVIndexes[0]){//contigs from cluster 1
 					continousPloidyContigsCluster1.add(contigD);
@@ -195,11 +215,12 @@ for (int yv=0;yv<ItemsSize;yv++){
 					continousPloidyContigsNamesCluster2.add(contigD.contigName);
 					LENGTH_OF_CLUSTER_TWO_CONTIGS+=contigD.maxLength;
 				}
+//System.out.println("-- LENGTH_OF_CLUSTER_ONE_CONTIGS:"+LENGTH_OF_CLUSTER_ONE_CONTIGS+" LENGTH_OF_CLUSTER_TWO_CONTIGS:"+LENGTH_OF_CLUSTER_TWO_CONTIGS);
 			}
 		
 		}else{
 			writer.println(contigname+"\t-\t-\t-");
-			System.out.println("  Not enough information to determine ploidy for "+contigname);
+			//System.out.println("  Not enough information to determine ploidy for "+contigname+ " writeOutPloEstByFragment");
 		}
 	}
 
@@ -271,25 +292,26 @@ for (int yv=0;yv<ItemsSize;yv++){
 
 	
 
-public void displayPloidyAndCoveragePlotNaive()throws IOException{	
+public void displayPloidyAndCoveragePlotNaive( PrintWriter writ)throws IOException{	
 
 		ContigData contigD;
-		PrintWriter writer = rt.writer;
+		
 		                                                                      
-		writer.println("#**************************************************************************************");
-		writer.println("#*Ploidy estimation detailed by fragments.  Precision: +/-"+(PLOIDY_SMOOTHER_WIDTH*SamParser.windowLength/(2*MAX_NB_MIXTURES))+" bp                      *");
-		writer.println("#*Only detects fragments with continuous ploidy over a sequence >"+(CONTINUITY_POINTS*(SamParser.windowLength/2) )+" bp *");
-		writer.println("#***************************************************************************************");
-		writer.println("#");
-		writer.println("PRECISION="+(SamParser.windowLength/2));
-		writer.println("#>CONTIG NAME\tFROM\tTO\tPLOIDY ESTIMATION");
-		writer.println("PLOIDY=");
+		writ.println("#**************************************************************************************");
+		writ.println("#*Ploidy estimation detailed by fragments.  Precision: +/-"+(PLOIDY_SMOOTHER_WIDTH*SamParser.windowLength/(2*MAX_NB_MIXTURES))+" bp                      *");
+		writ.println("#*Only detects fragments with continuous ploidy over a sequence >"+(CONTINUITY_POINTS*(SamParser.windowLength/2) )+" bp *");
+		writ.println("#***************************************************************************************");
+		writ.println("#");
+		writ.println("PRECISION="+(SamParser.windowLength/2));
+		writ.println("#>CONTIG NAME\tFROM\tTO\tPLOIDY ESTIMATION");
+		writ.println("PLOIDY=");
 		
 		for (int c=0;c<contigsList.size();c++){//for each contig
 			
 			contigD=contigsList.get(contArrList.get(c));
 			
-			//System.out.println(" CONTIG :"+contigD.contigName+" displayPloidyAndCoveragePlotNaive");
+//System.out.println(" CONTIG :"+contigD.contigName+" displayPloidyAndCoveragePlotNaive"+"  LENGTH_OF_CLUSTER_ONE_CONTIGS:"+LENGTH_OF_CLUSTER_ONE_CONTIGS+"  LENGTH_OF_CLUSTER_TWO_CONTIGS:"+LENGTH_OF_CLUSTER_TWO_CONTIGS);
+
 
 			XYPlot xyPlot = new XYPlot();
 
@@ -313,16 +335,19 @@ public void displayPloidyAndCoveragePlotNaive()throws IOException{
 			// Map the scatter to the first Domain and first Range
 			xyPlot.mapDatasetToDomainAxis(0, 0);
 			xyPlot.mapDatasetToRangeAxis(0, 0);
-//System.out.println(" CONTIG :"+contigD.contigName+" displayPloidyAndCoveragePlotNaive");
+//System.out.println(" CONTIG :"+contigD.contigName+" displayPloidyAndCoveragePlotNaive 2");
 			// Create the line data, renderer, and axis
-			XYDataset collection2 = createPloidyEstimationDatasetNaive(contigD,writer);
-			
-			if(!unsolvedPloidyContigs.contains(contigD)){
+			XYDataset collection2 = createPloidyEstimationDatasetNaive(contigD,writ);
+//System.out.println(" CONTIG :"+contigD.contigName+" displayPloidyAndCoveragePlotNaive 3 LENGTH_OF_CLUSTER_ONE_CONTIGS:"+LENGTH_OF_CLUSTER_ONE_CONTIGS+" LENGTH_OF_CLUSTER_TWO_CONTIGS:"+LENGTH_OF_CLUSTER_TWO_CONTIGS);	
+
+			if(!unsolvedPloidyContigs.contains(contigD)){//ploidy is solved for these contigs
+//System.out.println(" CONTIG :"+contigD.contigName+" displayPloidyAndCoveragePlotNaive-- ploidy is solved for these contigs");
 				XYItemRenderer renderer2 = new XYLineAndShapeRenderer(false , true);   // Lines only
 				ValueAxis domain2 = new NumberAxis("Genome Position (x " +(contigD.windLength/2)+" bp)");
 				ValueAxis range2 = new NumberAxis("Ploidy Estimation");
 				range2.setUpperBound(rangeAxis.getUpperBound()/rt.bestScore.candidateUnit);
 				domain2.setUpperBound(domain1.getUpperBound());
+				
 				// Set the line data, renderer, and axis into plot
 				range2.setStandardTickUnits(NumberAxis.createIntegerTickUnits());//domain2.setStandardTickUnits(NumberAxis.createIntegerTickUnits());
 				xyPlot.setDataset(1, collection2);
@@ -332,15 +357,28 @@ public void displayPloidyAndCoveragePlotNaive()throws IOException{
 				// Map the line to the second Domain and second Range
 				xyPlot.mapDatasetToDomainAxis(1, 1);
 				xyPlot.mapDatasetToRangeAxis(1, 1);
-				xyPlot.setDatasetRenderingOrder( DatasetRenderingOrder.FORWARD );	
-				// Create the chart with the plot and a legend
+				xyPlot.setDatasetRenderingOrder( DatasetRenderingOrder.FORWARD );
+				
+				// Create the chart with the plot and a legend of COVERAGE AND PLOIDY		
+				JFreeChart chart = new JFreeChart("Coverage and Ploidy Estimation :"+contigD.contigName, JFreeChart.DEFAULT_TITLE_FONT, xyPlot, true);
+				String correctedContigName = contigD.contigName.replaceAll("[^a-zA-Z0-9.-]", "_");
+				ChartUtilities.saveChartAsJPEG(new File(Ploest.outputFile + "//" + Ploest.projectName+ "//Ploidy_Estimation_Charts//Ploidy_Estimation_"+correctedContigName+"_"+SamParser.stringSecondRound+".jpg"),chart, 1500, 900);
+				
+			}
 			
+			if(unsolvedPloidyContigs.contains(contigD) && SamParser.stringSecondRound=="_2nd_Round_"){//ploidy is NOT solved for these contigs AND it is the SECOND RUN
+//System.out.println(" CONTIG :"+contigD.contigName+" displayPloidyAndCoveragePlotNaive-- ploidy is NOT solved for these contigs");
+
+				// Create the chart with the plot and a legend OF ONLY THE COVERAGE!!			
 				JFreeChart chart = new JFreeChart("Coverage and Ploidy Estimation :"+contigD.contigName, JFreeChart.DEFAULT_TITLE_FONT, xyPlot, true);
 				String correctedContigName = contigD.contigName.replaceAll("[^a-zA-Z0-9.-]", "_");
 				ChartUtilities.saveChartAsJPEG(new File(Ploest.outputFile + "//" + Ploest.projectName+ "//Ploidy_Estimation_Charts//Ploidy_Estimation_"+correctedContigName+"_"+SamParser.stringSecondRound+".jpg"),chart, 1500, 900);
 			}
+//System.out.println(" CONTIG :"+contigD.contigName+" displayPloidyAndCoveragePlotNaive END");
+			
 		}
-
+//System.out.println(" displayPloidyAndCoveragePlotNaive Ploest.baseCallIsOn:"+Ploest.baseCallIsOn+" rt.bestScore.score(>0.1?):"+rt.bestScore.score);		
+			
 		if(Ploest.baseCallIsOn && rt.bestScore.score>0.1){
 			
 			try {
@@ -351,30 +389,32 @@ public void displayPloidyAndCoveragePlotNaive()throws IOException{
 			}
 		}
 		
-		
+
 		//if some contigs CAN NOT BE SOLVED --> remove them
 		if (removedContigs.size()>0 && unsolvedPloidyContigs.size()==0 ){ //if this is the first and only round
-			printRemovedContigs( writer);
+			printRemovedContigs( writ);
 		}else if (removedContigs.size()>0 && SamParser.RUN_SECOND_ROUND ){//or if this is the second round
-			printRemovedContigs( writer);
+			printRemovedContigs( writ);
 		}
-		
 
 		//if a second run is needed... (there'are unsolved contigs)
 		if (unsolvedPloidyContigs.size()>0 && !SamParser.RUN_SECOND_ROUND){
+
 			int minLength=unsolvedPloidyContigs.get(0).maxLength;
-			writer.println("#");
-			writer.println("#> The following contigs could not be solved with the current window length of "+Ploest.windowLength+" bp : ");
-			writer.println("CONTIGS_TO_BE_SOLVED=");
+			writ.println("#");
+			writ.println("#> The following contigs could not be solved with the current window length of "+Ploest.windowLength+" bp : ");
+			writ.println("CONTIGS_TO_BE_SOLVED=");
 			//compute new window length
 			for (int u=0;u<unsolvedPloidyContigs.size();u++){
-				writer.println("  "+unsolvedPloidyContigs.get(u).contigName);
+				writ.println("  "+unsolvedPloidyContigs.get(u).contigName);
 				if (minLength>=unsolvedPloidyContigs.get(u).maxLength){
 					minLength=unsolvedPloidyContigs.get(u).maxLength;
 				}
 			}
-			writer.println("#>A new estimation will be attempted with a shorter window length of "+minLength/10);
-			Ploest.windowLength=minLength/15;
+			
+			Ploest.windowLength=minLength/25;
+			writ.println("#>A new estimation will be attempted with a shorter window length of "+Ploest.windowLength);
+			if(Ploest.windowLength<10)Ploest.windowLength=10;
 			SamParser.RUN_SECOND_ROUND=true;	
 			//update contigs info
 			for (int u=0;u<unsolvedPloidyContigs.size();u++){
@@ -384,7 +424,7 @@ public void displayPloidyAndCoveragePlotNaive()throws IOException{
 		
 		//SamParser.thisIsTheFirstRun=false;
 		
-		writer.close();
+		writ.close();
 	}
 
 
@@ -402,7 +442,9 @@ public void displayPloidyAndCoveragePlotNaive()throws IOException{
 
 
 	private void runBaseCallCheck() throws FileNotFoundException, InterruptedException {
-		if (Ploest.baseCallIsOn){
+		
+			
+			
 			System.out.println("runBaseCall on these contigs:");
 			System.out.println("cluster 1");
 			for (int i =0 ;i<continousPloidyContigsCluster1.size();i++){
@@ -412,8 +454,8 @@ public void displayPloidyAndCoveragePlotNaive()throws IOException{
 			for (int i =0 ;i<continousPloidyContigsCluster2.size();i++){
 				System.out.println(continousPloidyContigsCluster2.get(i).contigName);
 			}
-			VCFManager vcfManager=new VCFManager(Ploest.vcfFile.getAbsolutePath());
-		}
+			VCFManager vcfManager=new VCFManager(Ploest.vcfFile.getAbsolutePath(),this);
+		
 		
 		Ploest.baseCallIsOn=false;
 
@@ -474,7 +516,7 @@ public void displayPloidyAndCoveragePlotNaive()throws IOException{
 
 	
 	private  XYDataset createPloidyEstimationDatasetNaive(ContigData contigD, PrintWriter writer ) {
-System.out.println(" CONTIG :"+contigD.contigName+" createPloidyEstimationDatasetNaive");
+//System.out.println(" CONTIG :"+contigD.contigName+" createPloidyEstimationDatasetNaive");
 		XYSeriesCollection result = new XYSeriesCollection();
 		XYSeries series = new XYSeries(" Ploidy Estimation 1");
 		
@@ -482,18 +524,23 @@ System.out.println(" CONTIG :"+contigD.contigName+" createPloidyEstimationDatase
 		int [] yValues=new int[contigD.windPos.size()];
 		maxX=0;
 		int wInd=0;
+		
+//System.out.println(contigD.contigName+" createPloidyEstimationDatasetNaive getPointPloidyEstimationNaive size="+contigD.windPos.size()+"  LENGTH_OF_CLUSTER_ONE_CONTIGS:"+LENGTH_OF_CLUSTER_ONE_CONTIGS+"  LENGTH_OF_CLUSTER_TWO_CONTIGS:"+LENGTH_OF_CLUSTER_TWO_CONTIGS);
 
 		//this loop is for ESTIMATED PLOIDY PLOTTING
 		for (int i = 0; i < contigD.windPos.size(); i++) {
 
 			if(contigD.windPos.get(i)!=null){
-				xValues [wInd]= wInd;  			
 				yValues [wInd]= getPointPloidyEstimationNaive(contigD.windPos.get(i));
-				//System.out.print(" "+wInd+","+yValues [wInd]);
-				if (!AVG_PLOIDY)series.add(wInd, yValues [wInd]);
-				wInd++;
+			}else{//contigD.windPos.get(i)==null
+				yValues [wInd]=0;
 			}
+			xValues [wInd]= wInd;  	
+//System.out.print(" ("+wInd+","+yValues [wInd]+")");
+			if (!AVG_PLOIDY)series.add(wInd, yValues [wInd]);
+			wInd++;
 		}
+//System.out.println();		
 
 		if (wInd>maxX){//--wInd
 			maxX=(int) wInd;
@@ -505,7 +552,7 @@ System.out.println(" CONTIG :"+contigD.contigName+" createPloidyEstimationDatase
 
 		if(series.getItemCount()<5 /*&& !removedContigs.contains(contigD)*/){
 			unsolvedPloidyContigs.add(contigD);
-			System.err.println(" CONTIG :"+contigD.contigName+" added to list for new window length ploidy estimation. series.size="+series.getItemCount());
+			//System.err.println(" CONTIG :"+contigD.contigName+" added to list for new window length ploidy estimation. series.size="+series.getItemCount());
 			
 		}
 
@@ -523,6 +570,8 @@ System.out.println(" CONTIG :"+contigD.contigName+" createPloidyEstimationDatase
 		int currentMode=0;//the most observed ploidy value over the PLOIDY_SMOOTHER_WIDTH
 		int PLOIDY_SMOOTHER_WING=PLOIDY_SMOOTHER_WIDTH/2; //length of each of the sides of the PLOIDY_SMOOTHER window before and after the position being evaluated
 		int [] ploidyCounter=new int[MAX_NB_MIXTURES+1];//over the PLOIDY_SMOOTHER_WIDTH, this vector keeps track of how many times each ploidy is observed
+		int modeThreshold=(PLOIDY_SMOOTHER_WIDTH/3);//the currentMode needs to have a minimal threshold
+		
 		if (wInd > PLOIDY_SMOOTHER_WIDTH) {//we need a minimum of points to average the ploidy
 			
 			// solve the first  positions of the plot
@@ -535,7 +584,7 @@ System.out.println(" CONTIG :"+contigD.contigName+" createPloidyEstimationDatase
 				}
 			}//now store the mode over the first positions
 			for (int v = 0; v < PLOIDY_SMOOTHER_WIDTH/2; v++) {
-				if (currentMode!=0){
+				if (currentMode!=0 && ploidyCounter[currentMode]>modeThreshold){
 					series.add(xValues[v], currentMode);
 				}
 			}
@@ -557,7 +606,7 @@ System.out.println(" CONTIG :"+contigD.contigName+" createPloidyEstimationDatase
 							if(ploidyCounter[pc]>ploidyCounter[currentMode])currentMode=pc;
 						}//else the mode is the same
 					}
-					if (currentMode!=0){
+					if (currentMode!=0 && ploidyCounter[currentMode]>modeThreshold){
 						series.add(xValues[v], currentMode);
 					}
 				}
@@ -576,7 +625,7 @@ System.out.println(" CONTIG :"+contigD.contigName+" createPloidyEstimationDatase
 						}
 					}
 
-					if (currentMode!=0){
+					if (currentMode!=0 && ploidyCounter[currentMode]>modeThreshold ){
 						series.add(xValues[v], currentMode);
 					}
 				}
@@ -588,7 +637,7 @@ System.out.println(" CONTIG :"+contigD.contigName+" createPloidyEstimationDatase
 					if (ploidyCounter[currentMode]<ploidyCounter[yValues[v]]){
 						currentMode=yValues[v];
 					}
-					if (currentMode!=0){
+					if (currentMode!=0 && ploidyCounter[currentMode]>modeThreshold){
 						series.add(xValues[v], currentMode);
 					}
 				}
@@ -602,13 +651,13 @@ System.out.println(" CONTIG :"+contigD.contigName+" createPloidyEstimationDatase
 		}else{
 			removedContigs.add(contigD);
 			
-			System.err.println("Error in contig :"+contigname+". This series have 0 values!!!");
+			System.err.println("Error in contig :"+contigname+". This series have 0 values!!! averagePloidyMode");
 			return series;
 		}
 
 		
 	}
-	
+	/*
 	private XYSeries checkContinuity(XYSeries series, int continuityLength) {
 		//check that at least continuityLength points have the same copy number estimation before deciding if a fragment has a certain ploidy
 //System.out.println(" checking Continuity");
@@ -622,6 +671,7 @@ System.out.println(" CONTIG :"+contigD.contigName+" createPloidyEstimationDatase
 		//System.out.println("checkContinuity:"+series.getItemCount());
 
 		for (int i=0;i<series.getItemCount();i++){
+		
 			if( currentY.equals(series.getY(i) )){//if Y values is currently being observed
 				continousCurrents++;
 				if (continousCurrents>continuityLength){//if the continuity length is respected
@@ -664,7 +714,50 @@ System.out.println(" CONTIG :"+contigD.contigName+" createPloidyEstimationDatase
 		return result;
 	}
 
+*/
+	private XYSeries checkContinuity(XYSeries series, int continuityLength) {
+		//check that at least continuityLength points have the same copy number estimation before deciding if a fragment has a certain ploidy
 
+		
+		int ctr=0;
+		XYSeries result=new XYSeries(" Ploidy Estimation");
+		int [] yvalues=new int[series.getItemCount()];
+		Number currentPloidY=series.getY(0);//current Y value being counted
+		int continousCurrents=0;//nb of contiguous observed values of the current Y value
+		//Number[] firstObservedValues=new Number[continuityLength];//first observed values are stored while verifying that there are at least continuityLength contiguous observations
+
+		for (int i=0;i<series.getItemCount();i++){
+		
+			if( currentPloidY.equals(series.getY(i)) && (currentPloidY.intValue()!=0)){//if PloidY value is currently being observed
+				continousCurrents++;
+				if (continousCurrents>continuityLength){//if the continuity length is respected
+					result.add(series.getX(i),currentPloidY);//add to series
+				}else if (continousCurrents==continuityLength){//the following 2 'else if' allows the first continuityLength observed values to be taken into account 
+					//firstObservedValues[0]=currentY;
+					for (int j=0;j<continuityLength;j++){//add the stored first continuityLength observed values
+						result.add((series.getX(i).intValue()-continuityLength+j+1),currentPloidY);//add to series	
+					}
+				}
+				
+			}else{//new Y values observed
+				
+				if (continousCurrents>=continuityLength){
+					for (int j=0;j<continousCurrents;j++){//add the  first continousCurrents  values
+						if (currentPloidY.intValue()!=0)result.add((series.getX(i).intValue()-continousCurrents+j+1),currentPloidY);//add to series	
+					}
+				}else{//continousCurrents<continuityLength
+					/*
+					for (int j=0;j<continousCurrents;j++){//add the  first continousCurrents  values
+						result.add((series.getX(i).intValue()-continousCurrents+j+1),0);//add 0 to the series	
+					}*/
+				}
+				continousCurrents=0;//reset counter
+				currentPloidY=series.getY(i);//reset observed Y (ploidy)
+			}
+		}
+
+		return result;
+	}
 
 
 	public int getPointPloidyEstimationNaive(double ptCoverage){

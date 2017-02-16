@@ -46,7 +46,6 @@ public class NaivePDF {
 		yDataPoints=new double[readCounts.length];
 		xDataPoints=new double[readCounts.length];
 		
-	//	System.out.println("NaivePDF readCounts.length"+readCounts.length+" smootherWing:"+smootherWing);
 
 		for (int p=0;p<readCounts.length;p++){//for each point
 			double sum=0;

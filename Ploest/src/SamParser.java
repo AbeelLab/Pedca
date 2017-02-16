@@ -43,6 +43,16 @@ public class SamParser {
 
 	public SamParser(String inputFile, String outputfile)
 			throws FileNotFoundException, UnsupportedEncodingException {
+		//reset all static variables
+		readCounts=null;
+		fitPoints=null;
+		RUN_SECOND_ROUND=false;
+		stringSecondRound="";
+		windowLength =0;
+		readsDistributionMaxCoverage=0;
+		readDistributionMaxY=0;
+		barchart=null;
+		
 		System.out.println("VCF option on. vcf file="+Ploest.vcfFile);
 		this.windowLength=Ploest.windowLength;
 		SAMFileReader inputSam = new SAMFileReader(new File(inputFile));
@@ -103,6 +113,9 @@ public class SamParser {
 			readDistributionMaxY=barchart.maxY;
 		    myploter.naivePloestPlotter2ndRound(contigsList,readsDistributionMaxCoverage, barchart.normReadCounts);
 		}
+		
+		myploter.rt.writer.close();
+		myploter.rt.writer2ndRun.close();
 	}
 
 

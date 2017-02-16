@@ -56,7 +56,8 @@ public class Ploest {
 	static int nbOfRuns = 100;// nb of runs of
 
 	public static void main(String[] args) {
-		String[] winLengths = {"500"};// "50", "75", "100", "500", "750", "2000", "3000", "6000", "9000", "10000", "15000","20000", "30000", "40000", "50000", "75000", "10000" };
+		long startTimeGeneral = System.currentTimeMillis();
+		String[] winLengths = { "50","75","100","2000", "3000", "6000", "9000", "10000", "15000","20000", "30000", "40000", "50000","75000", "100000" };//"100","500",
 		for (int wlInd = 0; wlInd < winLengths.length; wlInd++) {
 			try {
 				args[0] = "-p";
@@ -68,22 +69,26 @@ public class Ploest {
 				args[6] = "-o";
 				args[7] = "C://Users//Mel//Documents//BIOINFORMATICS//DELFT_Research//Data//PastorianusCBS_1483";
 				args[8] = "-v";
-				args[9] = "C://Users//Mel//Documents//BIOINFORMATICS//DELFT_Research//Data//Simulated//PhasingAndVCFs//AllChroms//Pilon200_500Sim.vcf";
+				args[9] = "C://Users//Mel//Documents//BIOINFORMATICS//DELFT_Research//Data//PastorianusCBS_1483//VCF//PilonPastorianusCBS.vcf";
 			
 				runPloest(args);
 				
 
 			} catch (Exception e) {
-				System.err.println(args[1] + " could not be run");
+				System.err.println(args[1] + args[3]+" could not be run");
 			}
 
 		}
-
+		long endTimeGeneral = System.currentTimeMillis();
+		long totalTimeGeneral = endTimeGeneral - startTimeGeneral;
+		System.out.println("TOTAL TIME GENERAL (17 runs): " + totalTimeGeneral / 1000);
 	}
 
 
 	public static void runPloest(String[] args) {
+		
 		long startTime = System.currentTimeMillis();
+		baseCallIsOn = false;
 		// printHelp();
 		int argsIndex[] = new int[10]; // 0:-p,projectName
 										// 1:-i,inputFile (bam)
@@ -196,10 +201,7 @@ public class Ploest {
 
 				}
 			} else
-				bp = new SamParser(inputFile, outputFile);// IS THIS
-															// RIGHT???
-															// (AFTER
-															// THE ELSE)
+				bp = new SamParser(inputFile, outputFile);// IS THIS RIGHT??? (AFTER THE ELSE)
 
 		} catch (FileNotFoundException e) {
 			System.out.println("FileNotFoundException");
@@ -214,7 +216,7 @@ public class Ploest {
 
 		long endTime = System.currentTimeMillis();
 		long totalTime = endTime - startTime;
-		System.out.println("TOTAL TIME : " + totalTime / 1000);
+		System.out.println("TOTAL TIME : ["+args[3]+"] :"+ totalTime / 1000);
 	}
 	
 	

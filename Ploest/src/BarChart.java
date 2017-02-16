@@ -85,7 +85,7 @@ public class BarChart {
 		} catch (IOException e) {
 			System.err.println("Problem occurred creating base call chart.");
 		}
-		//System.out.println("BarChar BaseCall printed ");
+		System.out.println("BarChar BaseCall cluster "+cluster+" printed ");
 	}
 
 	//@SuppressWarnings("deprecation")
@@ -277,7 +277,7 @@ private XYDataset createHistDataset( GaussianMixturePDF gaussFit) {
 		for (int i=0;i<readCounts.length;i++){
 			sum+=readCounts[i];
 		}
-		System.out.println("SUM:"+sum);
+		//System.out.println("SUM:"+sum);
 		for (int i=0;i<readCounts.length;i++){
 			normalizedReadCounts[i]=100*(float)readCounts[i]/sum;
 		}

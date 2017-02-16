@@ -56,9 +56,9 @@ public class ContigData {
 				wsum += startPos[stIndex++];		
 			}
 			
-			windPos.set(wdIndex++, (int) (wsum /(windLength/COV_RATE)));// relative average of coverage over the range of the window;
-			if (windPos.get(wdIndex-1)>maxX)maxX=windPos.get(wdIndex-1);
-		
+			windPos.set(wdIndex, (int) (wsum /(windLength/COV_RATE)));// relative average of coverage over the range of the window;
+			if (windPos.get(wdIndex)>maxX)maxX=windPos.get(wdIndex);
+			wdIndex++;
 			stIndex = stIndex - (wl / 2);// window slides over all positions for a length of wl , but a new window is computed after each wl/2;
 			wsum=0;
 	

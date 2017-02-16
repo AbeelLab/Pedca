@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Scanner;
 
 public class VCFManager {
+	
 	List<String> humanLines = new ArrayList<String>();
 	ArrayList<ArrayList<Double>> vcfMatrix1 = new ArrayList<ArrayList<Double>>();
 	ArrayList<ArrayList<Double>> vcfMatrix2 = new ArrayList<ArrayList<Double>>();
@@ -15,17 +16,21 @@ public class VCFManager {
 	String endFix = "";
 	String outputMatrixFile1 = "Matrix1stCluster.vcf";
 	String outputMatrixFile2 = "Matrix2ndCluster.vcf";
-	static int depthThreshold=10;//coverage threshold to consider a variation valid
+	final static int depthThreshold=10;//coverage threshold to consider a variation valid
+	NaivePloestPlotter ploestPlotter;
 	
 	// constructor from vcf file
-	public VCFManager(String inputVcf_file) throws FileNotFoundException, InterruptedException {
+	public VCFManager(String inputVcf_file,NaivePloestPlotter n) throws FileNotFoundException, InterruptedException {
+		System.out.println("cluster 1 size:"+n.LENGTH_OF_CLUSTER_ONE_CONTIGS+" cluster 2 size:"+n.LENGTH_OF_CLUSTER_TWO_CONTIGS);
+		ploestPlotter=n;
 		File pilonOutFolder = new File(outputFileRoot);
 		pilonOutFolder.mkdirs();
 		vcfExtractor(inputVcf_file);
 	}
 
 	public void vcfExtractor(String inputFile) throws FileNotFoundException, InterruptedException {
-		System.out.println("--------------------     vcfExtractor    ----------------------");
+		System.out.println("--------------------     vcfExtractor    ----------------------"+inputFile);
+		System.out.println("   ContigsNamesCluster1" + ploestPlotter.continousPloidyContigsNamesCluster1.size()+" NaivePloestPlotter.continousPloidyContigsNamesCluster2:"+ploestPlotter.continousPloidyContigsNamesCluster2.size());
 		String currentChromosome = "";
 		double chromNumber = 0;
 		int nbOfVarsCluster1 = 0;
@@ -33,9 +38,9 @@ public class VCFManager {
 		
 		// solve the paths
 		outputMatrixFile1 = outputFileRoot + "\\" + outputMatrixFile1;
-		System.out.println("   outputMatrixFile1" + outputMatrixFile1);
+		System.out.println("   outputMatrixFile1 " + outputMatrixFile1);
 		outputMatrixFile2 = outputFileRoot + "\\" + outputMatrixFile2;
-		System.out.println("   outputMatrixFile2" + outputMatrixFile2);
+		System.out.println("   outputMatrixFile2 " + outputMatrixFile2);
 		// We are interested in the 6th column and the DEPTH column:
 		// 6th="Count of As, Cs, Gs, Ts at locus"
 
@@ -72,12 +77,12 @@ public class VCFManager {
 				currentChromosome = chrom;
 				chromNumber++;
 				// check if first Contig is in BaseCall List: cluster1
-				if (NaivePloestPlotter.continousPloidyContigsNamesCluster1.contains(currentChromosome)) {
+				if (ploestPlotter.continousPloidyContigsNamesCluster1.contains(currentChromosome)) {
 					currentContigIsInBaseCall_CLUSTER_1_List = true;
 				} else
 					currentContigIsInBaseCall_CLUSTER_1_List = false;
 				// check if first Contig is in BaseCall List: cluster2
-				if (NaivePloestPlotter.continousPloidyContigsNamesCluster2.contains(currentChromosome)) {
+				if (ploestPlotter.continousPloidyContigsNamesCluster2.contains(currentChromosome)) {
 					currentContigIsInBaseCall_CLUSTER_2_List = true;
 				} else
 					currentContigIsInBaseCall_CLUSTER_2_List = false;
@@ -132,12 +137,13 @@ public class VCFManager {
 							if (!currentChromosome.equals(chrom)) {// if change in chrom
 								currentChromosome = chrom;
 								chromNumber++;
+
 								// check if new currentContig is in BaseCall List:
-								if (NaivePloestPlotter.continousPloidyContigsNamesCluster1.contains(currentChromosome)) {
+								if (ploestPlotter.continousPloidyContigsNamesCluster1.contains(currentChromosome)) {
 									currentContigIsInBaseCall_CLUSTER_1_List = true;
 								} else{
 									currentContigIsInBaseCall_CLUSTER_1_List = false;
-									if (NaivePloestPlotter.continousPloidyContigsNamesCluster2.contains(currentChromosome)) {
+									if (ploestPlotter.continousPloidyContigsNamesCluster2.contains(currentChromosome)) {
 										currentContigIsInBaseCall_CLUSTER_2_List = true;
 									} else{
 										currentContigIsInBaseCall_CLUSTER_2_List = false;
@@ -149,7 +155,6 @@ public class VCFManager {
 					}
 					ct++;
 				} else if (currentContigIsInBaseCall_CLUSTER_2_List) {// treates variations in contigs from cluster 2
-
 					next = sc.next();
 					pos = Integer.parseInt(next);// get pos//sc.next(); //skip pos //
 
@@ -195,14 +200,13 @@ public class VCFManager {
 							chrom = sc.next();// contig name
 							if (!currentChromosome.equals(chrom)) {// if change in chrom
 								currentChromosome = chrom;
-								chromNumber++;
-								
+								chromNumber++;								
 								// check if new currentContig is in BaseCall List: 
-								if (NaivePloestPlotter.continousPloidyContigsNamesCluster1.contains(currentChromosome)) {
+								if (ploestPlotter.continousPloidyContigsNamesCluster1.contains(currentChromosome)) {
 									currentContigIsInBaseCall_CLUSTER_1_List = true;
 								} else{
 									currentContigIsInBaseCall_CLUSTER_1_List = false;
-									if (NaivePloestPlotter.continousPloidyContigsNamesCluster2.contains(currentChromosome)) {
+									if (ploestPlotter.continousPloidyContigsNamesCluster2.contains(currentChromosome)) {
 										currentContigIsInBaseCall_CLUSTER_2_List = true;
 									} else{
 										currentContigIsInBaseCall_CLUSTER_2_List = false;
@@ -220,13 +224,12 @@ public class VCFManager {
 						if (!currentChromosome.equals(chrom)) {// if change in chrom/contig
 							currentChromosome = chrom;
 							chromNumber++;
-
 							// check if new currentContig is in BaseCall List: cluster1
-							if (NaivePloestPlotter.continousPloidyContigsNamesCluster1.contains(currentChromosome)) {
+							if (ploestPlotter.continousPloidyContigsNamesCluster1.contains(currentChromosome)) {
 								currentContigIsInBaseCall_CLUSTER_1_List = true;
 							} else{
 								currentContigIsInBaseCall_CLUSTER_1_List = false;
-								if (NaivePloestPlotter.continousPloidyContigsNamesCluster2.contains(currentChromosome)) {
+								if (ploestPlotter.continousPloidyContigsNamesCluster2.contains(currentChromosome)) {
 									currentContigIsInBaseCall_CLUSTER_2_List = true;
 								} else{
 									currentContigIsInBaseCall_CLUSTER_2_List = false;
@@ -238,7 +241,6 @@ public class VCFManager {
 				}
 
 			}
-
 			printVCFmatrix1(nbOfVarsCluster1);
 			printVCFmatrix2(nbOfVarsCluster2);
 			if (sc != null)
@@ -253,7 +255,7 @@ public class VCFManager {
 	
 
 	public void printVCFmatrix1(double nbOfVars) {
-		System.out.println("Destination path of outputMatrixFile 1: " + outputMatrixFile1);
+		System.out.println("Destination path of outputMatrixFile 1: " + outputMatrixFile1+" size:"+vcfMatrix1.size());
 		PrintStream stdout = System.out;
 		PrintStream myConsole = null;
 		try {
@@ -276,8 +278,8 @@ public class VCFManager {
 				}
 			}
 			System.out.println("# Total nb of variation positions =  " + vcfMatrix1.size() + " over "
-					+ NaivePloestPlotter.LENGTH_OF_CLUSTER_ONE_CONTIGS + "bp which is "
-					+ (100 * (double) vcfMatrix1.size() / NaivePloestPlotter.LENGTH_OF_CLUSTER_ONE_CONTIGS)
+					+ ploestPlotter.LENGTH_OF_CLUSTER_ONE_CONTIGS + "bp which is "
+					+ (100 * (double) vcfMatrix1.size() / ploestPlotter.LENGTH_OF_CLUSTER_ONE_CONTIGS)
 					+ " % of the length of all contigs with that ploidy");
 			myConsole.close();
 		} catch (Exception e) {
@@ -290,7 +292,6 @@ public class VCFManager {
 			}
 		}
 		System.setOut(stdout);
-		System.out.println("End printVCFmatrix1 ");
 		BaseCallBarchar(vcfMatrix1,1);
 		
 	}
@@ -318,14 +319,13 @@ public class VCFManager {
 				baseCalls[j]=baseCallsList.get(j);
 			}
 			BarChart barchart = new BarChart(baseCalls,cluster);
-			System.out.println("BaseCall bar chart printed for cluster "+cluster);
 		}	
 	}
 
 	
 	
 	public void printVCFmatrix2(double nbOfVars2) {
-		System.out.println("Destination path of outputMatrixFile2: " + outputMatrixFile2);
+		System.out.println("Destination path of outputMatrixFile2: " + outputMatrixFile2+" size:"+vcfMatrix2.size());
 		PrintStream stdout = System.out;
 		PrintStream myConsole = null;
 		try {
@@ -346,8 +346,8 @@ public class VCFManager {
 				}
 			}
 			System.out.println("# Total nb of variation positions =  " + vcfMatrix2.size() + " over "
-					+ NaivePloestPlotter.LENGTH_OF_CLUSTER_TWO_CONTIGS + "bp which is "
-					+ (100 * (double) vcfMatrix2.size() / NaivePloestPlotter.LENGTH_OF_CLUSTER_TWO_CONTIGS)
+					+ ploestPlotter.LENGTH_OF_CLUSTER_TWO_CONTIGS + "bp which is "
+					+ (100 * (double) vcfMatrix2.size() / ploestPlotter.LENGTH_OF_CLUSTER_TWO_CONTIGS)
 					+ " % of the length of all contigs with that ploidy");
 			myConsole.close();
 		} catch (Exception e) {

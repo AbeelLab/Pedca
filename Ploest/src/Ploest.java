@@ -57,7 +57,7 @@ public class Ploest {
 
 	public static void main(String[] args) {
 		long startTimeGeneral = System.currentTimeMillis();
-		String[] winLengths = { "50","75","100","2000", "3000", "6000", "9000", "10000", "15000","20000", "30000", "40000", "50000","75000", "100000" };//"100","500",
+		String[] winLengths = {"7000"};//"50","75","100","2000", "3000", "6000", "9000", "10000", "15000","20000", "30000", "40000", "50000","75000", "100000" };//"100","500",
 		for (int wlInd = 0; wlInd < winLengths.length; wlInd++) {
 			try {
 				args[0] = "-p";

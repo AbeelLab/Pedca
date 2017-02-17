@@ -138,7 +138,7 @@ public class RatioFindNaive
 			return max;
 		}
 
-		private void computeScore(int [] cnvi,double [] md) {
+		private void computeScore(int [] cnvi, double [] md) {
 
 			//find for each remaining gaussian, the minimum index
 			for(int d=1;d<ds.length;d++){//for each of the remaining gaussians d

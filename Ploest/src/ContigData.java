@@ -13,6 +13,9 @@ public class ContigData {
 	int maxWindows;
 	int maxY=0;
 	int[] basecalls;
+	
+	//variables for measuring fragmented ploidy
+	boolean thisContigHasContinousPloidy=true;
 
 	
 	static double COV_RATE;//10 default ratio by which the average coverage of each sliding window  is mutiplied

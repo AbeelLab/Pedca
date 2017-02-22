@@ -80,7 +80,7 @@ public class NaivePloestPlotter {
 		LENGTH_OF_CLUSTER_TWO_CONTIGS=0;
 		continousPloidyContigsNamesCluster1=new ArrayList<String> () ; 
 		continousPloidyContigsNamesCluster2=new ArrayList<String> () ; 
-		System.out.println(" PloestPlotter constructor LENGTH_OF_CLUSTER_ONE_CONTIGS:"+LENGTH_OF_CLUSTER_ONE_CONTIGS+"  LENGTH_OF_CLUSTER_TWO_CONTIGS:"+LENGTH_OF_CLUSTER_TWO_CONTIGS);
+		//System.out.println(" PloestPlotter constructor LENGTH_OF_CLUSTER_ONE_CONTIGS:"+LENGTH_OF_CLUSTER_ONE_CONTIGS+"  LENGTH_OF_CLUSTER_TWO_CONTIGS:"+LENGTH_OF_CLUSTER_TWO_CONTIGS);
 		
 		readCounts=rc;
 		contigsList=contList;
@@ -124,7 +124,7 @@ public class NaivePloestPlotter {
 		Number newPloidy=0;
 		int ItemsSize=0;
 		int firstPloidyPos=0;
-		boolean thisContigHasContinousPloidy=true;
+		
 		
 		//get first valid ploidy point
 		if(series.getItemCount()>0){
@@ -160,7 +160,7 @@ for (int yv=0;yv<ItemsSize;yv++){
 				if(!newPloidy.equals(prevPloidy)  ){//segmentation point
 //System.out.println();
 //System.out.print("  BREAK at:"+yv+" prevPloidy:"+prevPloidy+" new:"+newPloidy+" ");
-					thisContigHasContinousPloidy=false;
+					contigD.thisContigHasContinousPloidy=false;
 					if(/*prevPloidy!=null && */prevPloidy.intValue()!=0){
 						
 						writer.println(contigname+"\t"+((int)prevPos*SamParser.windowLength/2)+"\t"+(yv*SamParser.windowLength/2)+"\t"+prevPloidy);
@@ -169,10 +169,8 @@ for (int yv=0;yv<ItemsSize;yv++){
 						
 						prevPos=yv;
 					}else{
-						thisContigHasContinousPloidy=false;
+						contigD.thisContigHasContinousPloidy=false;
 //System.out.println(contigname+"--\t"+((int)prevPos*SamParser.windowLength/2)+"\t"+(yv*SamParser.windowLength/2)+"\t"+prevPloidy);
-
-						//writer.println(contigname+"\t"+((int)prevPos*SamParser.windowLength/2)+"\t"+(yv*SamParser.windowLength/2)+"\t"+prevPloidy);
 						prevPloidy=newPloidy;
 						prevPos=yv;
 					}
@@ -181,7 +179,7 @@ for (int yv=0;yv<ItemsSize;yv++){
 			
 //System.out.println(" thisContigHasContinousPloidy "+thisContigHasContinousPloidy);
 
-			if (thisContigHasContinousPloidy && (prevPloidy.intValue()!=0) ){//coninuous contig with valid ploidy
+			if (contigD.thisContigHasContinousPloidy && (prevPloidy.intValue()!=0) ){//coninuous contig with valid ploidy
 				writer.println(contigname+"\t"+((int)prevPos*SamParser.windowLength/2)+"\t"+contigD.maxLength+"\t"+prevPloidy);
 //System.out.print(contigname+"\t"+((int)prevPos*SamParser.windowLength/2)+"\t"+contigD.maxLength+"\t"+prevPloidy);
 
@@ -203,7 +201,7 @@ for (int yv=0;yv<ItemsSize;yv++){
 			}
 //System.out.println("-- Ploest.baseCallIsOn "+Ploest.baseCallIsOn +" thisContigHasContinousPloidy"+thisContigHasContinousPloidy);
 			//store all contigs with ploidy belonging to cluster 1 or 2
-			if(Ploest.baseCallIsOn && thisContigHasContinousPloidy /*&& prevPloidy.intValue()==rt.bestScore.bestCNVIndexes[0]*/){
+			if(Ploest.baseCallIsOn && contigD.thisContigHasContinousPloidy ){
 //System.out.println("-- Ploest.baseCallIsOn  Ploidy:"+ prevPloidy.intValue()+" CNVIndexes[0]:"+rt.bestScore.bestCNVIndexes[0]+" CNVIndexes[1]:"+rt.bestScore.bestCNVIndexes[1]);
 				
 				if( prevPloidy.intValue()==rt.bestScore.bestCNVIndexes[0]){//contigs from cluster 1
@@ -412,9 +410,9 @@ public void displayPloidyAndCoveragePlotNaive( PrintWriter writ)throws IOExcepti
 				}
 			}
 			
-			Ploest.windowLength=minLength/25;
+			Ploest.windowLength=(int) (minLength/(1.5*CONTINUITY_POINTS));
 			writ.println("#>A new estimation will be attempted with a shorter window length of "+Ploest.windowLength);
-			if(Ploest.windowLength<10)Ploest.windowLength=10;
+			if(Ploest.windowLength<8)Ploest.windowLength=8;
 			SamParser.RUN_SECOND_ROUND=true;	
 			//update contigs info
 			for (int u=0;u<unsolvedPloidyContigs.size();u++){

@@ -53,10 +53,9 @@ public class SamParser {
 		readDistributionMaxY=0;
 		barchart=null;
 		
-		System.out.println("VCF option on. vcf file="+Ploest.vcfFile);
+
 		this.windowLength=Ploest.windowLength;
 		SAMFileReader inputSam = new SAMFileReader(new File(inputFile));
-		//readCounts = new int[nc];
 		nbSeq = inputSam.getFileHeader().getSequenceDictionary().size();// nb of sequences in the FileHeader
 		contigsList = new HashMap<String, ContigData>(nbSeq);// Map of  ContigDatas(value) and their name (key)
 		ArrayList<Integer> contigLengths = new ArrayList<Integer> ();
@@ -290,7 +289,7 @@ public class SamParser {
 		int SAFE_RANGE=(int) Math.ceil(midPoint*2);
 		if((readCounts.length-midPoint)>SAFE_RANGE){
 
-			System.out.println("reaffecting ReadCounts range. Old:"+readCounts.length+ " new:"+(int)Math.ceil(midPoint*SAFE_RANGE));
+			System.out.println("keeping original ReadCounts range? no, reaffecting ReadCounts range. Old:"+readCounts.length+ " new:"+(int)Math.ceil(midPoint*SAFE_RANGE));
 			totalDataPoints=0;
 			readCounts = new int[(int)SAFE_RANGE];
 			int nbNullVals=0;
@@ -329,7 +328,7 @@ public class SamParser {
 
 
 
-		}else System.out.println("keeping original ReadCounts range. keeping:"+readCounts.length+ " instead of midpoint calculated:"+(int)Math.ceil(midPoint*1.1));
+		}else System.out.println("Keeping original ReadCounts range? yes, keeping:"+readCounts.length+ " instead of changing to mid point :"+(int)Math.ceil(midPoint*1.1));
 		//System.out.println("sum:"+sum+ " midPoint:"+midPoint+ " readCounts size:"+readCounts.length);
 	}
 

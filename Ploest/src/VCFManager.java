@@ -125,7 +125,7 @@ public class VCFManager {
 					currentMatrixLine.add(bcG);// 9
 					currentMatrixLine.add(bcT);// 10
 
-					if ((nextFilter.substring(0, 3).equals("Amb") || nextFilter.substring(0, 3).equals("Del"))&&(depth > 0.0)) {
+					if ((nextFilter.substring(0, 3).equals("Amb") || nextFilter.substring(0, 3).equals("Del"))&&(depth > depthThreshold)) {
 						vcfMatrix1.add(currentMatrixLine);
 						nbOfVarsCluster1++;
 					}
@@ -173,7 +173,7 @@ public class VCFManager {
 						depth = (double) Integer
 								.parseInt(formatSample.get(0).substring(3, formatSample.get(0).length()));
 						baseCalls = Arrays.asList(formatSample.get(5).substring(3, formatSample.get(5).length()).split(","));
-						if (depth != 0.0) {
+						if (depth > depthThreshold) {
 							bcA = Integer.parseInt(baseCalls.get(0)) / depth;
 							bcC = Integer.parseInt(baseCalls.get(1)) / depth;
 							bcG = Integer.parseInt(baseCalls.get(2)) / depth;
@@ -188,7 +188,7 @@ public class VCFManager {
 					currentMatrixLine.add(bcG);// 9
 					currentMatrixLine.add(bcT);// 10
 
-					if ((nextFilter.substring(0, 3).equals("Amb") || nextFilter.substring(0, 3).equals("Del"))&&(depth > 0.0)) {
+					if ((nextFilter.substring(0, 3).equals("Amb") || nextFilter.substring(0, 3).equals("Del"))&&(depth > depthThreshold)) {
 						vcfMatrix2.add(currentMatrixLine);
 						nbOfVarsCluster2++;
 					}

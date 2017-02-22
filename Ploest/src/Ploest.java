@@ -9,15 +9,7 @@ import dataFitters.GaussianDataFitter;
 
 public class Ploest {
 	/*
-	 * BASECLEAR -p PloestBaseClear2000 -i
-	 * C:\Users\Mel\Documents\BIOINFORMATICS\DELFT_Research\Data\
-	 * PastorianusCBS_1483\BAM\sorted_CBS1483Pastorianus.bam -o
-	 * C:\Users\Mel\Documents\BIOINFORMATICS\DELFT_Research\Data\
-	 * PastorianusCBS_1483 -v
-	 * C:\Users\Mel\Documents\BIOINFORMATICS\DELFT_Research\Data\
-	 * PastorianusCBS_1483\VCF\PilonPastorianusCBS.vcf
-	 */
-	/*
+	 *
 	 * SIMULATEDDATASET
 	 * 
 	 * -p PloestSim500All -i
@@ -28,32 +20,14 @@ public class Ploest {
 	 * PhasingAndVCFs\AllChroms\Pilon200_500Sim.vcf
 	 * 
 	 * 
-	 * 
-	 * 
-	 * NOVOGENE
-	 * static String inputFile
-	 * ="C://Users//Mel//Documents//BIOINFORMATICS//DELFT_Research//Data//CBS_Novogene//sorted_CBS1483Novogene.bam";
-	 * static String outputFile
-	 * ="C://Users//Mel//Documents//BIOINFORMATICS//DELFT_Research//Data//SimulatedReads//CBS_Novogene";
-	 * static File fin=new File(
-	 * "C://Users//Mel//Documents//BIOINFORMATICS//DELFT_Research//Data//SimulatedReads//samFiles"
-	 * );
-	 * 
-	 * 
-	 * args[0] = "-p";
-				args[1] = "PloEstNovogene" ;	
-				args[2] = "-w";
-				args[3] = winLengths[wlInd];
-				args[4] = "-i";
-				args[5] = "C://Users//Mel//Documents//BIOINFORMATICS//DELFT_Research//Data//CBS_Novogene//sorted_CBS1483Novogene.bam";
-				args[6] = "-o";
-				args[7] = "C://Users//Mel//Documents//BIOINFORMATICS//DELFT_Research//Data//SimulatedReads//CBS_Novogene";
-				args[8] = "-v";
-				args[9] = "C://Users//Mel//Documents//BIOINFORMATICS//DELFT_Research//Data//SimulatedReads//CBS_Novogene//Pilon//PilonCBSNovogene.vcf";
-
-	 * 
-	 * BASECLEAR
-	 * 
+	 *  BASECLEAR -p PloestBaseClear2000 -i
+	 * C:\Users\Mel\Documents\BIOINFORMATICS\DELFT_Research\Data\
+	 * PastorianusCBS_1483\BAM\sorted_CBS1483Pastorianus.bam -o
+	 * C:\Users\Mel\Documents\BIOINFORMATICS\DELFT_Research\Data\
+	 * PastorianusCBS_1483 -v
+	 * C:\Users\Mel\Documents\BIOINFORMATICS\DELFT_Research\Data\
+	 * PastorianusCBS_1483\VCF\PilonPastorianusCBS.vcf
+	 *
 	 * args[0] = "-p";
 				args[1] = "PloestBaseClear" ;	
 				args[2] = "-w";
@@ -66,12 +40,45 @@ public class Ploest {
 				args[9] = "C://Users//Mel//Documents//BIOINFORMATICS//DELFT_Research//Data//PastorianusCBS_1483//VCF//PilonPastorianusCBS.vcf";
 			
 	 * 
+	 * NOVOGENE
+	 * static String inputFile
+	 * ="C://Users//Mel//Documents//BIOINFORMATICS//DELFT_Research//Data//CBS_Novogene//sorted_CBS1483Novogene.bam";
+	 * static String outputFile
+	 * ="C://Users//Mel//Documents//BIOINFORMATICS//DELFT_Research//Data//SimulatedReads//CBS_Novogene";
+	 * static File fin=new File(
+	 * "C://Users//Mel//Documents//BIOINFORMATICS//DELFT_Research//Data//SimulatedReads//samFiles"
+	 * );
+	 * 
+	 * 				args[0] = "-p";
+				args[1] = "PloEstNovogene" ;	
+				args[2] = "-w";
+				args[3] = winLengths[wlInd];
+				args[4] = "-i";
+				args[5] = "C://Users//Mel//Documents//BIOINFORMATICS//DELFT_Research//Data//CBS_Novogene//sorted_CBS1483Novogene.bam";
+				args[6] = "-o";
+				args[7] = "C://Users//Mel//Documents//BIOINFORMATICS//DELFT_Research//Data//CBS_Novogene";
+				args[8] = "-v";
+				args[9] = "C://Users//Mel//Documents//BIOINFORMATICS//DELFT_Research//Data//CBS_Novogene//Pilon//PilonCBSNovogene.vcf";
+	 * 
+	 * BASECLEAR
+	 * 
+	 * args[0] = "-p";
+				args[1] = "PloestBaseClear" ;	
+				args[2] = "-w";
+				args[3] = winLengths[wlInd];
+				args[4] = "-i";
+				args[5] = "C://Users//Mel//Documents//BIOINFORMATICS//DELFT_Research//Data//CBS_Baseclear//BAM//sorted_CBS1483Pastorianus.bam";
+				args[6] = "-o";
+				args[7] = "C://Users//Mel//Documents//BIOINFORMATICS//DELFT_Research//Data//CBS_Baseclear";
+				args[8] = "-v";
+				args[9] = "C://Users//Mel//Documents//BIOINFORMATICS//DELFT_Research//Data//CBS_Baseclear//VCF//PilonPastorianusCBS.vcf";
+			
+	 * 
 	 */
-	static String projectName = "PloEstCBS1483_wlenght2000";
-	static String inputFile = "C://Users//Mel//Documents//BIOINFORMATICS//DELFT_Research//Data//CBS_1483//sorted_CBS1483.bam";
-	static String outputFile = "C://Users//Mel//Documents//BIOINFORMATICS//DELFT_Research//Data//SimulatedReads//CBS_1483";
-	static File fin = new File(
-			"C://Users//Mel//Documents//BIOINFORMATICS//DELFT_Research//Data//CBS_1483//sorted_CBS1483.bam");
+	static String projectName = "";
+	static String inputFile = "";
+	static String outputFile = "";
+	//static File fin = new File("C://Users//Mel//Documents//BIOINFORMATICS//DELFT_Research//Data//CBS_1483//sorted_CBS1483.bam");
 
 	static File vcfFile;
 	static boolean baseCallIsOn = false;
@@ -88,21 +95,21 @@ public class Ploest {
 
 	public static void main(String[] args) {
 		long startTimeGeneral = System.currentTimeMillis();
-		String[] winLengths = {"6000"};//"50","75","100","2000", "3000", "6000", "9000", "10000", "15000","20000", "30000", "40000", "50000","75000", "100000" };//"100","500",
+		String[] winLengths = {"750"};//"50","75","100","500","750","1000","1500","2000", "3000", "6000", "9000", "10000", "15000","20000", "30000", "40000", "50000","75000", "100000" };//"100","500",
 		for (int wlInd = 0; wlInd < winLengths.length; wlInd++) {
 			try {
 				
 				
 				args[0] = "-p";
-				args[1] = "PloEstNovogene" ;	
+				args[1] = "PloestBaseClear" ;	
 				args[2] = "-w";
 				args[3] = winLengths[wlInd];
 				args[4] = "-i";
-				args[5] = "C://Users//Mel//Documents//BIOINFORMATICS//DELFT_Research//Data//CBS_Novogene//sorted_CBS1483Novogene.bam";
+				args[5] = "C://Users//Mel//Documents//BIOINFORMATICS//DELFT_Research//Data//CBS_Baseclear//BAM//sorted_CBS1483Pastorianus.bam";
 				args[6] = "-o";
-				args[7] = "C://Users//Mel//Documents//BIOINFORMATICS//DELFT_Research//Data//CBS_Novogene";
+				args[7] = "C://Users//Mel//Documents//BIOINFORMATICS//DELFT_Research//Data//CBS_Baseclear";
 				args[8] = "-v";
-				args[9] = "C://Users//Mel//Documents//BIOINFORMATICS//DELFT_Research//Data//CBS_Novogene//Pilon//PilonCBSNovogene.vcf";
+				args[9] = "C://Users//Mel//Documents//BIOINFORMATICS//DELFT_Research//Data//CBS_Baseclear//VCF//PilonPastorianusCBS.vcf";
 
 				
 				
@@ -116,7 +123,7 @@ public class Ploest {
 		}
 		long endTimeGeneral = System.currentTimeMillis();
 		long totalTimeGeneral = endTimeGeneral - startTimeGeneral;
-		System.out.println("TOTAL TIME GENERAL (17 runs): " + totalTimeGeneral / 1000);
+		System.out.println("TOTAL TIME GENERAL (all runs): " + totalTimeGeneral / 1000);
 	}
 
 
@@ -204,7 +211,9 @@ public class Ploest {
 					if (argsIndex[8] == 0) {
 						inputFile = args[argsIndex[1]];
 					} else {
-						fin = new File(args[argsIndex[8]]);
+						//TO DO
+						//implement multiple input files
+						//fin = new File(args[argsIndex[8]]);
 					}
 					if (argsIndex[9] != 0) {
 						vcfFile = new File(args[argsIndex[9]]);
@@ -228,15 +237,14 @@ public class Ploest {
 		System.out.println("COV_RATE=" + COV_RATE);
 		try {
 			if (args.length > 0) {
-				if (argsIndex[8] == 0) {
+				if (argsIndex[8] == 0) {//one single input file
 					bp = new SamParser(inputFile, outputFile);
 
 				} else {
-					bp = new SamParser(fin, outputFile);
-
+					System.out.println("The multiple file options is not yet implemeted. Try Plpoest again running one file at a time " );
+					//TO DO
 				}
-			} else
-				bp = new SamParser(inputFile, outputFile);// IS THIS RIGHT??? (AFTER THE ELSE)
+			} else  bp = new SamParser(inputFile, outputFile);// IS THIS RIGHT??? (AFTER THE ELSE)
 
 		} catch (FileNotFoundException e) {
 			System.out.println("FileNotFoundException");

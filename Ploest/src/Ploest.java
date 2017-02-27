@@ -49,16 +49,17 @@ public class Ploest {
 	 * "C://Users//Mel//Documents//BIOINFORMATICS//DELFT_Research//Data//SimulatedReads//samFiles"
 	 * );
 	 * 
-	 * 				args[0] = "-p";
+	 * 			args[0] = "-p";
 				args[1] = "PloEstNovogene" ;	
 				args[2] = "-w";
 				args[3] = winLengths[wlInd];
 				args[4] = "-i";
-				args[5] = "C://Users//Mel//Documents//BIOINFORMATICS//DELFT_Research//Data//CBS_Novogene//sorted_CBS1483Novogene.bam";
+				args[5] = "C://Users//Mel//Documents//BIOINFORMATICS//DELFT_Research//Data//CBS_Novogene//BAM//sorted_CBSNovogene3.bam";
 				args[6] = "-o";
 				args[7] = "C://Users//Mel//Documents//BIOINFORMATICS//DELFT_Research//Data//CBS_Novogene";
 				args[8] = "-v";
 				args[9] = "C://Users//Mel//Documents//BIOINFORMATICS//DELFT_Research//Data//CBS_Novogene//Pilon//PilonCBSNovogene.vcf";
+
 	 * 
 	 * BASECLEAR
 	 * 
@@ -72,7 +73,8 @@ public class Ploest {
 				args[7] = "C://Users//Mel//Documents//BIOINFORMATICS//DELFT_Research//Data//CBS_Baseclear";
 				args[8] = "-v";
 				args[9] = "C://Users//Mel//Documents//BIOINFORMATICS//DELFT_Research//Data//CBS_Baseclear//VCF//PilonPastorianusCBS.vcf";
-			
+
+							
 	 * 
 	 */
 	static String projectName = "";
@@ -95,21 +97,21 @@ public class Ploest {
 
 	public static void main(String[] args) {
 		long startTimeGeneral = System.currentTimeMillis();
-		String[] winLengths = {"750"};//"50","75","100","500","750","1000","1500","2000", "3000", "6000", "9000", "10000", "15000","20000", "30000", "40000", "50000","75000", "100000" };//"100","500",
+		String[] winLengths = { "1500","2000", "3000","5000", "6500", "9000", "10000", "15000","20000", "30000", "40000", "50000","75000"};//"50","100","250","400","500","750","1000","1500","2000", "3000","5000", "6500", "9000", "10000", "15000","20000", "30000", "40000", "50000","75000"};		
 		for (int wlInd = 0; wlInd < winLengths.length; wlInd++) {
 			try {
 				
 				
 				args[0] = "-p";
-				args[1] = "PloestBaseClear" ;	
+				args[1] = "PloEstNovogene" ;	
 				args[2] = "-w";
 				args[3] = winLengths[wlInd];
 				args[4] = "-i";
-				args[5] = "C://Users//Mel//Documents//BIOINFORMATICS//DELFT_Research//Data//CBS_Baseclear//BAM//sorted_CBS1483Pastorianus.bam";
+				args[5] = "C://Users//Mel//Documents//BIOINFORMATICS//DELFT_Research//Data//CBS_Novogene//BAM//sorted_CBSNovogene.bam";
 				args[6] = "-o";
-				args[7] = "C://Users//Mel//Documents//BIOINFORMATICS//DELFT_Research//Data//CBS_Baseclear";
+				args[7] = "C://Users//Mel//Documents//BIOINFORMATICS//DELFT_Research//Data//CBS_Novogene//WithVCF";
 				args[8] = "-v";
-				args[9] = "C://Users//Mel//Documents//BIOINFORMATICS//DELFT_Research//Data//CBS_Baseclear//VCF//PilonPastorianusCBS.vcf";
+				args[9] = "C://Users//Mel//Documents//BIOINFORMATICS//DELFT_Research//Data//CBS_Novogene//Pilon//PilonCBSNovogene.vcf";
 
 				
 				
@@ -123,7 +125,7 @@ public class Ploest {
 		}
 		long endTimeGeneral = System.currentTimeMillis();
 		long totalTimeGeneral = endTimeGeneral - startTimeGeneral;
-		System.out.println("TOTAL TIME GENERAL (all runs): " + totalTimeGeneral / 1000);
+		System.out.println("TOTAL TIME GENERAL ("+winLengths.length+" run/s): " + totalTimeGeneral / 1000);
 	}
 
 
@@ -157,6 +159,7 @@ public class Ploest {
 
 				for (int i = 0; i < args.length; i++) {
 					String arg = args[i];
+				
 					switch (arg) {
 					case "-p":
 						argsIndex[0] = i + 1;
@@ -192,11 +195,10 @@ public class Ploest {
 						break;
 					}
 				}
-
 				try {
 
 					outputFile = args[argsIndex[6]];
-
+					System.out.println("outputFile :"+outputFile);
 					if (argsIndex[2] != 0)
 						SIGNIFICANT_MIN = Double.parseDouble(args[argsIndex[2]]);
 					if (argsIndex[3] != 0)
@@ -211,10 +213,13 @@ public class Ploest {
 					if (argsIndex[8] == 0) {
 						inputFile = args[argsIndex[1]];
 					} else {
+						System.err.println("argsIndex[8] :"+argsIndex[8] + " inputFile = "+inputFile);
 						//TO DO
 						//implement multiple input files
 						//fin = new File(args[argsIndex[8]]);
 					}
+					
+					
 					if (argsIndex[9] != 0) {
 						vcfFile = new File(args[argsIndex[9]]);
 						baseCallIsOn = true;
@@ -231,7 +236,7 @@ public class Ploest {
 
 		currentFolder = new File(outputFile + "//" + projectName + "//Ploidy_Estimation_Charts//");
 		currentFolder.mkdirs();
-
+		
 		SamParser bp = null;
 		// COV_RATE=windowLength/5;
 		System.out.println("COV_RATE=" + COV_RATE);

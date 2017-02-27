@@ -230,11 +230,11 @@ private XYDataset createHistDataset( GaussianMixturePDF gaussFit) {
 		
 		//correction for overlapping the 2 datasets
 		int xOffSet=naiveFit.smootherWing/2;//to correct for the bins width
-		double yRatioCorrection=naiveFit.maxYHISTOGRAMvalue/naiveFit.maxYFITvalue;//to correct the y data normalization ratio
+		naiveFit.yRatioCorrection=naiveFit.maxYHISTOGRAMvalue/naiveFit.maxYFITvalue;//to correct the y data normalization ratio
 		System.out.println("createFitCurveDataset naiveFit.maxy="+naiveFit.maxYFITvalue+" ");
 		//add to series
 		for (int i = 0; i<naiveFit.yDataPoints.length; i++) {
-			series.add(naiveFit.xDataPoints[i]+xOffSet, naiveFit.yDataPoints[i]*yRatioCorrection);
+			series.add(naiveFit.xDataPoints[i]+xOffSet, naiveFit.yDataPoints[i]*naiveFit.yRatioCorrection);
 		}
 		
 		result.addSeries(series);//and send

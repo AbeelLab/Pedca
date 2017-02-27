@@ -97,8 +97,12 @@ public class NaivePloestPlotter {
 		}
 		
 	}
+	
+	private  void createFitterDataset() {
+		
+		fitPoints=SamParser.fitPoints;
 
-
+	}
 	public void naivePloestPlotter2ndRound(Map<String,ContigData> contList,int maxWindows, float[] rc) {
 		readCounts=rc;
 		contigsList=contList;
@@ -377,9 +381,10 @@ public void displayPloidyAndCoveragePlotNaive( PrintWriter writ)throws IOExcepti
 		}
 //System.out.println(" displayPloidyAndCoveragePlotNaive Ploest.baseCallIsOn:"+Ploest.baseCallIsOn+" rt.bestScore.score(>0.1?):"+rt.bestScore.score);		
 			
-		if(Ploest.baseCallIsOn && rt.bestScore.score>0.1){
+		if(Ploest.baseCallIsOn && rt.bestScore.score>0.07){
 			
 			try {
+				//System.out.println("runBaseCallCheck() DEACTIVATED!!!!");
 				runBaseCallCheck();
 			} catch (InterruptedException e) {
 				System.err.println("runBaseCall error exception in NaivePloestPlotter.displayPloidyAndCoveragePlotNaive()");
@@ -412,7 +417,7 @@ public void displayPloidyAndCoveragePlotNaive( PrintWriter writ)throws IOExcepti
 			
 			Ploest.windowLength=(int) (minLength/(1.5*CONTINUITY_POINTS));
 			writ.println("#>A new estimation will be attempted with a shorter window length of "+Ploest.windowLength);
-			if(Ploest.windowLength<8)Ploest.windowLength=8;
+			if(Ploest.windowLength<20)Ploest.windowLength=20;//if(Ploest.windowLength<8)Ploest.windowLength=8;
 			SamParser.RUN_SECOND_ROUND=true;	
 			//update contigs info
 			for (int u=0;u<unsolvedPloidyContigs.size();u++){
@@ -504,11 +509,7 @@ public void displayPloidyAndCoveragePlotNaive( PrintWriter writ)throws IOExcepti
 	}
 
 
-	private  void createFitterDataset() {
-	
-		fitPoints=SamParser.fitPoints;
 
-	}
 
 
 
@@ -655,64 +656,7 @@ public void displayPloidyAndCoveragePlotNaive( PrintWriter writ)throws IOExcepti
 
 		
 	}
-	/*
-	private XYSeries checkContinuity(XYSeries series, int continuityLength) {
-		//check that at least continuityLength points have the same copy number estimation before deciding if a fragment has a certain ploidy
-//System.out.println(" checking Continuity");
-		
-		int ctr=0;
-		XYSeries result=new XYSeries(" Ploidy Estimation");
-		int [] yvalues=new int[series.getItemCount()];
-		Number currentY=series.getY(0);//current Y value being counted
-		int continousCurrents=0;//nb of contiguous observed values of the current Y value
-		Number[] firstObservedValues=new Number[continuityLength];//first observed values are stored while verifying that there are at least continuityLength contiguous observations
-		//System.out.println("checkContinuity:"+series.getItemCount());
-
-		for (int i=0;i<series.getItemCount();i++){
-		
-			if( currentY.equals(series.getY(i) )){//if Y values is currently being observed
-				continousCurrents++;
-				if (continousCurrents>continuityLength){//if the continuity length is respected
-					result.add(series.getX(i),currentY);//add to series
-				}else if (continousCurrents==continuityLength){//the following 2 'else if' allows the first continuityLength observed values to be taken into account 
-					firstObservedValues[0]=currentY;
-					for (int j=0;j<continuityLength;j++){//add the stored first continuityLength observed values
-						result.add((series.getX(i).intValue()-continuityLength+j+1),firstObservedValues[j]);//add to series	
-					}//System.out.println();
-				}else if (continousCurrents<continuityLength){
-					firstObservedValues[continousCurrents]=currentY;
-					//result.add((series.getX(i).intValue()),0);//add to series as 0
-				}
-				
-			}else{//new Y values observed
-				if (continousCurrents<=continuityLength){
-					//System.out.println("---checkContinuity new Y value:"+series.getY(i)+" at x="+series.getX(i).intValue()+" old y value:"+currentY+" continousCurrents:"+continousCurrents);
-					for (int j=0;j<continousCurrents;j++){//add the stored first continuityLength observed values
-						result.add((series.getX(i).intValue()-continousCurrents+j+1),firstObservedValues[j]);//add to series	
-						//System.out.print(" *"+(ctr++));
-					}//System.out.println();
-				}
-				result.add((series.getX(i).intValue()),0);//add to series	
-				//System.out.print(" %"+(ctr++));	System.out.println();
-				continousCurrents=0;//reset counter
-				currentY=series.getY(i);//reset observed Y
-				
-			}
-		}
-		//System.out.println();
-		if (continousCurrents<=continuityLength){
-			for (int j=0;j<continousCurrents;j++){//add the stored first continuityLength observed values
-				result.add((series.getItemCount()-continousCurrents+j+1),firstObservedValues[j]);//add to series	
-				//System.out.print(" *"+(ctr++));
-
-			}//System.out.println();
-		}
-//System.out.println("SIZE OF post checkContinuity in average WINDPOS                                "+(result.getItemCount())*Ploest.windowLength/2);	
-
-		return result;
-	}
-
-*/
+	
 	private XYSeries checkContinuity(XYSeries series, int continuityLength) {
 		//check that at least continuityLength points have the same copy number estimation before deciding if a fragment has a certain ploidy
 
@@ -722,7 +666,6 @@ public void displayPloidyAndCoveragePlotNaive( PrintWriter writ)throws IOExcepti
 		int [] yvalues=new int[series.getItemCount()];
 		Number currentPloidY=series.getY(0);//current Y value being counted
 		int continousCurrents=0;//nb of contiguous observed values of the current Y value
-		//Number[] firstObservedValues=new Number[continuityLength];//first observed values are stored while verifying that there are at least continuityLength contiguous observations
 
 		for (int i=0;i<series.getItemCount();i++){
 		
@@ -731,7 +674,6 @@ public void displayPloidyAndCoveragePlotNaive( PrintWriter writ)throws IOExcepti
 				if (continousCurrents>continuityLength){//if the continuity length is respected
 					result.add(series.getX(i),currentPloidY);//add to series
 				}else if (continousCurrents==continuityLength){//the following 2 'else if' allows the first continuityLength observed values to be taken into account 
-					//firstObservedValues[0]=currentY;
 					for (int j=0;j<continuityLength;j++){//add the stored first continuityLength observed values
 						result.add((series.getX(i).intValue()-continuityLength+j+1),currentPloidY);//add to series	
 					}
@@ -744,10 +686,6 @@ public void displayPloidyAndCoveragePlotNaive( PrintWriter writ)throws IOExcepti
 						if (currentPloidY.intValue()!=0)result.add((series.getX(i).intValue()-continousCurrents+j+1),currentPloidY);//add to series	
 					}
 				}else{//continousCurrents<continuityLength
-					/*
-					for (int j=0;j<continousCurrents;j++){//add the  first continousCurrents  values
-						result.add((series.getX(i).intValue()-continousCurrents+j+1),0);//add 0 to the series	
-					}*/
 				}
 				continousCurrents=0;//reset counter
 				currentPloidY=series.getY(i);//reset observed Y (ploidy)
@@ -771,10 +709,9 @@ public void displayPloidyAndCoveragePlotNaive( PrintWriter writ)throws IOExcepti
 
 	private int significantMaxsInPDF(NaivePDF naivePDF) {
 		int sigMaxs = 0;//nb of significant maximums
-	//	double FITthreshold = naivePDF.maxYFITvalue * 0.05;// discards the values that are below this threshold in the naive fit values
 		double ReadCountThreshold = SamParser.readDistributionMaxY * 0.05;// discards the values that are below this threshold in the original readCount Distribution
-		
-		System.out.println(" SamParser.maxYh :" + SamParser.readDistributionMaxY + " Y min ReadCountThreshold:" + ReadCountThreshold);
+		//int FITthreshold
+		System.out.println(" sigificantMAx in PDF SamParser.maxYh :" + SamParser.readDistributionMaxY + " Y min ReadCountThreshold:" + ReadCountThreshold);
 		//System.out.println(" naivePDF.maxYFITvalue:" + naivePDF.maxYFITvalue+ " Y min FITthreshold:" + FITthreshold);
 
 		ArrayList<Double> yMinList = new ArrayList<Double>();
@@ -801,7 +738,7 @@ public void displayPloidyAndCoveragePlotNaive( PrintWriter writ)throws IOExcepti
 				lastLeftIndex = lastMidIndex;
 				lastMidIndex = lastRightIndex;
 				lastRightIndex = ind;
-				//System.out.println(" .     ind :" + ind + " = " + mid + "  l:" + left + " m:" + mid+ " r:" + right );
+	//System.out.println(" .     ind :" + ind + " = " + mid + "  l:" + left + " m:" + mid+ " r:" + right );
 
 				if (right < mid && mid > left /*&& mid > FITthreshold*/) {// we count maxs only above threshold (deactivayted here, threshold is checked below) 
 					
@@ -810,10 +747,12 @@ public void displayPloidyAndCoveragePlotNaive( PrintWriter writ)throws IOExcepti
 					
 					double maxVal = 0;// precise max Y value in the corresponding bins
 					int Xindex = lastLeftIndex;//index (x value) of the maxVal
+					int endscaningIndex=lastRightIndex + naivePDF.smootherLength;
+					if(endscaningIndex>readCounts.length-1)endscaningIndex=readCounts.length-1;
 
-				//	System.out.println(" ....    max in :" + lastRightIndex + " = " + mid + "  l:" + left + " m:" + mid+ " r:" + right + "  between leftIn:" + lastLeftIndex + " midInd:" + lastMidIndex+ " rightInd:" + lastRightIndex + " \nSCANING from lastLeftIndex:" + lastLeftIndex+ " to  :" + (lastRightIndex + naivePDF.smootherLength));
+	//System.out.println(" ....    max in :" + lastRightIndex + " = " + mid + "  l:" + left + " m:" + mid+ " r:" + right + "  between leftIn:" + lastLeftIndex + " midInd:" + lastMidIndex+ " rightInd:" + lastRightIndex + " \nSCANING from lastLeftIndex:" + lastLeftIndex+ " to  :" + endscaningIndex+" readCounts.length="+readCounts.length);
 
-					for (int ib = lastLeftIndex; ib < (lastRightIndex + naivePDF.smootherLength); ib++) {
+					for (int ib = lastLeftIndex; ib < endscaningIndex; ib++) {
 
 						if (readCounts[ib] > maxVal) {
 							maxVal = readCounts[ib];
@@ -822,14 +761,22 @@ public void displayPloidyAndCoveragePlotNaive( PrintWriter writ)throws IOExcepti
 						//System.out.println("     ib:" + ib + " Xindex:" + Xindex + " maxval:" + maxVal+ " readCounts[ib]:" + readCounts[ib]);
 
 					}
+					
+					
 					if(!xMinList.contains(naivePDF.xDataPoints[Xindex]) && maxVal>ReadCountThreshold ){// we count maxs only above threshold
 						yMinList.add(maxVal);
 						xMinList.add(naivePDF.xDataPoints[Xindex]);
-						System.out.println(" ****    max in :" + naivePDF.xDataPoints[Xindex] + " = " + maxVal+ " lastLeftIndex:"+lastLeftIndex+" lastRightIndex:"+lastRightIndex+" (+ "+naivePDF.smootherLength+" = "+(lastRightIndex + naivePDF.smootherLength)+")");
+						System.out.println(" ****    max in :" + naivePDF.xDataPoints[Xindex] + " = " + maxVal+ " lastLeftIndex:"+lastLeftIndex+" lastRightIndex:"+lastRightIndex+" (+ "+naivePDF.smootherLength+" = "+endscaningIndex+") mid="+mid);
 						//System.out.println(" ++++    max in :" + naivePDF.xDataPoints[Xindex] + " mid = " + mid);
 
 						sigMaxs++;
-					}else System.out.println(" REPEATED max in :" + naivePDF.xDataPoints[Xindex] + " = " + maxVal+"  ...VALUE DISCARDED...!");
+					}else {
+						System.out.print(" REPEATED max in :" + naivePDF.xDataPoints[Xindex] + " = " + maxVal+"  ...VALUE DISCARDED...!");
+						if (maxVal<=ReadCountThreshold ){
+							System.out.print( " VALUE BELOW THRESHOLD");
+						}System.out.println();
+					
+					}
 
 					
 

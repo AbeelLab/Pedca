@@ -18,6 +18,8 @@ public class NaivePDF {
 	double step=1;//step on x axis
     double maxYFITvalue=0.0;
     double maxYHISTOGRAMvalue=0.0;
+	double yRatioCorrection=0.0;//to correct the y data normalization ratio
+
     double maxXvalue=0.0;
     int peakYvalueIndex=0;//index f the peak value (therefore in both histogram and fit). Used to find the correct ratio of both plots
     MixtureModel mixtMod;
@@ -25,12 +27,6 @@ public class NaivePDF {
     static int smootherWing;
     
 	public NaivePDF(float[] rc){
-		/*
-		System.out.print("naivepdf NON SOFT rc =[");
-		for (int p=0;p<rc.length;p++){//for each param extract mu and sigma
-			System.out.print(p+" "+rc[p]+" ;");
-		}System.out.println("]");
-		*/
 		
 		readCounts=rc;
 		maxXvalue=readCounts.length;
@@ -71,7 +67,7 @@ public class NaivePDF {
 			p=p+smootherWing-1;//move p to next bin start point
 
 		}
-	
+		//yRatioCorrection=maxYHISTOGRAMvalue/maxYFITvalue;
 		/*
 		System.out.println(" smootherLength:"+smootherLength);
 		System.out.print("naivepdf SOFT readcounts =[");
@@ -79,24 +75,12 @@ public class NaivePDF {
 			System.out.print(xDataPoints[p]+" "+yDataPoints[p]+" ;");
 		}System.out.println("]");
 		*/
+		
+		System.out.println("NEW NAivePDF constructed");
 	}
 	
 	
 
-	public static double factorial ( double input )
-	{
-	  double x, fact = 1;
-	  for ( x = input; x > 1; x--)
-	     fact *= x;
-
-	  return fact;
-
-	}
-    // return distance to the center mu of this cluster 
-    public static double pdf(double x, double mu) {
-    	//if(x<150)System.out.println("x:"+x+" m:"+mu+" d:"+Math.abs(x-mu));
-    	return Math.abs(x-mu);
-    }
 
 
 

@@ -43,6 +43,8 @@ public class SamParser {
 
 	public SamParser(String inputFile, String outputfile)
 			throws FileNotFoundException, UnsupportedEncodingException {
+		
+		
 		//reset all static variables
 		readCounts=null;
 		fitPoints=null;
@@ -55,8 +57,11 @@ public class SamParser {
 		
 
 		this.windowLength=Ploest.windowLength;
+		System.out.println("SamParser lastgood:");
 		SAMFileReader inputSam = new SAMFileReader(new File(inputFile));
+		System.out.println("SamParser inputSam:");
 		nbSeq = inputSam.getFileHeader().getSequenceDictionary().size();// nb of sequences in the FileHeader
+		System.out.println("SamParser nbSeq:"+nbSeq);
 		contigsList = new HashMap<String, ContigData>(nbSeq);// Map of  ContigDatas(value) and their name (key)
 		ArrayList<Integer> contigLengths = new ArrayList<Integer> ();
 		// fill the contigsList

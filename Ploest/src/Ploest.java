@@ -97,21 +97,23 @@ public class Ploest {
 
 	public static void main(String[] args) {
 		long startTimeGeneral = System.currentTimeMillis();
-		String[] winLengths = { "1500","2000", "3000","5000", "6500", "9000", "10000", "15000","20000", "30000", "40000", "50000","75000"};//"50","100","250","400","500","750","1000","1500","2000", "3000","5000", "6500", "9000", "10000", "15000","20000", "30000", "40000", "50000","75000"};		
+		String[] winLengths = {"300","750","1000"};//0","750","1000","3000"};//"50","100","250","400","500","750","1000","1500","2000", "3000","5000", "6500", "9000", "10000", "15000","20000", "30000", "40000", "50000","75000"};		
 		for (int wlInd = 0; wlInd < winLengths.length; wlInd++) {
 			try {
 				
 				
 				args[0] = "-p";
-				args[1] = "PloEstNovogene" ;	
+				args[1] = "PedcaTCruziEsmeraldoLike" ;	
 				args[2] = "-w";
 				args[3] = winLengths[wlInd];
 				args[4] = "-i";
-				args[5] = "C://Users//Mel//Documents//BIOINFORMATICS//DELFT_Research//Data//CBS_Novogene//BAM//sorted_CBSNovogene.bam";
+				//args[5] = "//tudelft.net//staff-bulk//ewi//insy//DBL//mcarbajo//Genomes//Cruzi//Bams//sorted_CruziEsmeraldoLikeIllumina_full.bam";
+				args[5] = "C://Users//Mel//Documents//BIOINFORMATICS//DELFT_Research//Data//T.Cruzi//Bams//sorted_CruziEsmeraldoLikeIllumina_full.bam";
+
 				args[6] = "-o";
-				args[7] = "C://Users//Mel//Documents//BIOINFORMATICS//DELFT_Research//Data//CBS_Novogene//WithVCF";
-				args[8] = "-v";
-				args[9] = "C://Users//Mel//Documents//BIOINFORMATICS//DELFT_Research//Data//CBS_Novogene//Pilon//PilonCBSNovogene.vcf";
+				args[7] = "C://Users//Mel//Documents//BIOINFORMATICS//DELFT_Research//Data//T.Cruzi//PEDCAEsmeraldoLikeIllumina";
+				//args[8] = "-v";
+				//args[9] = "C://Users//Mel//Documents//BIOINFORMATICS//DELFT_Research//Data//CBS_Novogene//Pilon//PilonCBSNovogene.vcf";
 
 				
 				

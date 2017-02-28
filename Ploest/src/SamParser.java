@@ -287,14 +287,14 @@ public class SamParser {
 		int midPoint;
 		for (midPoint=0;midPoint<readCounts.length;midPoint++){
 			space-=readCounts[midPoint];
-			if (space<(sum*0.01))break;//select range that takes 99% of all datapoints in readcounts
+			if (space<(sum*0.05))break;//select range that takes 95% of all datapoints in readcounts
 		}
 
 		//redo readCounts with proper range if necesary
-		int SAFE_RANGE=(int) Math.ceil(midPoint*2);
+		int SAFE_RANGE=(int) Math.ceil(midPoint*1.1);
 		if((readCounts.length-midPoint)>SAFE_RANGE){
 
-			System.out.println("keeping original ReadCounts range? no, reaffecting ReadCounts range. Old:"+readCounts.length+ " new:"+(int)Math.ceil(midPoint*SAFE_RANGE));
+			System.out.println("keeping original ReadCounts range? no, reaffecting ReadCounts range. Old:"+readCounts.length+ " new:"+SAFE_RANGE);
 			totalDataPoints=0;
 			readCounts = new int[(int)SAFE_RANGE];
 			int nbNullVals=0;
@@ -333,7 +333,7 @@ public class SamParser {
 
 
 
-		}else System.out.println("Keeping original ReadCounts range? yes, keeping:"+readCounts.length+ " instead of changing to mid point :"+(int)Math.ceil(midPoint*1.1));
+		}else System.out.println("Keeping original ReadCounts range? yes, keeping:"+readCounts.length+ " instead of changing to mid point :"+SAFE_RANGE);
 		//System.out.println("sum:"+sum+ " midPoint:"+midPoint+ " readCounts size:"+readCounts.length);
 	}
 

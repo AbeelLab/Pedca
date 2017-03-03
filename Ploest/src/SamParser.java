@@ -57,11 +57,11 @@ public class SamParser {
 		
 
 		this.windowLength=Ploest.windowLength;
-		System.out.println("SamParser lastgood:");
-		SAMFileReader inputSam = new SAMFileReader(new File(inputFile));
-		System.out.println("SamParser inputSam:");
+		
+		File samFileInput=new File(inputFile);
+		SAMFileReader inputSam = new SAMFileReader(samFileInput);
+	
 		nbSeq = inputSam.getFileHeader().getSequenceDictionary().size();// nb of sequences in the FileHeader
-		System.out.println("SamParser nbSeq:"+nbSeq);
 		contigsList = new HashMap<String, ContigData>(nbSeq);// Map of  ContigDatas(value) and their name (key)
 		ArrayList<Integer> contigLengths = new ArrayList<Integer> ();
 		// fill the contigsList

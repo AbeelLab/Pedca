@@ -1,3 +1,4 @@
+import java.awt.Font;
 import java.io.File;
 import java.io.IOException;
 
@@ -76,7 +77,7 @@ public class BarChart {
 			perc=(r*0.05);
 			histDataset.setValue(bins[r], "Base Call %",perc);
 		}
-
+		
 		histChart = ChartFactory.createBarChart("BaseCall Distribution. Cluster nb:"+cluster+" ; depth>"+VCFManager.depthThreshold, "Base Call %", "Number of occurrences ", histDataset,
 				PlotOrientation.VERTICAL, false, true, false);
 		
@@ -139,17 +140,21 @@ public void BarChartWithFit (NaivePDF naivePDF, String title) {
 		final XYItemRenderer renderer1 = new StandardXYItemRenderer();
 		final NumberAxis domainAxis = new NumberAxis("ReadsCounts");
 		
+
 		//domainAxis.setTickMarkPosition(DateTickMarkPosition.MIDDLE);
 		final ValueAxis rangeAxis = new NumberAxis("%Contigs");
 		final XYPlot plot = new XYPlot  (data1, domainAxis, rangeAxis, renderer1);
-
+		
 		// add a second dataset and renderer...
 		final XYDataset data2 = createFitCurveDataset(naivePDF);
 		final XYItemRenderer renderer2 = new StandardXYItemRenderer();
 
 		plot.setDataset(1, data2);
 		plot.setRenderer(1, renderer2);
-
+		Font font3 = new Font("Dialog", Font.PLAIN, 25); 
+		plot.getDomainAxis().setLabelFont(font3);
+		plot.getRangeAxis().setLabelFont(font3);
+		
 		plot.setDatasetRenderingOrder(DatasetRenderingOrder.FORWARD);
 		// return a new chart containing the overlaid plot...
 		overlaidChart=new JFreeChart("Naive Smoothed Fit of Reads Distribution. Window length: "+Ploest.windowLength, JFreeChart.DEFAULT_TITLE_FONT, plot, true);

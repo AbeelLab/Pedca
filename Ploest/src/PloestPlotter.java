@@ -45,7 +45,8 @@ public class PloestPlotter {
 	static GaussianMixturePDF gmPDFResult;//final Gaussian Mixture PDF
 	static PoissonDataFitter pdfResult;//final data fit with the best POISSON fit predicted 
 	static PoissonMixturePDF pmPDFResult;//final POISSON Mixture PDF
-	PVector[] fitPoints;
+	//PVector[] fitPoints;
+	PVector[] intFitPoints;
 	JFreeChart chart;
 	static int maxX=0;
 	//static int maxY=0;
@@ -115,7 +116,7 @@ public class PloestPlotter {
 				System.out.println("run --"+r);
 				for (int k=1;k<MAX_NB_MIXTURES;k++){//fit to different number k of mixtures
 					System.out.println("run --"+r+" fitting "+k+" poissons/"+MAX_NB_MIXTURES);
-					poissDF=new PoissonDataFitter (fitPoints,k );
+					poissDF=new PoissonDataFitter (intFitPoints,k );
 
 					emMMs[k]=poissDF.getEMmodel();//store EM fit values
 					bscMMs[k]=poissDF.getBSCModel();//same for BSC
@@ -197,7 +198,7 @@ public class PloestPlotter {
 		}
 
 		//print final gaussian fitted result with final number of mixtures
-		pdfResult=new PoissonDataFitter (fitPoints,finalNumberOfMixtures );//final data fit with the best number of mixture prediction
+		pdfResult=new PoissonDataFitter (intFitPoints,finalNumberOfMixtures );//final data fit with the best number of mixture prediction
 		System.out.print("PoissonDataFitter for result done");
 		gMMweights=new double[pdfResult.getBSCModel().weight.length];
 		gMMmus=new double[pdfResult.getBSCModel().param.length];
@@ -245,7 +246,7 @@ public class PloestPlotter {
 			for (int r=0;r<NbOfRuns;r++){
 				System.out.println("run --"+r);
 				for (int k=0;k<MAX_NB_MIXTURES;k++){//fit to different number k of mixtures
-					df=new GaussianDataFitter (fitPoints,k );//fits a gauss mixture(by EM and BSC) to the 
+					df=new GaussianDataFitter (intFitPoints,k );//fits a gauss mixture(by EM and BSC) to the 
 					emMMs[k]=df.getEMmodel();//store EM fit values
 					bscMMs[k]=df.getBSCModel();//same for BSC
 					//get EM LogLikelihoods and estimate BIC and AIC values
@@ -301,7 +302,7 @@ public class PloestPlotter {
 		}
 
 		//print final gaussian fitted result with final number of mixtures
-		dfResult=new GaussianDataFitter (fitPoints,finalNumberOfMixtures );//final data fit with the best number of mixture prediction
+		dfResult=new GaussianDataFitter (intFitPoints,finalNumberOfMixtures );//final data fit with the best number of mixture prediction
 
 		gMMweights=new double[dfResult.getBSCModel().weight.length];
 		gMMmus=new double[dfResult.getBSCModel().param.length];
@@ -634,28 +635,9 @@ public void displayPloidyEstimationScatterPlotPoisson() throws IOException{//not
 
 
 	private  void createFitterDataset() {
-		/*
-		fitPoints=new PVector[SamParser.totalDataPoints];
-		int ind=0;
-		for (int c=0;c<contigsList.size();c++){//for each contig
-			ContigData contigD=contigsList.get(contArrList.get(c));
-			for (int i = 0; i < (contigD.windPos.size()); i++) {//for each window position
-				//if(contigD.windPos.get(i)!=0){
-					PVector curVec=new PVector(1);
-					curVec.array[0]=contigD.windPos.get(i);//coverage per window position
-					fitPoints[ind++]=curVec; 
-				//}				              
-			}
-		}
-		 */
-		fitPoints=SamParser.fitPoints;
-		/*PRINTOUT FIT POINTS (14541 !!!)
-		System.out.println(" fitPoints:"+fitPoints.length);
-		for (int i=1;i<fitPoints.length;i++){
-			System.out.print(" "+fitPoints[i]);
-		}
-		System.out.println();
-		*/
+
+		intFitPoints=SamParser.fitPoints;
+
 	}
 
 

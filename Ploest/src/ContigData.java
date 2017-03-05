@@ -41,25 +41,20 @@ public class ContigData {
 
 	public int windPos(int wl) throws FileNotFoundException, UnsupportedEncodingException {//computes the windPos vector, storing 
 			//at each window position, the number of reads found in that window. Returns the maximum value found at that window
-											
 		int maxX=0;
-	
+		
 		windLength = wl;
-		windPos = new ArrayList<Integer>((startPos.length / wl) * 2);//ensure capacity		
-		for (int i=0;i<((startPos.length / wl) * 2);i++){//initialize the list with zeros
-			windPos.add( 0);
-		}
-
-
+		windPos = new ArrayList<Integer>();//(startPos.length / wl) * 2);//ensure capacity		
+		int maxWinPosSize=(startPos.length / wl) * 2;
 		int stIndex = 0;// index in startPos array
 		int wdIndex = 0;
 		int wsum = 0;// window sum
-		while (stIndex < (startPos.length-windLength) && (wdIndex<windPos.size())) {//wdIndex<windPos.size()-1
+		while (stIndex < (startPos.length-windLength) && (wdIndex<maxWinPosSize)) {//wdIndex<windPos.size()-1
 			for (int i = 0; i < windLength; i++) {
 				wsum += startPos[stIndex++];		
 			}
 			
-			windPos.set(wdIndex, (int) (wsum /(windLength/COV_RATE)));// relative average of coverage over the range of the window;
+			windPos.add(wdIndex, (int) (wsum /(windLength/COV_RATE)));// relative average of coverage over the range of the window;
 			if (windPos.get(wdIndex)>maxX)maxX=windPos.get(wdIndex);
 			wdIndex++;
 			stIndex = stIndex - (wl / 2);// window slides over all positions for a length of wl , but a new window is computed after each wl/2;
@@ -68,7 +63,10 @@ public class ContigData {
 		}
 
 		maxWindows=maxX;
+//if(contigName==SamParser.debuggingTarget)System.out.println(" windPos , size of "+SamParser.debuggingTarget+" windPos: "+windPos.size()+" Genome:"+maxLength+" startpos.length:"+startPos.length);
+
 		return maxX;
+
 	}
 	
 	

@@ -22,12 +22,16 @@ import org.jfree.data.xy.XYDataset;
 import jMEF.PVector;
 
 public class SamParser {
+	static String debuggingTarget="cerevisiaeS288cchromosomeI";
+	
+	
 	int nbSeq=0;// nb of sequences in the FileHeader
 	Map<String, ContigData> contigsList;// Map of ContigDatas(value) and their  name (key)
 	static int[] readCounts;
 	
-	static PVector[] fitPoints;//all the points of all windows positions (coverages) in all contigs. Used to fit the read counts distribution chart
-	
+	static PVector[] fitPoints;	//remains for ploestpotter but it is not longer used
+	static int[] intFitPoints;//all the points of all windows positions (coverages) in all contigs. Used to fit the read counts distribution chart
+
 	static boolean RUN_SECOND_ROUND=false;
 	static String stringSecondRound="";
 	static int windowLength ;
@@ -47,7 +51,7 @@ public class SamParser {
 		
 		//reset all static variables
 		readCounts=null;
-		fitPoints=null;
+		intFitPoints=null;
 		RUN_SECOND_ROUND=false;
 		stringSecondRound="";
 		windowLength =0;
@@ -240,26 +244,29 @@ public class SamParser {
 			for (int w = 0; w < currentContig.windPos.size(); w++) {//store all readCounts of every window position 
 				if(currentContig.windPos.get(w)!=0){
 					readCounts[currentContig.windPos.get(w)] += 1;
-				}else nbZeroVals++;				
+				}else {
+					nbZeroVals++;
+					
+				}
 			}
 			totalDataPoints+= (currentContig.windPos.size()-nbZeroVals);
 			nbZeroVals=0;
 		}
-		System.out.println(" totalDataPoints="+totalDataPoints);
+		
+		readCounts[0] =readCounts[1] ;//trick to avoid false peak at 0
+		
 		//fill fit points
 		int ind=0;
-		fitPoints=new PVector[SamParser.totalDataPoints];
+		intFitPoints=new int[totalDataPoints+nbZeroVals];
 		for (int i = 0; i < contArrList.size(); i++) {//for each contig
 			ContigData currentContig = contigsList.get(contArrList.get(i));
 			for (int w = 0; w < currentContig.windPos.size(); w++) {//store all readCounts of every window position 
 				if(currentContig.windPos.get(w)!=0){
-					PVector curVec=new PVector(1);
-					curVec.array[0]=currentContig.windPos.get(w);//coverage per window position
-					fitPoints[ind++]=curVec; 
-
+					intFitPoints[ind++]=currentContig.windPos.get(w);//coverage per window position
 				}			
 			}
 		}
+
 		insureReadCountsRange();//excludes outliers values (very high and non significant) from readCount
 
 		if(RUN_SECOND_ROUND)  {
@@ -267,14 +274,14 @@ public class SamParser {
 		}
 
 		//PRINT OUT readCounts
-		
+		/*
 		PrintWriter writer = new PrintWriter(Ploest.outputFile + "//" + Ploest.projectName+ "//readCounts"+stringSecondRound+".txt", "UTF-8");
 		for (int r = 0; r < readCounts.length; r++) {
 			writer.println(r + " " + readCounts[r] + "; ");
 		}
 		writer.println();
 		writer.close();
-
+		 */
 
 	}
 
@@ -317,14 +324,12 @@ public class SamParser {
 
 			//fill fit points (dataset to be fitted)
 			int ind=0;
-			fitPoints=new PVector[SamParser.totalDataPoints];
+			intFitPoints=new int[SamParser.totalDataPoints];
 			for (int i = 0; i < contArrList.size(); i++) {//for each contig
 				ContigData currentContig = contigsList.get(contArrList.get(i));
 				for (int w = 0; w < currentContig.windPos.size(); w++) {//store all readCounts of every window position 
 					if(currentContig.windPos.get(w)!=null){//extra big values have been set to zero in previoous loop
-						PVector curVec=new PVector(1);
-						curVec.array[0]=currentContig.windPos.get(w);//coverage per window position
-						fitPoints[ind++]=curVec; 
+						intFitPoints[ind++]=currentContig.windPos.get(w);//coverage per window position 
 					}			
 				}
 

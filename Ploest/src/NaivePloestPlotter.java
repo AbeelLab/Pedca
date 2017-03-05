@@ -32,7 +32,7 @@ import jMEF.MixtureModel;
 import jMEF.PVector;
 
 public class NaivePloestPlotter {
-	String debuggingTarget="cerevisiaeS288cchromosomeI";
+	
 	
 	
 	//static variable for smoothing the ploidy estimation
@@ -49,7 +49,8 @@ public class NaivePloestPlotter {
 	
 	//variables for the naive smooth
 	static NaivePDF npdf;//Naive Smoothed Density Function
-	PVector[] fitPoints;
+	//PVector[] fitPoints;
+	int[] intFitPoints;
 	JFreeChart chart;
 	static int maxX;
 	static int totalDataPoints;//total number of input datapoints (coverage for all windows)
@@ -102,7 +103,7 @@ public class NaivePloestPlotter {
 	
 	private  void createFitterDataset() {
 		
-		fitPoints=SamParser.fitPoints;
+		intFitPoints=SamParser.intFitPoints;
 
 	}
 	public void naivePloestPlotter2ndRound(Map<String,ContigData> contList,int maxWindows, float[] rc) {
@@ -321,6 +322,11 @@ public void displayPloidyAndCoveragePlotNaive( PrintWriter writ)throws IOExcepti
 
 			XYPlot xyPlot = new XYPlot();
 
+			
+			
+			
+			
+			
 			/* SETUP SCATTER */
 			// Create the scatter data, renderer, and axis
 			XYDataset collection1 = createPlotDataset(contigD);
@@ -496,16 +502,19 @@ public void displayPloidyAndCoveragePlotNaive( PrintWriter writ)throws IOExcepti
 		
 		//this first loop is for the PLOESTPLOTTER
 		int wInd=0;//writting index
-	
-		for (int i = 0; i <= (contigD.windPos.size()-1); i++) {
-			if(contigD.windPos.get(i)!=null){
-				x = wInd++;  			
+		
+//if(contigD.getContigName()==SamParser.debuggingTarget)System.out.println(" Create plot dataset for "+SamParser.debuggingTarget);	
+		for (int i = 0; i < (contigD.windPos.size()); i++) {
+			x = wInd++;  
+			if(contigD.windPos.get(i)!=null){						
 				y = contigD.windPos.get(i);
-				if(y>contigD.maxY)contigD.maxY=(int)y;
-
-				series.add(x, y);
-				//writer.println( " x:" +x + " y:"+y);
+			}else{			
+				y = 0;
 			}
+			
+			if(y>contigD.maxY)contigD.maxY=(int)y;
+//if(contigD.getContigName()==SamParser.debuggingTarget)System.out.print(" "+x+","+y+";");
+			series.add(x, y);
 
 		}
 
@@ -536,9 +545,10 @@ public void displayPloidyAndCoveragePlotNaive( PrintWriter writ)throws IOExcepti
 
 			if(contigD.windPos.get(i)!=null){
 				yValues [wInd]= (int)Math.round(contigD.windPos.get(i)/RatioFindNaive.candUnit);
-if(contigD.getContigName()==debuggingTarget)System.out.print(" "+wInd+","+contigD.windPos.get(i)+";");
+//if(contigD.getContigName()==SamParser.debuggingTarget)System.out.print(" "+wInd+","+contigD.windPos.get(i)+";");
 			}else{//contigD.windPos.get(i)==null
 				yValues [wInd]=0;
+//if(contigD.getContigName()==SamParser.debuggingTarget)System.out.print(" "+wInd+",Z;");
 			}
 			xValues [wInd]= wInd;  	
 
@@ -549,16 +559,17 @@ if(contigD.getContigName()==debuggingTarget)System.out.print(" "+wInd+","+contig
 				series.add(wInd, yValues [wInd]);
 			}
 			wInd++;
-		}
-if(contigD.getContigName()==debuggingTarget)System.out.println();			
-if(contigD.getContigName()==debuggingTarget){
-	System.out.println("createPloidyEstimationDatasetNaive "+debuggingTarget+"   contigD.windPos.size():"+ contigD.windPos.size()+" xValues:"+xValues.length+" yvalues:"+yValues.length);
+	}
+/*		
+//if(contigD.getContigName()==SamParser.debuggingTarget)System.out.println();			
+if(contigD.getContigName()==SamParser.debuggingTarget){
+	System.out.println("createPloidyEstimationDatasetNaive %"+SamParser.debuggingTarget+"   contigD.windPos.size():"+ contigD.windPos.size()+" xValues:"+xValues.length+" yvalues:"+yValues.length);
 	for (int j=0;j<xValues.length;j++){
-		System.out.print(xValues[j]+","+yValues[j]+" ");
+		System.out.print(xValues[j]+"%"+yValues[j]+" ");
 	}
 	System.out.println();
 }
-		
+*/
 		
 //System.out.println();		
 //System.out.println(contigD.contigName+" 1 createPloidyEstimationDatasetNaive getPointPloidyEstimationNaive size="+series.getItemCount()+" /"+contigD.windPos.size());
@@ -579,6 +590,17 @@ if(contigD.getContigName()==debuggingTarget){
 		}
 
 		result.addSeries(series);
+/*		
+if(contigD.getContigName()==SamParser.debuggingTarget){
+	System.out.println("Post Average createPloidyEstimationDatasetNaive "+SamParser.debuggingTarget+"   contigD.windPos.size():"+ contigD.windPos.size()+" xValues:"+xValues.length+" yvalues:"+yValues.length);
+		for (int j=0;j<xValues.length;j++){
+			System.out.print(xValues[j]+","+yValues[j]+" ");
+		}
+		System.out.println();
+	}		
+*/		
+	
+		
 		writeOutPloEstByFragment(writer, series,contigD );//writes out the ploidy estimation detailed by fragment
 
 		return result;
@@ -587,14 +609,13 @@ if(contigD.getContigName()==debuggingTarget){
 	
 	public XYSeries averagePloidyMode(ContigData contigD,XYSeries series, int valuesSize,double [] xValues,int [] yValues){
 		String contigname=contigD.contigName;
-//System.out.println(" CONTIG :"+contigD.contigName+" averagePloidyMode");
-if(contigD.getContigName()==debuggingTarget)System.out.println("averagePloidyMode "+debuggingTarget+" xValues:"+xValues.length+" yvalues:"+yValues.length+" wInd:"+valuesSize);
+//if(contigD.getContigName()==SamParser.debuggingTarget)System.out.println("averagePloidyMode "+SamParser.debuggingTarget+" xValues:"+xValues.length+" yvalues:"+yValues.length+" wInd:"+valuesSize);
 
 		int currentMode=0;//the most observed ploidy value over the PLOIDY_SMOOTHER_WIDTH
 		int PLOIDY_SMOOTHER_WING=PLOIDY_SMOOTHER_WIDTH/2; //length of each of the sides of the PLOIDY_SMOOTHER window before and after the position being evaluated
 		int [] ploidyCounter=new int[MAX_NB_MIXTURES+1];//over the PLOIDY_SMOOTHER_WIDTH, this vector keeps track of how many times each ploidy is observed
 		int modeThreshold=(PLOIDY_SMOOTHER_WIDTH/3);//the currentMode needs to have a minimal threshold
-if(contigD.getContigName()==debuggingTarget)System.out.println("PLOIDY_SMOOTHER");
+//if(contigD.getContigName()==SamParser.debuggingTarget)System.out.println("PLOIDY_SMOOTHER");
 
 		if (valuesSize > PLOIDY_SMOOTHER_WIDTH) {//we need a minimum of points to average the ploidy
 			
@@ -610,7 +631,7 @@ if(contigD.getContigName()==debuggingTarget)System.out.println("PLOIDY_SMOOTHER"
 			for (int v = 0; v < PLOIDY_SMOOTHER_WING; v++) {
 				if (currentMode!=0 && ploidyCounter[currentMode]>modeThreshold){
 					series.add(xValues[v], currentMode);
-if(contigD.getContigName()==debuggingTarget)System.out.print(xValues[v]+"/"+currentMode+" ");
+//if(contigD.getContigName()==SamParser.debuggingTarget)System.out.print(xValues[v]+"/"+currentMode+" ");
 				}
 			}
 			
@@ -636,11 +657,11 @@ if(contigD.getContigName()==debuggingTarget)System.out.print(xValues[v]+"/"+curr
 
 					}
 					
-					if(contigD.getContigName()==debuggingTarget)System.out.print("("+currentMode+"-"+ploidyCounter[currentMode]+") ");
+//if(contigD.getContigName()==SamParser.debuggingTarget)System.out.print("("+currentMode+"-"+ploidyCounter[currentMode]+") ");
 
 					if (currentMode!=0 && ploidyCounter[currentMode]>modeThreshold){
 						series.add(xValues[v], currentMode);
-						if(contigD.getContigName()==debuggingTarget)System.out.print(xValues[v]+";"+currentMode+" ");
+//if(contigD.getContigName()==SamParser.debuggingTarget)System.out.print(xValues[v]+";"+currentMode+" ");
 					}
 				}
 			}
@@ -660,11 +681,12 @@ if(contigD.getContigName()==debuggingTarget)System.out.print(xValues[v]+"/"+curr
 
 					if (currentMode!=0 && ploidyCounter[currentMode]>modeThreshold ){
 						series.add(xValues[v], currentMode);
-						if(contigD.getContigName()==debuggingTarget)System.out.print(xValues[v]+"/"+currentMode+" ");
+//if(contigD.getContigName()==SamParser.debuggingTarget)System.out.print(xValues[v]+"/"+currentMode+" ");
 					}
 				}
 				
-			}if(contigD.getContigName()==debuggingTarget)System.out.println();
+			}
+//if(contigD.getContigName()==SamParser.debuggingTarget)System.out.println();
 		}else{//not enough points, simply average over the available points
 			for (int v = 0; v < valuesSize; v++) {
 				if(yValues[v]<=MAX_NB_MIXTURES ){
@@ -674,12 +696,12 @@ if(contigD.getContigName()==debuggingTarget)System.out.print(xValues[v]+"/"+curr
 					}
 					if (currentMode!=0 && ploidyCounter[currentMode]>modeThreshold){
 						series.add(xValues[v], currentMode);
-						if(contigD.getContigName()==debuggingTarget)System.out.print(xValues[v]+"#"+currentMode+" ");
+//if(contigD.getContigName()==SamParser.debuggingTarget)System.out.print(xValues[v]+"#"+currentMode+" ");
 
 					}
 				}
 			}
-			if(contigD.getContigName()==debuggingTarget)System.out.println();
+//if(contigD.getContigName()==SamParser.debuggingTarget)System.out.println();
 		}
 
 		if(series.getItemCount()>0){
@@ -688,7 +710,6 @@ if(contigD.getContigName()==debuggingTarget)System.out.print(xValues[v]+"/"+curr
 			return checkContinuity(series,CONTINUITY_POINTS,contigD);
 		}else{
 			removedContigs.add(contigD);
-			
 			System.err.println("Error in contig :"+contigname+". This series have 0 values!!! averagePloidyMode");
 			return series;
 		}

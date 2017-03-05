@@ -125,7 +125,7 @@ public class Ploest {
 	public static void main(String[] args) {
 		args=new String[8];
 		long startTimeGeneral = System.currentTimeMillis();
-		String[] winLengths = {"1000",};//"500","750","1000"};//"50","100","250","400","500","750","1000","1500","2000", "3000","5000", "6500", "9000", "10000", "15000","20000", "30000", "40000", "50000","75000"};		
+		String[] winLengths = {"400","500","750","1000","2000"};//};//"50","100","250","400","500","750","1000","1500","2000", "3000","5000", "6500", "9000", "10000", "15000","20000", "30000", "40000", "50000","75000"};		
 		for (int wlInd = 0; wlInd < winLengths.length; wlInd++) {
 			try {
 				
@@ -142,7 +142,7 @@ public class Ploest {
 				//args[5] = "C://Users//Mel//Documents//BIOINFORMATICS//DELFT_Research//Data//CBS_Novogene//BAM//sorted_CBSNovogene.bam";
 
 				args[6] = "-o";
-				args[7] = "C://Users//Mel//Documents//BIOINFORMATICS//DELFT_Research//Data//CBS_Novogene";
+				args[7] = "C://Users//Mel//Documents//BIOINFORMATICS//DELFT_Research//Data//CBS_Novogene//PedcaNovogene2ancestors";
 	
 							
 				

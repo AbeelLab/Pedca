@@ -319,13 +319,8 @@ public void displayPloidyAndCoveragePlotNaive( PrintWriter writ)throws IOExcepti
 			
 //System.out.println(" CONTIG :"+contigD.contigName+" displayPloidyAndCoveragePlotNaive"+"  LENGTH_OF_CLUSTER_ONE_CONTIGS:"+LENGTH_OF_CLUSTER_ONE_CONTIGS+"  LENGTH_OF_CLUSTER_TWO_CONTIGS:"+LENGTH_OF_CLUSTER_TWO_CONTIGS);
 
-
 			XYPlot xyPlot = new XYPlot();
 
-			
-			
-			
-			
 			
 			/* SETUP SCATTER */
 			// Create the scatter data, renderer, and axis
@@ -614,7 +609,8 @@ if(contigD.getContigName()==SamParser.debuggingTarget){
 		int currentMode=0;//the most observed ploidy value over the PLOIDY_SMOOTHER_WIDTH
 		int PLOIDY_SMOOTHER_WING=PLOIDY_SMOOTHER_WIDTH/2; //length of each of the sides of the PLOIDY_SMOOTHER window before and after the position being evaluated
 		int [] ploidyCounter=new int[MAX_NB_MIXTURES+1];//over the PLOIDY_SMOOTHER_WIDTH, this vector keeps track of how many times each ploidy is observed
-		int modeThreshold=(PLOIDY_SMOOTHER_WIDTH/3);//the currentMode needs to have a minimal threshold
+		int modeThresholdRate=3;//the currentMode needs to have a minimal threshold
+		int nbZeroValues=0;//neglects the zero values when calculating the mode
 //if(contigD.getContigName()==SamParser.debuggingTarget)System.out.println("PLOIDY_SMOOTHER");
 
 		if (valuesSize > PLOIDY_SMOOTHER_WIDTH) {//we need a minimum of points to average the ploidy
@@ -626,10 +622,11 @@ if(contigD.getContigName()==SamParser.debuggingTarget){
 					if (ploidyCounter[currentMode]<ploidyCounter[yValues[v]]){
 						currentMode=yValues[v];
 					}
-				}
-			}//now store the mode over the first positions
+				}else if (yValues[v]==0)nbZeroValues++;
+			}
+			//now store the mode over the first positions
 			for (int v = 0; v < PLOIDY_SMOOTHER_WING; v++) {
-				if (currentMode!=0 && ploidyCounter[currentMode]>modeThreshold){
+				if (currentMode!=0 && ploidyCounter[currentMode]>((PLOIDY_SMOOTHER_WIDTH-(nbZeroValues/8))/modeThresholdRate)){
 					series.add(xValues[v], currentMode);
 //if(contigD.getContigName()==SamParser.debuggingTarget)System.out.print(xValues[v]+"/"+currentMode+" ");
 				}
@@ -646,8 +643,13 @@ if(contigD.getContigName()==SamParser.debuggingTarget){
 					mostRightValue=yValues[v+PLOIDY_SMOOTHER_WING];
 					
 					if(mostLeftValue!=mostRightValue){//if the removed and the added are different, update the mode
-						if(mostLeftValue>0 && mostLeftValue<=MAX_NB_MIXTURES ){	ploidyCounter[mostLeftValue]--;	}//remove mostleft value of window
-						if (mostRightValue>0 && mostRightValue<=MAX_NB_MIXTURES )ploidyCounter[mostRightValue]++;//add mostright value of window
+						if(mostLeftValue>0 && mostLeftValue<=MAX_NB_MIXTURES ){	
+							ploidyCounter[mostLeftValue]--;	//remove mostleft value of window
+							}else if (mostLeftValue==0)nbZeroValues--;
+						
+						if (mostRightValue>0 && mostRightValue<=MAX_NB_MIXTURES ){
+							ploidyCounter[mostRightValue]++;//add mostright value of window
+						}else if (mostRightValue==0)nbZeroValues++;
 						
 						//update the mode
 						for(int pc=1;pc<ploidyCounter.length;pc++){
@@ -659,7 +661,7 @@ if(contigD.getContigName()==SamParser.debuggingTarget){
 					
 //if(contigD.getContigName()==SamParser.debuggingTarget)System.out.print("("+currentMode+"-"+ploidyCounter[currentMode]+") ");
 
-					if (currentMode!=0 && ploidyCounter[currentMode]>modeThreshold){
+					if (currentMode!=0 && ploidyCounter[currentMode]>((PLOIDY_SMOOTHER_WIDTH-(nbZeroValues/8))/modeThresholdRate)){
 						series.add(xValues[v], currentMode);
 //if(contigD.getContigName()==SamParser.debuggingTarget)System.out.print(xValues[v]+";"+currentMode+" ");
 					}
@@ -670,16 +672,17 @@ if(contigD.getContigName()==SamParser.debuggingTarget){
 				if(yValues[v]<=MAX_NB_MIXTURES ){
 					mostLeftValue=yValues[v-(PLOIDY_SMOOTHER_WIDTH/2)];
 
-					if(mostLeftValue>0 && mostLeftValue<=MAX_NB_MIXTURES && ploidyCounter[mostLeftValue]>0 ){	ploidyCounter[mostLeftValue]--;	}//remove mostleft value of window
+					if(mostLeftValue>0 && mostLeftValue<=MAX_NB_MIXTURES && ploidyCounter[mostLeftValue]>0 ){	
+						ploidyCounter[mostLeftValue]--;	//remove mostleft value of window
+					}else if (mostLeftValue==0)nbZeroValues--;
 
-					//if(yValues[v]>0 && yValues[v]<=MAX_NB_MIXTURES)ploidyCounter[yValues[v]]++;//if(yValues[v]>0 && yValues[v]<=MAX_NB_MIXTURES)ploidyCounter[yValues[v]]--;??
 					if (ploidyCounter[currentMode]<ploidyCounter[yValues[v]]){
 						for(int pc=1;pc<ploidyCounter.length;pc++){//we don't consider 0 values
 							if(ploidyCounter[pc]>ploidyCounter[currentMode])currentMode=pc;
 						}
 					}
 
-					if (currentMode!=0 && ploidyCounter[currentMode]>modeThreshold ){
+					if (currentMode!=0 && ploidyCounter[currentMode]>((PLOIDY_SMOOTHER_WIDTH-(nbZeroValues/8))/modeThresholdRate) ){
 						series.add(xValues[v], currentMode);
 //if(contigD.getContigName()==SamParser.debuggingTarget)System.out.print(xValues[v]+"/"+currentMode+" ");
 					}
@@ -694,7 +697,7 @@ if(contigD.getContigName()==SamParser.debuggingTarget){
 					if (ploidyCounter[currentMode]<ploidyCounter[yValues[v]]){
 						currentMode=yValues[v];
 					}
-					if (currentMode!=0 && ploidyCounter[currentMode]>modeThreshold){
+					if (currentMode!=0 && ploidyCounter[currentMode]>((PLOIDY_SMOOTHER_WIDTH-(nbZeroValues/8))/modeThresholdRate)){
 						series.add(xValues[v], currentMode);
 //if(contigD.getContigName()==SamParser.debuggingTarget)System.out.print(xValues[v]+"#"+currentMode+" ");
 
@@ -802,19 +805,19 @@ if(contigD.getContigName()==SamParser.debuggingTarget){
 				lastRightIndex = ind;
 	//System.out.println(" .     ind :" + ind + " = " + mid + "  l:" + left + " m:" + mid+ " r:" + right );
 
-				if (right < mid && mid > left /*&& mid > FITthreshold*/) {// we count maxs only above threshold (deactivayted here, threshold is checked below) 
+				if (right < mid && mid > left /*&& mid > FITthreshold*/) {// we count maxs only above threshold (deactivated here, threshold is checked below) 
 					
 					// now that we encountered a max bin, we scan the previous
 					// and the following bins to find the exact maximum point in this area
 					
 					double maxVal = 0;// precise max Y value in the corresponding bins
-					int Xindex = lastLeftIndex;//index (x value) of the maxVal
-					int endscaningIndex=lastRightIndex + naivePDF.smootherLength;
+					int Xindex = lastLeftIndex ;//index (x value) of the maxVal
+					int endscaningIndex=lastRightIndex + naivePDF.smootherLength/2;
 					if(endscaningIndex>readCounts.length-1)endscaningIndex=readCounts.length-1;
 
 	//System.out.println(" ....    max in :" + lastRightIndex + " = " + mid + "  l:" + left + " m:" + mid+ " r:" + right + "  between leftIn:" + lastLeftIndex + " midInd:" + lastMidIndex+ " rightInd:" + lastRightIndex + " \nSCANING from lastLeftIndex:" + lastLeftIndex+ " to  :" + endscaningIndex+" readCounts.length="+readCounts.length);
 
-					for (int ib = lastLeftIndex; ib < endscaningIndex; ib++) {
+					for (int ib = lastLeftIndex ; ib < endscaningIndex; ib++) {
 
 						if (readCounts[ib] > maxVal) {
 							maxVal = readCounts[ib];
@@ -828,7 +831,7 @@ if(contigD.getContigName()==SamParser.debuggingTarget){
 					if(!xMinList.contains(naivePDF.xDataPoints[Xindex]) && maxVal>ReadCountThreshold ){// we count maxs only above threshold
 						yMinList.add(maxVal);
 						xMinList.add(naivePDF.xDataPoints[Xindex]);
-						System.out.println(" ****    max in :" + naivePDF.xDataPoints[Xindex] + " = " + maxVal+ " lastLeftIndex:"+lastLeftIndex+" lastRightIndex:"+lastRightIndex+" (+ "+naivePDF.smootherLength+" = "+endscaningIndex+") mid="+mid);
+						System.out.println(" ****    max in :" + naivePDF.xDataPoints[Xindex] + " = " + maxVal+ " lastLeftIndex:"+lastLeftIndex+" lastRightIndex:"+lastRightIndex+" (+ "+naivePDF.smootherLength/2+" = "+endscaningIndex+") mid="+mid);
 						//System.out.println(" ++++    max in :" + naivePDF.xDataPoints[Xindex] + " mid = " + mid);
 
 						sigMaxs++;

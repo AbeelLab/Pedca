@@ -23,7 +23,7 @@ public class NaivePDF {
     double maxXvalue=0.0;
     int peakYvalueIndex=0;//index f the peak value (therefore in both histogram and fit). Used to find the correct ratio of both plots
     MixtureModel mixtMod;
-    static int smootherLength;
+    static int smootherLength;//bin width (values are averaged within each bin)
     static int smootherWing;
     
 	public NaivePDF(float[] rc){
@@ -31,7 +31,7 @@ public class NaivePDF {
 		readCounts=rc;
 		maxXvalue=readCounts.length;
 		
-		smootherLength=(int) (maxXvalue/(Math.round(3*NaivePloestPlotter.MAX_NB_MIXTURES)));//the window of our smoother must be able to discretize over at least 10 different clusters (MAX_NB_MIXTURES). The minimum length should be 2X. We go for a safer 3X
+		smootherLength=(int) (maxXvalue/(Math.round(2.5*NaivePloestPlotter.MAX_NB_MIXTURES)));//the window of our smoother must be able to discretize over at least 10 different clusters (MAX_NB_MIXTURES). The minimum length should be 2X. We go for a safer 3X
 		if((smootherLength & 1) == 0   ){//if even number
 			smootherLength++;//must be odd number
 		}

@@ -43,14 +43,22 @@ public class Ploest {
 	 * NOVOGENE
 	
 	Novogene to CBS1483_59contigs
+	
+				SIGNIFICANT_MIN=0.03;
 				args[0] = "-p";
-				args[1] = "PloEstNovogene" ;	
+				args[1] = "PloestNovogene" ;////args[1] = "NovogeneVdB2anc" ;
+				//args[1] = "PedcaNovogene2ancestors" ;	
+				
 				args[2] = "-w";
 				args[3] = winLengths[wlInd];
 				args[4] = "-i";
+				//args[5] = "C://Users//Mel//Documents//BIOINFORMATICS//DELFT_Research//Data//CBS_Novogene//BAM//sorted_nov2anc.bam";
+				//args[5] = "C://Users//Mel//Documents//BIOINFORMATICS//DELFT_Research//Data//CBS_Novogene//BAM//sorted_NovoVdBNewMap2anc.bam";
 				args[5] = "C://Users//Mel//Documents//BIOINFORMATICS//DELFT_Research//Data//CBS_Novogene//BAM//sorted_CBSNovogene.bam";
+
 				args[6] = "-o";
-				args[7] = "C://Users//Mel//Documents//BIOINFORMATICS//DELFT_Research//Data//CBS_Novogene";
+				//args[7] = "C://Users//Mel//Documents//BIOINFORMATICS//DELFT_Research//Data//CBS_Novogene//PedcaNovogene2ancestors";
+				args[7] = "C://Users//Mel//Documents//BIOINFORMATICS//DELFT_Research//Data//CBS_Novogene//PedcaNovogene";
 				args[8] = "-v";
 				args[9] = "C://Users//Mel//Documents//BIOINFORMATICS//DELFT_Research//Data//CBS_Novogene//Pilon//PilonCBSNovogene.vcf";
 	 * 
@@ -116,7 +124,7 @@ public class Ploest {
 	
 	static File currentFolder;
 	static int COV_RATE = 100;
-	static double SIGNIFICANT_MIN = 0.1;//default =0.05 threshold to calculate the minimal
+	static double SIGNIFICANT_MIN = 0.05;//default =0.05 threshold to calculate the minimal
 											// points in the gaussian mixture
 											// plot to be considered significant
 											// (in PloestPlotter.significantMin)
@@ -125,26 +133,44 @@ public class Ploest {
 	public static void main(String[] args) {
 		args=new String[8];
 		long startTimeGeneral = System.currentTimeMillis();
-		String[] winLengths = {"400","500","750","1000","2000"};//};//"50","100","250","400","500","750","1000","1500","2000", "3000","5000", "6500", "9000", "10000", "15000","20000", "30000", "40000", "50000","75000"};		
+		String[] winLengths = {"2000"};//"400","500","750","1000","2000"};//"50","100","250","400","500","750","1000","1500","2000", "3000","5000", "6500", "9000", "10000", "15000","20000", "30000", "40000", "50000","75000"};		
 		for (int wlInd = 0; wlInd < winLengths.length; wlInd++) {
 			try {
 				
-				SIGNIFICANT_MIN=0.3;
+				SIGNIFICANT_MIN=0.05;
+			/*
 				args[0] = "-p";
-				//args[1] = "PloestNovogene" ;////args[1] = "NovogeneVdB2anc" ;
-				args[1] = "PedcaNovogene2ancestors" ;	
+				args[1] = "PedcaNovogene59bowtiePseudo" ;////args[1] = "NovogeneVdB2anc" ;
+				//args[1] = "PedcaNovogene2ancestors" ;	
 				
 				args[2] = "-w";
 				args[3] = winLengths[wlInd];
 				args[4] = "-i";
-				args[5] = "C://Users//Mel//Documents//BIOINFORMATICS//DELFT_Research//Data//CBS_Novogene//BAM//sorted_nov2anc.bam";
+				//args[5] = "C://Users//Mel//Documents//BIOINFORMATICS//DELFT_Research//Data//CBS_Novogene//BAM//sorted_nov2anc.bam";
 				//args[5] = "C://Users//Mel//Documents//BIOINFORMATICS//DELFT_Research//Data//CBS_Novogene//BAM//sorted_NovoVdBNewMap2anc.bam";
-				//args[5] = "C://Users//Mel//Documents//BIOINFORMATICS//DELFT_Research//Data//CBS_Novogene//BAM//sorted_CBSNovogene.bam";
+				args[5] = "C://Users//Mel//Documents//BIOINFORMATICS//DELFT_Research//Data//CBS_Novogene//BAM//sorted_CBS_bowtie_pseudo_Novogene.bam";
 
 				args[6] = "-o";
-				args[7] = "C://Users//Mel//Documents//BIOINFORMATICS//DELFT_Research//Data//CBS_Novogene//PedcaNovogene2ancestors";
+				//args[7] = "C://Users//Mel//Documents//BIOINFORMATICS//DELFT_Research//Data//CBS_Novogene//PedcaNovogene2ancestors";
+				args[7] = "C://Users//Mel//Documents//BIOINFORMATICS//DELFT_Research//Data//CBS_Novogene////CBSBowtiePseudo"
+						+ "";
+				//args[8] = "-v";
+				//args[9] = "C://Users//Mel//Documents//BIOINFORMATICS//DELFT_Research//Data//CBS_Novogene//Pilon//PilonCBSNovogene.vcf";
+				*/	
+			
+				args[0] = "-p";
+				args[1] = "PedcaBaseClear59bowtiePseudo" ;	
+				args[2] = "-w";
+				args[3] = winLengths[wlInd];
+				args[4] = "-i";
+				//args[5] = "C://Users//Mel//Documents//BIOINFORMATICS//DELFT_Research//Data//CBS_Baseclear//BAM//sorted_BaseVdBNewMap2anc.bam";
+				args[5] = "C://Users//Mel//Documents//BIOINFORMATICS//DELFT_Research//Data//CBS_Baseclear//BAM//sorted_CBS_bowtie_pseudo_Baseclear.bam";
+				args[6] = "-o";
+				args[7] = "C://Users//Mel//Documents//BIOINFORMATICS//DELFT_Research//Data//CBS_Baseclear//CBSBowtiePseudo";
+				//args[8] = "-v";
+				//args[9] = "C://Users//Mel//Documents//BIOINFORMATICS//DELFT_Research//Data//CBS_Baseclear//VCF//PilonPastorianusCBS.vcf";
 	
-							
+				
 				
 				
 				runPloest(args);
@@ -152,6 +178,7 @@ public class Ploest {
 
 			} catch (Exception e) {
 				System.err.println(args[1] + args[3]+" could not be run");
+				e.printStackTrace();
 			}
 
 		}
@@ -222,7 +249,7 @@ public class Ploest {
 						break;
 					case "-v":
 						argsIndex[9] = i + 1;
-						System.out.println("case -v stored not supposed to happen:");
+						//System.out.println("case -v stored not supposed to happen:");
 						break;
 					default:
 						break;

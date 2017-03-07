@@ -141,7 +141,8 @@ public class VCFManager {
 							if (!currentChromosome.equals(chrom)) {// if change in chrom
 								currentChromosome = chrom;
 								chromNumber++;
-								System.out.println("Allele frequencies analysis. Processing chrom:"+chrom+" in vcf file....");
+								//printout current chromosome being processed
+								//System.out.println("Allele frequencies analysis. Processing chrom:"+chrom+" in vcf file....");
 								// check if new currentContig is in BaseCall List:
 								if (ploestPlotter.continousPloidyContigsNamesCluster1.contains(currentChromosome)) {
 									currentContigIsInBaseCall_CLUSTER_1_List = true;
@@ -206,7 +207,8 @@ public class VCFManager {
 							if (!currentChromosome.equals(chrom)) {// if change in chrom
 								currentChromosome = chrom;
 								chromNumber++;	
-								System.out.println("Allele frequencies analysis. Processing chrom:"+chrom+" in vcf file....");
+								//printout current chromosome being processed
+								//System.out.println("Allele frequencies analysis. Processing chrom:"+chrom+" in vcf file....");
 								// check if new currentContig is in BaseCall List: 
 								if (ploestPlotter.continousPloidyContigsNamesCluster1.contains(currentChromosome)) {
 									currentContigIsInBaseCall_CLUSTER_1_List = true;
@@ -230,7 +232,8 @@ public class VCFManager {
 						if (!currentChromosome.equals(chrom)) {// if change in chrom/contig
 							currentChromosome = chrom;
 							chromNumber++;
-							System.out.println("Allele frequencies analysis. Processing chrom:"+chrom+" in vcf file....");
+							//printout current chromosome being processed							
+							//System.out.println("Allele frequencies analysis. Processing chrom:"+chrom+" in vcf file....");
 							// check if new currentContig is in BaseCall List: cluster1
 							if (ploestPlotter.continousPloidyContigsNamesCluster1.contains(currentChromosome)) {
 								currentContigIsInBaseCall_CLUSTER_1_List = true;

@@ -294,11 +294,11 @@ public class SamParser {
 		int midPoint;
 		for (midPoint=0;midPoint<readCounts.length;midPoint++){
 			space-=readCounts[midPoint];
-			if (space<(sum*0.05))break;//select range that takes 95% of all datapoints in readcounts
+			if (space<(sum*0.02))break;//select range that takes 95% of all datapoints in readcounts
 		}
 
 		//redo readCounts with proper range if necesary
-		int SAFE_RANGE=(int) Math.ceil(midPoint*1.1);
+		int SAFE_RANGE=(int) Math.ceil(midPoint*1.2);
 		if((readCounts.length-midPoint)>SAFE_RANGE){
 
 			System.out.println("keeping original ReadCounts range? no, reaffecting ReadCounts range. Old:"+readCounts.length+ " new:"+SAFE_RANGE);

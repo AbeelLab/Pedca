@@ -454,8 +454,7 @@ public void displayPloidyAndCoveragePlotNaive( PrintWriter writ)throws IOExcepti
 
 	private void runBaseCallCheck() throws FileNotFoundException, InterruptedException {
 		
-			
-			
+		try{
 			System.out.println("runBaseCall on these contigs:");
 			System.out.println("cluster 1");
 			for (int i =0 ;i<continousPloidyContigsCluster1.size();i++){
@@ -469,6 +468,12 @@ public void displayPloidyAndCoveragePlotNaive( PrintWriter writ)throws IOExcepti
 		
 		
 		Ploest.baseCallIsOn=false;
+		}catch (Exception e){
+			
+			e.printStackTrace();
+		}
+			
+			
 
 	
     }

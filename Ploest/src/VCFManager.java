@@ -256,6 +256,7 @@ public class VCFManager {
 			if (sc != null)
 				sc.close();
 		} catch (Exception e) {
+			e.printStackTrace();
 			System.err.println("error at ct:" + ct + " chrom:" + chrom + " id:" + id + " pos:" + pos + " current:  "
 					+ currentMatrixLine);
 		}

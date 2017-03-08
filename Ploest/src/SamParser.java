@@ -123,7 +123,7 @@ public class SamParser {
 		}
 		
 		myploter.rt.writer.close();
-		myploter.rt.writer2ndRun.close();
+		if(myploter.rt.writer2ndRun!=null)myploter.rt.writer2ndRun.close();
 	}
 
 

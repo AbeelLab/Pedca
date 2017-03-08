@@ -161,10 +161,7 @@ public class Ploest {
 				args[8] = "-v";
 				args[9] = "C://Users//Mel//Documents//BIOINFORMATICS//DELFT_Research//Data//CBS_Baseclear//Pilon//PilonBaseclearVdBNew2anc.vcf";
 			      
-			
-				
-				
-				
+
 				
 				runPloest(args);
 				

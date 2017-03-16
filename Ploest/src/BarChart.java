@@ -82,7 +82,7 @@ public class BarChart {
 				PlotOrientation.VERTICAL, false, true, false);
 		
 		try {
-			ChartUtilities.saveChartAsJPEG(new File(Ploest.outputFile + "//" + Ploest.projectName+ "//BaseCall//BaseCallHistogramCluster_"+cluster+".jpg"), histChart, 1500, 900);
+			ChartUtilities.saveChartAsJPEG(new File(Ploest.outputFile + "//BaseCall//BaseCallHistogramCluster_"+cluster+".jpg"), histChart, 1500, 900);
 		} catch (IOException e) {
 			System.err.println("Problem occurred creating base call chart.");
 		}

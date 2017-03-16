@@ -389,11 +389,12 @@ public void displayPloidyAndCoveragePlotNaive( PrintWriter writ)throws IOExcepti
 		}
 //System.out.println(" displayPloidyAndCoveragePlotNaive Ploest.baseCallIsOn:"+Ploest.baseCallIsOn+" rt.bestScore.score(>0.1?):"+rt.bestScore.score);		
 			
-		if(Ploest.baseCallIsOn && rt.bestScore.score>0.07){
+		if(Ploest.baseCallIsOn /*&& rt.bestScore.score>0.07*/){
 			
 			try {
 				//System.out.println("runBaseCallCheck() DEACTIVATED!!!!");
 				runBaseCallCheck();
+				Ploest.baseCallIsOn =false;
 			} catch (InterruptedException e) {
 				System.err.println("runBaseCall error exception in NaivePloestPlotter.displayPloidyAndCoveragePlotNaive()");
 				e.printStackTrace();
@@ -425,7 +426,7 @@ public void displayPloidyAndCoveragePlotNaive( PrintWriter writ)throws IOExcepti
 			
 			Ploest.windowLength=(int) (minLength/(3*CONTINUITY_POINTS));
 			writ.println("#>A new estimation will be attempted with a new window length of "+Ploest.windowLength);
-			if(Ploest.windowLength<20)Ploest.windowLength=20;//if(Ploest.windowLength<8)Ploest.windowLength=8;
+			if(Ploest.windowLength<16)Ploest.windowLength=16;//if(Ploest.windowLength<8)Ploest.windowLength=8;
 			SamParser.RUN_SECOND_ROUND=true;	
 			//update contigs info
 			for (int u=0;u<unsolvedPloidyContigs.size();u++){

@@ -12,7 +12,7 @@ public class VCFManager {
 	List<String> humanLines = new ArrayList<String>();
 	ArrayList<ArrayList<Double>> vcfMatrix1 = new ArrayList<ArrayList<Double>>();
 	ArrayList<ArrayList<Double>> vcfMatrix2 = new ArrayList<ArrayList<Double>>();
-	String outputFileRoot = Ploest.outputFile + "\\" + Ploest.projectName + "\\BaseCall";
+	String outputFileRoot = Ploest.outputFile +  "\\BaseCall";//= Ploest.outputFile + "\\" + Ploest.projectName + "\\BaseCall";
 	String endFix = "";
 	String outputMatrixFile1 = "Matrix1stCluster.vcf";
 	String outputMatrixFile2 = "Matrix2ndCluster.vcf";

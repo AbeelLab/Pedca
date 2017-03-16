@@ -81,16 +81,16 @@ public class Ploest {
 	 * BASECLEAR
 	 * 
 	 * args[0] = "-p";
-				args[1] = "PloestBaseClear" ;	
+				args[1] = "PedcaBaseclear" ;	
 				args[2] = "-w";
 				args[3] = winLengths[wlInd];
 				args[4] = "-i";
-				args[5] = "C://Users//Mel//Documents//BIOINFORMATICS//DELFT_Research//Data//CBS_Baseclear//BAM//sorted_CBS1483Pastorianus.bam";
+				args[5] = "C://Users//Mel//Documents//BIOINFORMATICS//DELFT_Research//Data//CBS_Baseclear//BAM//sorted_BaseVdBNewMap2anc.bam";
 				args[6] = "-o";
-				args[7] = "C://Users//Mel//Documents//BIOINFORMATICS//DELFT_Research//Data//CBS_Baseclear";
+				args[7] = "C://Users//Mel//Documents//BIOINFORMATICS//DELFT_Research//Data//CBS_Baseclear//VdBNewMap2anc";
 				args[8] = "-v";
-				args[9] = "C://Users//Mel//Documents//BIOINFORMATICS//DELFT_Research//Data//CBS_Baseclear//VCF//PilonPastorianusCBS.vcf";
-							
+				args[9] = "C://Users//Mel//Documents//BIOINFORMATICS//DELFT_Research//Data//CBS_Baseclear//Pilon//PilonBaseclearVdBNew2anc.vcf";
+			      							
 	 args[0] = "-p";
 				args[1] = "PedcaBaseClear59bowtiePseudo" ;	
 				args[2] = "-w";
@@ -144,23 +144,24 @@ public class Ploest {
 	public static void main(String[] args) {
 		args=new String[10];
 		long startTimeGeneral = System.currentTimeMillis();
-		String[] winLengths = {"1000"};//"400","500","750","1000","2000"};//"50","100","250","400","500","750","1000","1500","2000", "3000","5000", "6500", "9000", "10000", "15000","20000", "30000", "40000", "50000","75000"};		
+		String[] winLengths = {"5000"};//"400","500","750","1000","2000"};//"50","100","250","400","500","750","1000","1500","2000", "3000","5000", "6500", "9000", "10000", "15000","20000", "30000", "40000", "50000","75000"};		
 		for (int wlInd = 0; wlInd < winLengths.length; wlInd++) {
 			try {
 				
 				SIGNIFICANT_MIN=0.05;
 				
 				args[0] = "-p";
-				args[1] = "PedcaBaseclear" ;	
+				args[1] = "PedcaTCruzi_CLB_PacBio_Assembly" ;	
 				args[2] = "-w";
 				args[3] = winLengths[wlInd];
 				args[4] = "-i";
-				args[5] = "C://Users//Mel//Documents//BIOINFORMATICS//DELFT_Research//Data//CBS_Baseclear//BAM//sorted_BaseVdBNewMap2anc.bam";
+				args[5] = "C://Users//Mel//Documents//BIOINFORMATICS//DELFT_Research//Data//TCruzi//Bams//sorted_CruziPacBioAssemblyCLB1.bam";
+
 				args[6] = "-o";
-				args[7] = "C://Users//Mel//Documents//BIOINFORMATICS//DELFT_Research//Data//CBS_Baseclear//VdBNewMap2anc";
+				args[7] = "C://Users//Mel//Documents//BIOINFORMATICS//DELFT_Research//Data//TCruzi//PEDCA_CLB_PacBioAssembly";
+				
 				args[8] = "-v";
-				args[9] = "C://Users//Mel//Documents//BIOINFORMATICS//DELFT_Research//Data//CBS_Baseclear//Pilon//PilonBaseclearVdBNew2anc.vcf";
-			      
+				args[9] = "C://Users//Mel//Documents//BIOINFORMATICS//DELFT_Research//Data//TCruzi//Pilon//PilonCruziPacBio.vcf";
 
 				
 				runPloest(args);

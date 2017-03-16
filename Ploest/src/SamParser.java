@@ -67,15 +67,19 @@ public class SamParser {
 	
 		nbSeq = inputSam.getFileHeader().getSequenceDictionary().size();// nb of sequences in the FileHeader
 		contigsList = new HashMap<String, ContigData>(nbSeq);// Map of  ContigDatas(value) and their name (key)
-		ArrayList<Integer> contigLengths = new ArrayList<Integer> ();
+		int[] contigLengths = new int[nbSeq];//length of all contigs
+		int contigLength=0;
+		String contigName="";
 		// fill the contigsList
 		for (int i = 0; i < nbSeq; i++) {
-			contigsList.put(inputSam.getFileHeader().getSequenceDictionary().getSequence(i).getSequenceName(),
-					new ContigData(inputSam.getFileHeader().getSequenceDictionary().getSequence(i).getSequenceName(),
-							inputSam.getFileHeader().getSequenceDictionary().getSequence(i).getSequenceLength()));
-			contigLengths.add(inputSam.getFileHeader().getSequenceDictionary().getSequence(i).getSequenceLength());
+			contigLength=inputSam.getFileHeader().getSequenceDictionary().getSequence(i).getSequenceLength();
+			contigName=inputSam.getFileHeader().getSequenceDictionary().getSequence(i).getSequenceName();
+			//Printout contig names and lengths
+			//System.out.println(contigName+","+contigLength/1000+" Kbp");
+			contigsList.put(contigName,new ContigData(contigName,contigLength));
+			contigLengths[i]=contigLength;
 		}
-		
+		computeNmeasure(contigLengths,50);
 
 		inputSam.setValidationStringency(ValidationStringency.SILENT);
 		SAMRecordIterator iter = inputSam.iterator();
@@ -124,6 +128,27 @@ public class SamParser {
 		
 		myploter.rt.writer.close();
 		if(myploter.rt.writer2ndRun!=null)myploter.rt.writer2ndRun.close();
+	}
+
+
+	private void computeNmeasure(int[] contigLengths, int x){
+		Arrays.sort(contigLengths);
+
+		int sum=0;
+		for (int i=contigLengths.length-1;i>=0;i--){
+			sum+=contigLengths[i];
+		}
+		System.out.println("Total length of all contigs: "+sum+" bp");
+		int target=sum*x/100;
+		int cumulativeSum=0;
+		for (int i=contigLengths.length-1;i>0;i--){
+			cumulativeSum+=contigLengths[i];
+			if (cumulativeSum>target){
+				System.out.println("N"+x+" of input contigs:"+contigLengths[i]+" bp");
+				break;
+			}
+		}
+		
 	}
 
 
@@ -294,7 +319,7 @@ public class SamParser {
 		int midPoint;
 		for (midPoint=0;midPoint<readCounts.length;midPoint++){
 			space-=readCounts[midPoint];
-			if (space<(sum*0.02))break;//select range that takes 95% of all datapoints in readcounts
+			if (space<(sum*0.03))break;//select range that takes 95% of all datapoints in readcounts
 		}
 
 		//redo readCounts with proper range if necesary
@@ -376,4 +401,8 @@ public class SamParser {
 		}
 	}
 
+
+
+	
+	
 }

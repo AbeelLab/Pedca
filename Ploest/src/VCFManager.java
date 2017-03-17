@@ -303,11 +303,13 @@ public class VCFManager {
 			}
 		}
 		System.setOut(stdout);
-		BaseCallBarchar(vcfMatrix1,1);
+		
 		
 	}
 
-	private void BaseCallBarchar(ArrayList<ArrayList<Double>> vcfMatrix,int cluster) {
+	private double[] BaseCallBarchar(ArrayList<ArrayList<Double>> vcfMatrix,int cluster) {
+
+		double[]baseCalls=new double[0];
 		if (vcfMatrix.size() > 0) {
 			int lineSize = vcfMatrix.get(0).size();// should always be 5
 			ArrayList<Double> currentLine;
@@ -325,12 +327,15 @@ public class VCFManager {
 				}
 			}
 			
-			double[]baseCalls=new double[baseCallsList.size()];
+			baseCalls=new double[baseCallsList.size()];
 			for (int j = 0; j < baseCallsList.size(); j++) {
+			
 				baseCalls[j]=baseCallsList.get(j);
 			}
-			BarChart barchart = new BarChart(baseCalls,cluster);
-		}	
+			
+		}
+		return baseCalls;
+			
 	}
 
 	
@@ -371,6 +376,38 @@ public class VCFManager {
 			}
 		}
 		System.setOut(stdout);
-		BaseCallBarchar(vcfMatrix2,2);
+		
+		//get the plot values and transform it into histogram values
+		//for cluster1
+		int[] YbaseCalls1=new int[20];
+		double[] baseCalls1 =BaseCallBarchar(vcfMatrix1,1);
+		int currentBin=0;
+		for (int j = 0; j < baseCalls1.length; j++) {
+			currentBin=(int) (baseCalls1[j]/0.05);
+			YbaseCalls1[currentBin]++;
+		}
+		//and for cluster2
+		double[] baseCalls2 =BaseCallBarchar(vcfMatrix2,2);
+		currentBin=0;
+		int[] YbaseCalls2=new int[20];
+		for (int j = 0; j < baseCalls2.length; j++) {
+			currentBin=(int) (baseCalls2[j]/0.05);
+			YbaseCalls2[currentBin]++;
+		}
+		
+		
+		
+		//find the max value of y axis in YbaseCalls1 and YbaseCalls2 (for comparative reasons we wnt the same y axe range)
+		int maxYBaseCall=0;
+		for(int i=0;i<YbaseCalls1.length;i++){
+			if (YbaseCalls1[i]>maxYBaseCall)maxYBaseCall=YbaseCalls1[i];
+		}
+		for(int i=0;i<YbaseCalls2.length;i++){
+			if (YbaseCalls2[i]>maxYBaseCall)maxYBaseCall=YbaseCalls2[i];
+		}
+		
+		new BarChart(baseCalls1,1,maxYBaseCall);
+		new BarChart(baseCalls2,2,maxYBaseCall);
+		
 	}
 }

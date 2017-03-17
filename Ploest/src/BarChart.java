@@ -56,7 +56,7 @@ public class BarChart {
 		System.out.println("BarChar printed "+SamParser.stringSecondRound+". maxY="+maxY);
 	}
 	
-	public BarChart (double [] baseCalls,int cluster) {//baseCall chart constructor
+	public BarChart (double [] baseCalls,int cluster, int maxY) {//baseCall chart constructor
 		//System.out.println("BarChart call for cluster "+cluster);
 		int[] bins=new int [NB_OF_BASECALL_BiNS];
 		int bin;
@@ -81,8 +81,20 @@ public class BarChart {
 		histChart = ChartFactory.createBarChart("BaseCall Distribution. Cluster nb:"+cluster+" ; depth>"+VCFManager.depthThreshold, "Base Call %", "Number of occurrences ", histDataset,
 				PlotOrientation.VERTICAL, false, true, false);
 		
+		histChart.getCategoryPlot().getRangeAxis().setRange(0.00, maxY);
+		
+        
+        Font font3 = new Font("Dialog", Font.PLAIN, 25); 
+        histChart.getCategoryPlot().getDomainAxis().setLabelFont(font3);
+        histChart.getCategoryPlot().getRangeAxis().setLabelFont(font3);
+        histChart.getCategoryPlot().getDomainAxis().setTickLabelFont(font3);
+        histChart.getCategoryPlot().getRangeAxis().setTickLabelFont(font3);
+  
+		
+        
+		
 		try {
-			ChartUtilities.saveChartAsJPEG(new File(Ploest.outputFile + "//BaseCall//BaseCallHistogramCluster_"+cluster+".jpg"), histChart, 1500, 900);
+			ChartUtilities.saveChartAsJPEG(new File(Ploest.outputFile + "//BaseCall//BaseCallHistogramCluster_"+cluster+".jpg"), histChart, 3000, 1800);
 		} catch (IOException e) {
 			System.err.println("Problem occurred creating base call chart.");
 		}

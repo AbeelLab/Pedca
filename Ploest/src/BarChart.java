@@ -71,10 +71,10 @@ public class BarChart {
 		}
 
 		// Create a simple Bar chart
-		Double perc;
+		Integer perc;
 		histDataset = new DefaultCategoryDataset();
 		for (int r=0;r<bins.length;r++){	
-			perc=(r*0.05);
+			perc=(r*5);
 			histDataset.setValue(bins[r], "Base Call %",perc);
 		}
 		

@@ -4,6 +4,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
+import java.util.List;
 
 import dataFitters.GaussianDataFitter;
 
@@ -136,44 +137,15 @@ public class Ploest {
 	
 	static File currentFolder;
 	static int COV_RATE = 100;
-	static double SIGNIFICANT_MIN = 0.05;//default =0.05 threshold to calculate the minimal
+	static double SIGNIFICANT_MIN = 0.1;//default =0.05 threshold to calculate the minimal
 											// points in the gaussian mixture
 											// plot to be considered significant
 											// (in PloestPlotter.significantMin)
 	static int nbOfRuns = 100;// nb of runs of
-
+	static boolean MULTIRUN=false;
+	static double BIN_FACTOR=2.5;
 	public static void main(String[] args) {
-		args=new String[10];
-		long startTimeGeneral = System.currentTimeMillis();
-		String[] winLengths = {"2000"};//"400","500","750","1000","2000"};//"50","100","250","400","500","750","1000","1500","2000", "3000","5000", "6500", "9000", "10000", "15000","20000", "30000", "40000", "50000","75000"};		
-		for (int wlInd = 0; wlInd < winLengths.length; wlInd++) {
-			try {
-				
-				args[0] = "-p";
-				args[1] = "PedcaBaseClear59bowtiePseudo" ;	
-				args[2] = "-w";
-				args[3] = winLengths[wlInd];
-				args[4] = "-i";
-				//args[5] = "C://Users//Mel//Documents//BIOINFORMATICS//DELFT_Research//Data//CBS_Baseclear//BAM//sorted_BaseVdBNewMap2anc.bam";
-				args[5] = "C://Users//Mel//Documents//BIOINFORMATICS//DELFT_Research//Data//CBS_Baseclear//BAM//sorted_CBS_bowtie_pseudo_Baseclear.bam";
-				args[6] = "-o";
-				args[7] = "C://Users//Mel//Documents//BIOINFORMATICS//DELFT_Research//Data//CBS_Baseclear//CBSBowtiePseudo";
-				args[8] = "-v";
-				args[9] = "C://Users//Mel//Documents//BIOINFORMATICS//DELFT_Research//Data//CBS_Baseclear//Pilon//PilonPastorianusCBS.vcf";
-
-				
-				runPloest(args);
-				
-
-			} catch (Exception e) {
-				System.err.println(args[1] + args[3]+" could not be run");
-				e.printStackTrace();
-			}
-
-		}
-		long endTimeGeneral = System.currentTimeMillis();
-		long totalTimeGeneral = endTimeGeneral - startTimeGeneral;
-		System.out.println("TOTAL TIME GENERAL ("+winLengths.length+" run/s): " + totalTimeGeneral / 1000);
+		runPloest(args);		
 	}
 
 
@@ -190,13 +162,14 @@ public class Ploest {
 										// 5:-r,numberOfRuns//deprecated
 										// 6:-o,outputFile
 										// 7:-k,mode average window
-										// 8:-m,multiple files is set
+										// 8:-m,automatic multiple windows
 										// 9:-v, vcf input file
+										//10:-b, bin factor per possible ploidy
 
 		if (args.length > 0) {
-			System.out.print(" Ploest ");
+			System.out.print(" Ploest args.length="+args.length+" :");
 			for (int i = 0; i < args.length; i++) {
-				System.out.print(" " + args[i] + " " + args[++i]);
+				System.out.print(" " + args[i] );
 			}
 			System.out.println();
 			// -help
@@ -234,18 +207,59 @@ public class Ploest {
 						argsIndex[7] = i + 1;
 						break;
 					case "-m":
-						argsIndex[8] = i + 1;
+						argsIndex[8] = i ;
+						MULTIRUN=true;
 						break;
 					case "-v":
 						argsIndex[9] = i + 1;
+						//System.out.println("case -v stored not supposed to happen:");
+						break;
+					case "-b":
+						argsIndex[10] = i + 1;
 						//System.out.println("case -v stored not supposed to happen:");
 						break;
 					default:
 						break;
 					}
 				}
+				if(MULTIRUN){
+					MULTIRUN=false;
+					List <String> newArgslist=new ArrayList <String>();
+		
+					System.out.println(" MULTIRUN  ");
+				
+					for (int n=0;n<args.length;n++){
+						if(!args[n].equals("-m") && !args [n].equals("-w")){
+							newArgslist.add(args[n]);
+						}
+						if(args [n].equals("-w")){
+							n++;
+						}
+					}
+					
+					String [] newArgs=new String [newArgslist.size()];
+					for (int n=0;n<newArgslist.size();n++){
+						newArgs[n]=newArgslist.get(n);
+					}
+					
+					
+					runMultipleWindows( newArgs);
+					return ;
+					
+				}
 				try {
-
+					// 0:-p,projectName
+					// 1:-i,inputFile (bam)
+					// 2:-s,SIGNIFICANT_MIN
+					// 3:-w,windowLength
+					// 4:-c,COV_RATE
+					// 5:-r,numberOfRuns//deprecated
+					// 6:-o,outputFile
+					// 7:-k,mode average window
+					// 8:-m,automatic multiple windows
+					// 9:-v, vcf input file
+					//10:-b, bin factor per possible ploidy
+					
 					outputFile = args[argsIndex[6]];
 					System.out.println("outputFile :"+outputFile);
 					if (argsIndex[2] != 0)
@@ -254,7 +268,7 @@ public class Ploest {
 						windowLength = Integer.parseInt(args[argsIndex[3]]);
 					projectName = args[argsIndex[0]] + windowLength;
 					if (argsIndex[4] != 0)
-						COV_RATE = Integer.parseInt(args[argsIndex[4]]);// bigger, more detail. Default= 10
+						COV_RATE = Integer.parseInt(args[argsIndex[4]]);// bigger, more detail. Default= 100
 					if (argsIndex[5] != 0)
 						nbOfRuns = Integer.parseInt(args[argsIndex[5]]);
 					if (argsIndex[7] != 0)
@@ -263,9 +277,7 @@ public class Ploest {
 						inputFile = args[argsIndex[1]];
 					} else {
 						System.err.println("argsIndex[8] :"+argsIndex[8] + " inputFile = "+inputFile);
-						//TO DO
-						//implement multiple input files
-						//fin = new File(args[argsIndex[8]]);
+
 					}
 					
 					
@@ -274,6 +286,13 @@ public class Ploest {
 						vcfFile = new File(args[argsIndex[9]]);
 						baseCallIsOn = true;
 					}else baseCallIsOn=false;
+					
+					if (argsIndex[10] != 0 && Integer.parseInt(args[argsIndex[10]])<4.0 && Integer.parseInt(args[argsIndex[10]])>1.0){
+						BIN_FACTOR = Integer.parseInt(args[argsIndex[10]]);
+					}else if ( Integer.parseInt(args[argsIndex[10]])>4.0 || Integer.parseInt(args[argsIndex[10]])>1.0)System.err.println(" BIN_FACTOR value non accpeted, must be >1.0 and <4.0. Will be run with default value "+BIN_FACTOR );
+						
+					
+					
 				} catch (Error e) {
 
 					System.out.println("Could not read input arguments");
@@ -315,6 +334,40 @@ public class Ploest {
 		long endTime = System.currentTimeMillis();
 		long totalTime = endTime - startTime;
 		System.out.println("TOTAL TIME : ["+args[3]+"] :"+ totalTime / 1000);
+	}
+	
+	
+	public static void runMultipleWindows(String[] args){
+		String[] newArgs=new String[args.length+2];
+		long startTimeGeneral = System.currentTimeMillis();
+		String[] winLengths = {"500","750"};//,"1000","2000","3000"};//"50","100","250","400","500","750","1000","1500","2000", "3000","5000", "6500", "9000", "10000", "15000","20000", "30000", "40000", "50000","75000"};		
+		for (int wlInd = 0; wlInd < winLengths.length; wlInd++) {
+			try {
+				
+				for (int i=0;i<args.length;i++){
+					newArgs[i]=args[i];
+				}
+				newArgs[args.length]= "-w";
+				newArgs[args.length+1]= winLengths[wlInd];
+				
+				System.out.println( " ARGS for wl="+winLengths[wlInd]);
+				for (int i=0;i<args.length;i++){
+					System.out.print(newArgs[i] + " ");
+				}
+				System.out.println( " ");
+				
+				runPloest(newArgs);
+				
+
+			} catch (Exception e) {
+				System.err.println(args[1] + args[3]+" could not be run");
+				e.printStackTrace();
+			}
+
+		}
+		long endTimeGeneral = System.currentTimeMillis();
+		long totalTimeGeneral = endTimeGeneral - startTimeGeneral;
+		System.out.println("TOTAL TIME GENERAL ("+winLengths.length+" run/s): " + totalTimeGeneral / 1000);
 	}
 	
 	

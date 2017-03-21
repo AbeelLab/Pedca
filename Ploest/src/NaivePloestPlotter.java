@@ -426,7 +426,7 @@ public void displayPloidyAndCoveragePlotNaive( PrintWriter writ)throws IOExcepti
 			
 			Ploest.windowLength=(int) (minLength/(3*CONTINUITY_POINTS));
 			writ.println("#>A new estimation will be attempted with a new window length of "+Ploest.windowLength);
-			if(Ploest.windowLength<16)Ploest.windowLength=16;//if(Ploest.windowLength<8)Ploest.windowLength=8;
+			if(Ploest.windowLength<Ploest.MIN_WIND_LENGTH)Ploest.windowLength=Ploest.MIN_WIND_LENGTH;//if(Ploest.windowLength<8)Ploest.windowLength=8;
 			SamParser.RUN_SECOND_ROUND=true;	
 			//update contigs info
 			for (int u=0;u<unsolvedPloidyContigs.size();u++){

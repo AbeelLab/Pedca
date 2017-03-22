@@ -27,7 +27,7 @@ public class ContigData {
 		contigName = name;
 		maxLength = length;
 		startPos =  new int[maxLength] ;
-		this.COV_RATE=Ploest.COV_RATE;
+		this.COV_RATE=Pedca.COV_RATE;
 		//System.out.println("new ContigData "+name+" startPos.length:"+startPos.length);
 		
 	}

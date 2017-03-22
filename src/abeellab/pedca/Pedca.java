@@ -9,7 +9,7 @@ import java.util.List;
 
 import dataFitters.GaussianDataFitter;
 
-public class Ploest {
+public class Pedca {
 	/*
 	 *
 	 * SIMULATEDDATASET

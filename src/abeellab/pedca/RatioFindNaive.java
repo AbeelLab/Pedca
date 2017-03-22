@@ -209,20 +209,20 @@ public class RatioFindNaive
 		System.out.print("%%%%%%%%%%%%%%%%%%%%%%%%% writeOut()"+"%%%%%%%%%%%%%%%%%%%%%%%%%%");
 		try {
 
-			writer = new PrintWriter(Ploest.outputFile + "//" + Ploest.projectName+ "//"+Ploest.projectName+"PloidyEstimation"+SamParser.stringSecondRound+".txt", "UTF-8");
-			writer.println("#> PLOIDY ESTIMATION FOR PROJECT:"+ Ploest.projectName);
-			writer.println("FINAL_NUMBER_OF_CLUSTERS="+NaivePloestPlotter.clusterMus.length );
+			writer = new PrintWriter(Pedca.outputFile + "//" + Pedca.projectName+ "//"+Pedca.projectName+"PloidyEstimation"+SamParser.stringSecondRound+".txt", "UTF-8");
+			writer.println("#> PLOIDY ESTIMATION FOR PROJECT:"+ Pedca.projectName);
+			writer.println("FINAL_NUMBER_OF_CLUSTERS="+NaivePedcaPlotter.clusterMus.length );
 			writer.println("#\n");
 			writer.println("#>CLUSTER CENTERS AT READ COUNTS:");
 			writer.println("CLUSTER_CENTERS=");
 //System.out.println("CLUSTER_CENTERS=");
-			for (int g=0;g<NaivePloestPlotter.clusterMus.length;g++){
-				writer.println(NaivePloestPlotter.clusterMus[g]);	
+			for (int g=0;g<NaivePedcaPlotter.clusterMus.length;g++){
+				writer.println(NaivePedcaPlotter.clusterMus[g]);	
 //System.out.println(NaivePloestPlotter.clusterMus[g]);
 			}
 			writer.println("#\n");
 			writer.println("#>WINDOW LENGTH USED FOR PLOIDY ESTIMATION:");
-			writer.println("WINDOW_LENGTH="+ Ploest.windowLength);
+			writer.println("WINDOW_LENGTH="+ Pedca.windowLength);
 			writer.println("#> CLUSTER_NUMBER \tCOPY_NUMBER_ESTIMATION \t DISTANCE_ERROR (% MAX reads counts) ");
 			writer.println("CLUSTERS=");
 //System.out.println("CLUSTERs=");
@@ -268,20 +268,20 @@ System.out.println("#>Maximum Nb Of Mixtures respected = "+bestScore.respectsMax
 		System.out.print("%%%%%%%%%%%%%%%%%%%%%%%%% writeOut(2)"+SamParser.stringSecondRound+ "%%%%%%%%%%%%%%%%%%%%%%%%%%");
 		try {
 
-			writer2ndRun = new PrintWriter(Ploest.outputFile + "//" + Ploest.projectName+ "//"+Ploest.projectName+"PloidyEstimation"+SamParser.stringSecondRound+".txt", "UTF-8");
-			writer2ndRun.println("#> PLOIDY ESTIMATION FOR PROJECT:"+ Ploest.projectName);
-			writer2ndRun.println("FINAL_NUMBER_OF_CLUSTERS="+NaivePloestPlotter.clusterMus.length );
+			writer2ndRun = new PrintWriter(Pedca.outputFile + "//" + Pedca.projectName+ "//"+Pedca.projectName+"PloidyEstimation"+SamParser.stringSecondRound+".txt", "UTF-8");
+			writer2ndRun.println("#> PLOIDY ESTIMATION FOR PROJECT:"+ Pedca.projectName);
+			writer2ndRun.println("FINAL_NUMBER_OF_CLUSTERS="+NaivePedcaPlotter.clusterMus.length );
 			writer2ndRun.println("#\n");
 			writer2ndRun.println("#>CLUSTER CENTERS AT READ COUNTS:");
 			writer2ndRun.println("CLUSTER_CENTERS=");
 System.out.println("CLUSTER_CENTERS=");
-			for (int g=0;g<NaivePloestPlotter.clusterMus.length;g++){
-				writer2ndRun.println(NaivePloestPlotter.clusterMus[g]);	
+			for (int g=0;g<NaivePedcaPlotter.clusterMus.length;g++){
+				writer2ndRun.println(NaivePedcaPlotter.clusterMus[g]);	
 //System.out.println(NaivePloestPlotter.clusterMus[g]);
 			}
 			writer2ndRun.println("#\n");
 			writer2ndRun.println("#>WINDOW LENGTH USED FOR PLOIDY ESTIMATION:");
-			writer2ndRun.println("WINDOW_LENGTH="+ Ploest.windowLength);
+			writer2ndRun.println("WINDOW_LENGTH="+ Pedca.windowLength);
 			writer2ndRun.println("#> CLUSTER_NUMBER \tCOPY_NUMBER_ESTIMATION \t DISTANCE_ERROR (% MAX reads counts) ");
 			writer2ndRun.println("CLUSTERS=");
 //System.out.println("CLUSTERs=");

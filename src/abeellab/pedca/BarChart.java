@@ -46,11 +46,11 @@ public class BarChart {
 			if(normReadCounts[r]>maxY)maxY=normReadCounts[r];
 		}
 
-		histChart = ChartFactory.createBarChart("Read Count Distribution. Window length: "+Ploest.windowLength+" "+SamParser.stringSecondRound, "Reads Count", "%Contigs", histDataset,
+		histChart = ChartFactory.createBarChart("Read Count Distribution. Window length: "+Pedca.windowLength+" "+SamParser.stringSecondRound, "Reads Count", "%Contigs", histDataset,
 				PlotOrientation.VERTICAL, false, true, false);
 
 		try {
-			ChartUtilities.saveChartAsJPEG(new File(Ploest.outputFile + "//" + Ploest.projectName+ "//readsDistribution"+SamParser.stringSecondRound+".jpg"), histChart, 2000, 1200);
+			ChartUtilities.saveChartAsJPEG(new File(Pedca.outputFile + "//" + Pedca.projectName+ "//readsDistribution"+SamParser.stringSecondRound+".jpg"), histChart, 2000, 1200);
 		} catch (IOException e) {
 			System.err.println("Problem occurred creating chart.");
 		}
@@ -95,7 +95,7 @@ public class BarChart {
         
 		
 		try {
-			ChartUtilities.saveChartAsJPEG(new File(Ploest.outputFile + "//BaseCall//BaseCallHistogramCluster_"+cluster+".jpg"), histChart, 3000, 1800);
+			ChartUtilities.saveChartAsJPEG(new File(Pedca.outputFile + "//BaseCall//BaseCallHistogramCluster_"+cluster+".jpg"), histChart, 3000, 1800);
 		} catch (IOException e) {
 			System.err.println("Problem occurred creating base call chart.");
 		}
@@ -132,7 +132,7 @@ public class BarChart {
 
 
 			try {
-				ChartUtilities.saveChartAsJPEG(new File(Ploest.outputFile + "//" + Ploest.projectName+ "//readsDistributionGaussianFitted"+r+".jpg"), overlaidChart, 1000, 600);
+				ChartUtilities.saveChartAsJPEG(new File(Pedca.outputFile + "//" + Pedca.projectName+ "//readsDistributionGaussianFitted"+r+".jpg"), overlaidChart, 1000, 600);
 			} catch (IOException e) {
 				System.err.println("Problem occurred creating chart.");
 			}
@@ -170,11 +170,11 @@ public void BarChartWithFit (NaivePDF naivePDF, String title) {
 		
 		plot.setDatasetRenderingOrder(DatasetRenderingOrder.FORWARD);
 		// return a new chart containing the overlaid plot...
-		overlaidChart=new JFreeChart("Naive Smoothed Fit of Reads Distribution. Window length: "+Ploest.windowLength, JFreeChart.DEFAULT_TITLE_FONT, plot, true);
+		overlaidChart=new JFreeChart("Naive Smoothed Fit of Reads Distribution. Window length: "+Pedca.windowLength, JFreeChart.DEFAULT_TITLE_FONT, plot, true);
 
 
 		try {
-			ChartUtilities.saveChartAsJPEG(new File(Ploest.outputFile + "//" + Ploest.projectName+ "//readsDistributionFitted"+title+".jpg"), overlaidChart, 1000, 600);
+			ChartUtilities.saveChartAsJPEG(new File(Pedca.outputFile + "//" + Pedca.projectName+ "//readsDistributionFitted"+title+".jpg"), overlaidChart, 1000, 600);
 		} catch (IOException e) {
 			System.err.println("Problem occurred creating chart.");
 		}

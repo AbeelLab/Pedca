@@ -34,7 +34,7 @@ import dataFitters.*;
 import jMEF.MixtureModel;
 import jMEF.PVector;
 
-public class PloestPlotter {
+public class PedcaPlotter {
 	static final int MAX_NB_MIXTURES=10;
 	//static final double SIGMA_FACTOR=2;//accepted factor for standard variation criterion of a point belonging to a gaussian  
 	Map<String,ContigData> contigsList;
@@ -57,7 +57,7 @@ public class PloestPlotter {
 	static int finalNumberOfMixtures;
 	RatioFind rt;//contains the ratio of the gaussians to the ploidy unit which allows computation of ploidy from contig coverage
 
-	public PloestPlotter(Map<String,ContigData> contList,int maxWindows) {
+	public PedcaPlotter(Map<String,ContigData> contList,int maxWindows) {
 		contigsList=contList;
 		contArrList = new ArrayList<String>(contigsList.keySet());
 
@@ -103,7 +103,7 @@ public class PloestPlotter {
 		MixtureModel[]bscMMs=new MixtureModel[MAX_NB_MIXTURES+1];//contains the result of the BSC fit for each of the mixtures
 		GaussianDataFitter gaussDF;
 		PoissonDataFitter poissDF;
-		int NbOfRuns=Ploest.nbOfRuns;
+		int NbOfRuns=Pedca.nbOfRuns;
 		int indofmin;
 		int[] bestBSCGuess=new int[MAX_NB_MIXTURES];//best BSC guess with bic model evaluation
 		int[] bestEMGuess=new int[MAX_NB_MIXTURES];//best BSC guess with EM model evaluation
@@ -111,7 +111,7 @@ public class PloestPlotter {
 
 	
 		pmPDF=new PoissonMixturePDF[NbOfRuns];
-		if(Ploest.forceK==0){
+		if(Pedca.forceK==0){
 			NbOfRuns=1;//DELETE WHEN DONE TESTING !!!!!!!
 			for (int r=0;r<NbOfRuns;r++){
 				System.out.println("run --"+r);
@@ -191,7 +191,7 @@ public class PloestPlotter {
 			finalNumberOfMixtures=indexOfMode(correctedResults);
 			System.out.println("-------------FINAL RESULT :"+finalNumberOfMixtures+" POISSON MODELS WITH "+(100*correctedResults[finalNumberOfMixtures]/NbOfRuns)+" % consensus---");
 		}else{//force input number of mixtures
-			finalNumberOfMixtures=Ploest.forceK;//
+			finalNumberOfMixtures=Pedca.forceK;//
 			//finalNumberOfMixtures=8;//RESET VALUE DELETING THIS
 			//System.out.println("-------------FINAL RESULT, GAUSSIAN MODELS WITH NB OF MIXTURE SET TO 90 !!!! (instead of :"+finalNumberOfMixtures+" reset values in PloestPlotter) forced mixtures");
 			System.out.println("-------------FINAL RESULT, POISSON MODELS WITH :"+finalNumberOfMixtures+"  forced mixtures");
@@ -235,7 +235,7 @@ public class PloestPlotter {
 		MixtureModel[]emMMs=new MixtureModel[MAX_NB_MIXTURES+1];//contains the result of the EM fit for each of the mixtures
 		MixtureModel[]bscMMs=new MixtureModel[MAX_NB_MIXTURES+1];//contains the result of the BSC fit for each of the mixtures
 		GaussianDataFitter df;
-		int NbOfRuns=Ploest.nbOfRuns;
+		int NbOfRuns=Pedca.nbOfRuns;
 		int indofmin;
 		int[] bestBSCGuess=new int[MAX_NB_MIXTURES];//best BSC guess with bic model evaluation
 		int[] bestEMGuess=new int[MAX_NB_MIXTURES];//best BSC guess with EM model evaluation
@@ -243,7 +243,7 @@ public class PloestPlotter {
 
 		gmPDF =new GaussianMixturePDF[NbOfRuns];
 		pmPDF=new PoissonMixturePDF[NbOfRuns];
-		if(Ploest.forceK==0){
+		if(Pedca.forceK==0){
 			for (int r=0;r<NbOfRuns;r++){
 				System.out.println("run --"+r);
 				for (int k=0;k<MAX_NB_MIXTURES;k++){//fit to different number k of mixtures
@@ -295,7 +295,7 @@ public class PloestPlotter {
 			finalNumberOfMixtures=indexOfMode(correctedResults);
 			System.out.println("-------------FINAL RESULT :"+finalNumberOfMixtures+" GAUSSIAN MODELS WITH "+(100*correctedResults[finalNumberOfMixtures]/NbOfRuns)+" % consensus---");
 		}else{//force input number of mixtures
-			finalNumberOfMixtures=Ploest.forceK;//
+			finalNumberOfMixtures=Pedca.forceK;//
 			//finalNumberOfMixtures=8;//RESET VALUE DELETING THIS
 			//System.out.println("-------------FINAL RESULT, GAUSSIAN MODELS WITH NB OF MIXTURE SET TO 90 !!!! (instead of :"+finalNumberOfMixtures+" reset values in PloestPlotter) forced mixtures");
 			System.out.println("-------------FINAL RESULT, GAUSSIAN MODELS WITH :"+finalNumberOfMixtures+"  forced mixtures");
@@ -405,7 +405,7 @@ public class PloestPlotter {
 			domain.setRange(0.00, maxX);
 			ValueAxis rangeAxis = xyPlot.getRangeAxis();	
 			rangeAxis.setRange(0.00, SamParser.readsDistributionMaxCoverage);
-			ChartUtilities.saveChartAsJPEG(new File(Ploest.outputFile + "//" + Ploest.projectName+ "//Contig_Coverage_Charts//Chart_Contig_"+c+".jpg"), chart, 1000, 600);
+			ChartUtilities.saveChartAsJPEG(new File(Pedca.outputFile + "//" + Pedca.projectName+ "//Contig_Coverage_Charts//Chart_Contig_"+c+".jpg"), chart, 1000, 600);
 		}
 
 	}
@@ -461,7 +461,7 @@ public class PloestPlotter {
 			xyPlot.setDatasetRenderingOrder( DatasetRenderingOrder.REVERSE );
 			// Create the chart with the plot and a legend
 			JFreeChart chart = new JFreeChart("Coverage and Ploidy Estimation :"+contigD.contigName, JFreeChart.DEFAULT_TITLE_FONT, xyPlot, true);
-			ChartUtilities.saveChartAsJPEG(new File(Ploest.outputFile + "//" + Ploest.projectName+ "//Ploidy_Estimation_Charts//Ploidy_Estimation_Contig_"+c+".jpg"),chart, 1000, 600);
+			ChartUtilities.saveChartAsJPEG(new File(Pedca.outputFile + "//" + Pedca.projectName+ "//Ploidy_Estimation_Charts//Ploidy_Estimation_Contig_"+c+".jpg"),chart, 1000, 600);
 
 		}
 	}
@@ -518,7 +518,7 @@ public void displayPloidyAndCoveragePlotPoisson()throws IOException{
 			xyPlot.setDatasetRenderingOrder( DatasetRenderingOrder.REVERSE );
 			// Create the chart with the plot and a legend
 			JFreeChart chart = new JFreeChart("Coverage and Ploidy Estimation :"+contigD.contigName, JFreeChart.DEFAULT_TITLE_FONT, xyPlot, true);
-			ChartUtilities.saveChartAsJPEG(new File(Ploest.outputFile + "//" + Ploest.projectName+ "//Ploidy_Estimation_Charts//Ploidy_Estimation_Contig_"+c+".jpg"),chart, 1000, 600);
+			ChartUtilities.saveChartAsJPEG(new File(Pedca.outputFile + "//" + Pedca.projectName+ "//Ploidy_Estimation_Charts//Ploidy_Estimation_Contig_"+c+".jpg"),chart, 1000, 600);
 
 		}
 	}
@@ -554,7 +554,7 @@ public void displayPloidyEstimationScatterPlotPoisson() throws IOException{//not
 		Shape shape1 = new Rectangle2D.Double(-delta, -delta, size, size);
 		renderer.setSeriesShape(0,shape1);
 
-		ChartUtilities.saveChartAsJPEG(new File(Ploest.outputFile + "//" + Ploest.projectName+ "//Ploidy_Estimation_Charts//Ploidy_Estimation_Contig_"+contigD.contigName+".jpg"),chart, 1000, 600);
+		ChartUtilities.saveChartAsJPEG(new File(Pedca.outputFile + "//" + Pedca.projectName+ "//Ploidy_Estimation_Charts//Ploidy_Estimation_Contig_"+contigD.contigName+".jpg"),chart, 1000, 600);
 
 	}
 }
@@ -591,7 +591,7 @@ public void displayPloidyEstimationScatterPlotPoisson() throws IOException{//not
 			Shape shape1 = new Rectangle2D.Double(-delta, -delta, size, size);
 			renderer.setSeriesShape(0,shape1);
 
-			ChartUtilities.saveChartAsJPEG(new File(Ploest.outputFile + "//" + Ploest.projectName+ "//Ploidy_Estimation_Charts//Ploidy_Estimation_Contig_"+contigD.contigName+".jpg"),chart, 1000, 600);
+			ChartUtilities.saveChartAsJPEG(new File(Pedca.outputFile + "//" + Pedca.projectName+ "//Ploidy_Estimation_Charts//Ploidy_Estimation_Contig_"+contigD.contigName+".jpg"),chart, 1000, 600);
 
 		}
 	}
@@ -774,7 +774,7 @@ public void displayPloidyEstimationScatterPlotPoisson() throws IOException{//not
 	private int significantMinsInPDF(GaussianMixturePDF gmf) {
 		//MaxMinArrays lists = new MaxMinArrays();
 		int sigMins=0;
-		double threshold=Ploest.SIGNIFICANT_MIN;//discards the mins that are above this threshold 
+		double threshold=Pedca.SIGNIFICANT_MIN;//discards the mins that are above this threshold 
 		//First find Mins:
 		//int count = 0; // To handle special case of singleton list
 		ArrayList<Double> yMinList= new  ArrayList<Double>();
@@ -810,7 +810,7 @@ public void displayPloidyEstimationScatterPlotPoisson() throws IOException{//not
 	private int significantMinsInPDF(PoissonMixturePDF pmf) {
 		//MaxMinArrays lists = new MaxMinArrays();
 		int sigMins=0;
-		double threshold=Ploest.SIGNIFICANT_MIN;//discards the mins that are above this threshold 
+		double threshold=Pedca.SIGNIFICANT_MIN;//discards the mins that are above this threshold 
 		//First find Mins:
 		//int count = 0; // To handle special case of singleton list
 		ArrayList<Double> yMinList= new  ArrayList<Double>();

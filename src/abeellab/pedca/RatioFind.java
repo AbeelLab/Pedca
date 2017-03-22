@@ -217,19 +217,19 @@ public class RatioFind
 	public void writeOut() {
 		
 		try {
-			PrintWriter writer = new PrintWriter(Ploest.outputFile + "//" + Ploest.projectName+ "//"+Ploest.projectName+"PloidyEstimation.txt", "UTF-8");
+			PrintWriter writer = new PrintWriter(Pedca.outputFile + "//" + Pedca.projectName+ "//"+Pedca.projectName+"PloidyEstimation.txt", "UTF-8");
 			
 			System.out.println("BEG ratio write out");
-			writer.println(">FINAL NUMBER OF MIXTURES: "+PloestPlotter.finalNumberOfMixtures+" gaussians\n" );
+			writer.println(">FINAL NUMBER OF MIXTURES: "+PedcaPlotter.finalNumberOfMixtures+" gaussians\n" );
 			writer.println("\n");
 			System.out.println("1 ratio write out");
-			for (int g=0;g<PloestPlotter.dfResult.getBSCModel().param.length;g++){
-				writer.println("weight["+g+"]:"+PloestPlotter.gMMweights[g]+" \tmu["+g+"]"+PloestPlotter.gMMmus[g]+"\tsigma["+g+"]:"+PloestPlotter.gMMsigmas[g]);		
+			for (int g=0;g<PedcaPlotter.dfResult.getBSCModel().param.length;g++){
+				writer.println("weight["+g+"]:"+PedcaPlotter.gMMweights[g]+" \tmu["+g+"]"+PedcaPlotter.gMMmus[g]+"\tsigma["+g+"]:"+PedcaPlotter.gMMsigmas[g]);		
 			}
 			System.out.println("2 ratio write out");	
 			writer.println("\n");
 			
-			writer.println("> PLOIDY ESTIMATION :"+ Ploest.projectName);
+			writer.println("> PLOIDY ESTIMATION :"+ Pedca.projectName);
 			writer.println("> GAUSSIAN_CLUSTER_NUMBER \tCOPY_NUMBER_ESTIMATION \t DISTANCE_ERROR ");
 			for(int d=0;d<ds.length;d++){
 				writer.println("\t\t"+d+" \t\t\t"+bestScore.bestCNVIndexes[d]+" \t\t\t"+bestScore.bestMinDistances[d]);
@@ -253,19 +253,19 @@ public class RatioFind
 	
 	public void writeOutPoisson() {
 		try {
-			PrintWriter writer = new PrintWriter(Ploest.outputFile + "//" + Ploest.projectName+ "//"+Ploest.projectName+"PloidyEstimation.txt", "UTF-8");
+			PrintWriter writer = new PrintWriter(Pedca.outputFile + "//" + Pedca.projectName+ "//"+Pedca.projectName+"PloidyEstimation.txt", "UTF-8");
 			
 			
-			writer.println(">FINAL NUMBER OF MIXTURES: "+PloestPlotter.finalNumberOfMixtures+" poissons\n" );
+			writer.println(">FINAL NUMBER OF MIXTURES: "+PedcaPlotter.finalNumberOfMixtures+" poissons\n" );
 			writer.println("\n");
 			
-			for (int g=0;g<PloestPlotter.pdfResult.getBSCModel().param.length;g++){
-				writer.println("weight["+g+"]:"+PloestPlotter.gMMweights[g]+" \tmu["+g+"]"+PloestPlotter.gMMmus[g]);		
+			for (int g=0;g<PedcaPlotter.pdfResult.getBSCModel().param.length;g++){
+				writer.println("weight["+g+"]:"+PedcaPlotter.gMMweights[g]+" \tmu["+g+"]"+PedcaPlotter.gMMmus[g]);		
 			}
 				
 			writer.println("\n");
 			
-			writer.println("> PLOIDY ESTIMATION :"+ Ploest.projectName);
+			writer.println("> PLOIDY ESTIMATION :"+ Pedca.projectName);
 			writer.println("> POISSON_CLUSTER_NUMBER \tCOPY_NUMBER_ESTIMATION \t DISTANCE_ERROR ");
 			for(int d=0;d<ds.length;d++){
 				writer.println("\t\t"+d+" \t\t\t"+bestScore.bestCNVIndexes[d]+" \t\t\t"+bestScore.bestMinDistances[d]);

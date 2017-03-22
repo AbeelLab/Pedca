@@ -5,12 +5,12 @@ import java.io.FileNotFoundException;
 import java.util.Scanner;
 import java.util.Vector;
 
-import Tools.ExpectationMaximization1D;
-import Tools.KMeans;
 import jMEF.BregmanSoftClustering;
 import jMEF.MixtureModel;
 import jMEF.PVector;
 import jMEF.UnivariateGaussian;
+import tools.ExpectationMaximization1D;
+import tools.KMeans;
 
 public class GaussianDataFitter {
 

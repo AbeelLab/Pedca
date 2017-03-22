@@ -32,13 +32,13 @@ import dataFitters.PoissonDataFitter;
 import jMEF.MixtureModel;
 import jMEF.PVector;
 
-public class NaivePloestPlotter {
+public class NaivePedcaPlotter {
 	
 	
 	
 	//static variable for smoothing the ploidy estimation
 	static boolean AVG_PLOIDY=true;//smooths the ploidy estimation by averaging over a window of length: PLOIDY_SMOOTHER_WIDTH
-	static int PLOIDY_SMOOTHER_WIDTH=Ploest.k;//preferably odd number
+	static int PLOIDY_SMOOTHER_WIDTH=Pedca.k;//preferably odd number
 	static int CONTINUITY_POINTS=20;//minimum datapoints (windows) required to evaluate the continuity of the ploidy estimation
 	
 	//variable for the read count distribution
@@ -73,7 +73,7 @@ public class NaivePloestPlotter {
 	 public int LENGTH_OF_CLUSTER_TWO_CONTIGS;	
 	
 	
-	public NaivePloestPlotter(Map<String,ContigData> contList,int maxWindows, float[] rc) {
+	public NaivePedcaPlotter(Map<String,ContigData> contList,int maxWindows, float[] rc) {
 		//reset static variables
 		clusterMus=null;
 		npdf=null;
@@ -209,7 +209,7 @@ for (int yv=0;yv<ItemsSize;yv++){
 			}
 //System.out.println("-- Ploest.baseCallIsOn "+Ploest.baseCallIsOn +" thisContigHasContinousPloidy"+thisContigHasContinousPloidy);
 			//store all contigs with ploidy belonging to cluster 1 or 2
-			if(Ploest.baseCallIsOn && contigD.thisContigHasContinousPloidy ){
+			if(Pedca.baseCallIsOn && contigD.thisContigHasContinousPloidy ){
 //System.out.println("-- Ploest.baseCallIsOn  Ploidy:"+ prevPloidy.intValue()+" CNVIndexes[0]:"+rt.bestScore.bestCNVIndexes[0]+" CNVIndexes[1]:"+rt.bestScore.bestCNVIndexes[1]);
 				
 				if( prevPloidy.intValue()==rt.bestScore.bestCNVIndexes[0]){//contigs from cluster 1
@@ -287,7 +287,7 @@ for (int yv=0;yv<ItemsSize;yv++){
 					c--;
 				}
 				String correctedContigName = contigD.contigName.replaceAll("[^a-zA-Z0-9.-]", "_");
-				ChartUtilities.saveChartAsJPEG(new File(Ploest.outputFile + "//" + Ploest.projectName+ "//Contig_Coverage_Charts//Chart_Contig_"+correctedContigName+".jpg"), chart, 1000, 600);
+				ChartUtilities.saveChartAsJPEG(new File(Pedca.outputFile + "//" + Pedca.projectName+ "//Contig_Coverage_Charts//Chart_Contig_"+correctedContigName+".jpg"), chart, 1000, 600);
 			}else {
 				System.err.println(contigD.contigName+" is too short ("+contigD.maxLength+"bp ) for the length of the sliding window (winLength="+contigD.windLength+" bp). Contig is Removed");
 				writeoutStringLog+= contigD.contigName+" is too short ("+contigD.maxLength+"bp ) for the length of the sliding window (winLength="+contigD.windLength+" bp). Contig is Removed\r\n";
@@ -373,7 +373,7 @@ public void displayPloidyAndCoveragePlotNaive( PrintWriter writ)throws IOExcepti
 				// Create the chart with the plot and a legend of COVERAGE AND PLOIDY		
 				JFreeChart chart = new JFreeChart("Coverage and Ploidy Estimation :"+contigD.contigName, JFreeChart.DEFAULT_TITLE_FONT, xyPlot, true);
 				String correctedContigName = contigD.contigName.replaceAll("[^a-zA-Z0-9.-]", "_");
-				ChartUtilities.saveChartAsJPEG(new File(Ploest.outputFile + "//" + Ploest.projectName+ "//Ploidy_Estimation_Charts//Ploidy_Estimation_"+correctedContigName+"_"+SamParser.stringSecondRound+".jpg"),chart, 1500, 900);
+				ChartUtilities.saveChartAsJPEG(new File(Pedca.outputFile + "//" + Pedca.projectName+ "//Ploidy_Estimation_Charts//Ploidy_Estimation_"+correctedContigName+"_"+SamParser.stringSecondRound+".jpg"),chart, 1500, 900);
 				
 			}
 			
@@ -383,19 +383,19 @@ public void displayPloidyAndCoveragePlotNaive( PrintWriter writ)throws IOExcepti
 				// Create the chart with the plot and a legend OF ONLY THE COVERAGE!!			
 				JFreeChart chart = new JFreeChart("Coverage and Ploidy Estimation :"+contigD.contigName, JFreeChart.DEFAULT_TITLE_FONT, xyPlot, true);
 				String correctedContigName = contigD.contigName.replaceAll("[^a-zA-Z0-9.-]", "_");
-				ChartUtilities.saveChartAsJPEG(new File(Ploest.outputFile + "//" + Ploest.projectName+ "//Ploidy_Estimation_Charts//Ploidy_Estimation_"+correctedContigName+"_"+SamParser.stringSecondRound+".jpg"),chart, 1500, 900);
+				ChartUtilities.saveChartAsJPEG(new File(Pedca.outputFile + "//" + Pedca.projectName+ "//Ploidy_Estimation_Charts//Ploidy_Estimation_"+correctedContigName+"_"+SamParser.stringSecondRound+".jpg"),chart, 1500, 900);
 			}
 //System.out.println(" CONTIG :"+contigD.contigName+" displayPloidyAndCoveragePlotNaive END");
 			
 		}
 //System.out.println(" displayPloidyAndCoveragePlotNaive Ploest.baseCallIsOn:"+Ploest.baseCallIsOn+" rt.bestScore.score(>0.1?):"+rt.bestScore.score);		
 			
-		if(Ploest.baseCallIsOn /*&& rt.bestScore.score>0.07*/){
+		if(Pedca.baseCallIsOn /*&& rt.bestScore.score>0.07*/){
 			
 			try {
 				//System.out.println("runBaseCallCheck() DEACTIVATED!!!!");
 				runBaseCallCheck();
-				Ploest.baseCallIsOn =false;
+				Pedca.baseCallIsOn =false;
 			} catch (InterruptedException e) {
 				System.err.println("runBaseCall error exception in NaivePloestPlotter.displayPloidyAndCoveragePlotNaive()");
 				e.printStackTrace();
@@ -415,7 +415,7 @@ public void displayPloidyAndCoveragePlotNaive( PrintWriter writ)throws IOExcepti
 
 			int minLength=unsolvedPloidyContigs.get(0).maxLength;
 			writ.println("#");
-			writ.println("#> The following contigs could not be solved with the current window length of "+Ploest.windowLength+" bp : ");
+			writ.println("#> The following contigs could not be solved with the current window length of "+Pedca.windowLength+" bp : ");
 			writ.println("CONTIGS_TO_BE_SOLVED=");
 			//compute new window length
 			for (int u=0;u<unsolvedPloidyContigs.size();u++){
@@ -425,13 +425,13 @@ public void displayPloidyAndCoveragePlotNaive( PrintWriter writ)throws IOExcepti
 				}
 			}
 			
-			Ploest.windowLength=(int) (minLength/(3*CONTINUITY_POINTS));
-			writ.println("#>A new estimation will be attempted with a new window length of "+Ploest.windowLength);
-			if(Ploest.windowLength<Ploest.MIN_WIND_LENGTH)Ploest.windowLength=Ploest.MIN_WIND_LENGTH;//if(Ploest.windowLength<8)Ploest.windowLength=8;
+			Pedca.windowLength=(int) (minLength/(3*CONTINUITY_POINTS));
+			writ.println("#>A new estimation will be attempted with a new window length of "+Pedca.windowLength);
+			if(Pedca.windowLength<Pedca.MIN_WIND_LENGTH)Pedca.windowLength=Pedca.MIN_WIND_LENGTH;//if(Ploest.windowLength<8)Ploest.windowLength=8;
 			SamParser.RUN_SECOND_ROUND=true;	
 			//update contigs info
 			for (int u=0;u<unsolvedPloidyContigs.size();u++){
-				unsolvedPloidyContigs.get(u).windLength=Ploest.windowLength;
+				unsolvedPloidyContigs.get(u).windLength=Pedca.windowLength;
 			}
 		}
 		
@@ -466,10 +466,10 @@ public void displayPloidyAndCoveragePlotNaive( PrintWriter writ)throws IOExcepti
 			for (int i =0 ;i<continousPloidyContigsCluster2.size();i++){
 				System.out.println(continousPloidyContigsCluster2.get(i).contigName);
 			}
-			VCFManager vcfManager=new VCFManager(Ploest.vcfFile.getAbsolutePath(),this);
+			VCFManager vcfManager=new VCFManager(Pedca.vcfFile.getAbsolutePath(),this);
 		
 		
-		Ploest.baseCallIsOn=false;
+		Pedca.baseCallIsOn=false;
 		}catch (Exception e){
 			
 			e.printStackTrace();
@@ -781,7 +781,7 @@ if(contigD.getContigName()==SamParser.debuggingTarget){
 
 	private int significantMaxsInPDF(NaivePDF naivePDF) {
 		int sigMaxs = 0;//nb of significant maximums
-		double ReadCountThreshold = SamParser.readDistributionMaxY * Ploest.SIGNIFICANT_MIN;// discards the values that are below this threshold in the original readCount Distribution
+		double ReadCountThreshold = SamParser.readDistributionMaxY * Pedca.SIGNIFICANT_MIN;// discards the values that are below this threshold in the original readCount Distribution
 		//int FITthreshold
 		System.out.println(" sigificantMAx in PDF SamParser.maxYh :" + SamParser.readDistributionMaxY + " Y min ReadCountThreshold:" + ReadCountThreshold);
 		//System.out.println(" naivePDF.maxYFITvalue:" + naivePDF.maxYFITvalue+ " Y min FITthreshold:" + FITthreshold);

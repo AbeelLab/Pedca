@@ -1,4 +1,4 @@
-package Tools;
+package tools;
 
 import jMEF.BregmanSoftClustering;
 import jMEF.MixtureModel;

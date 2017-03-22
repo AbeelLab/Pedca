@@ -13,15 +13,15 @@ public class VCFManager {
 	List<String> humanLines = new ArrayList<String>();
 	ArrayList<ArrayList<Double>> vcfMatrix1 = new ArrayList<ArrayList<Double>>();
 	ArrayList<ArrayList<Double>> vcfMatrix2 = new ArrayList<ArrayList<Double>>();
-	String outputFileRoot = Ploest.outputFile +  "\\BaseCall";//= Ploest.outputFile + "\\" + Ploest.projectName + "\\BaseCall";
+	String outputFileRoot = Pedca.outputFile +  "\\BaseCall";//= Ploest.outputFile + "\\" + Ploest.projectName + "\\BaseCall";
 	String endFix = "";
 	String outputMatrixFile1 = "Matrix1stCluster.vcf";
 	String outputMatrixFile2 = "Matrix2ndCluster.vcf";
 	final static int depthThreshold=10;//coverage threshold to consider a variation valid
-	NaivePloestPlotter ploestPlotter;
+	NaivePedcaPlotter ploestPlotter;
 	
 	// constructor from vcf file
-	public VCFManager(String inputVcf_file,NaivePloestPlotter n) throws FileNotFoundException, InterruptedException {
+	public VCFManager(String inputVcf_file,NaivePedcaPlotter n) throws FileNotFoundException, InterruptedException {
 		System.out.println("cluster 1 size:"+n.LENGTH_OF_CLUSTER_ONE_CONTIGS+" cluster 2 size:"+n.LENGTH_OF_CLUSTER_TWO_CONTIGS);
 		ploestPlotter=n;
 		File pilonOutFolder = new File(outputFileRoot);

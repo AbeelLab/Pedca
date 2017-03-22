@@ -39,8 +39,8 @@ public class SamParser {
 	List<String> contArrList;
 	static int readsDistributionMaxCoverage;//max coverage found in all contigs (to be used in x axis reads counts)
     static float readDistributionMaxY=0;//max normalized value in the y axis (to be used in y axis reads counts)
-	PloestPlotter plotter;//ploidy estimation  plott and pdf gaussian fit data
-	NaivePloestPlotter myploter;
+	PedcaPlotter plotter;//ploidy estimation  plott and pdf gaussian fit data
+	NaivePedcaPlotter myploter;
 	static BarChart barchart;
 	
 	static int totalDataPoints=0;//total amount of datapoints (all contigs considered)
@@ -61,7 +61,7 @@ public class SamParser {
 		barchart=null;
 		
 
-		this.windowLength=Ploest.windowLength;
+		this.windowLength=Pedca.windowLength;
 		
 		File samFileInput=new File(inputFile);
 		SAMFileReader inputSam = new SAMFileReader(samFileInput);
@@ -110,7 +110,7 @@ public class SamParser {
 		barchart = new BarChart(readCounts);
 		readDistributionMaxY=barchart.maxY;
 		
-		myploter = new NaivePloestPlotter(contigsList,readsDistributionMaxCoverage, barchart.normReadCounts);//plotter = new PloestPlotter(contigsList,maxWindows);
+		myploter = new NaivePedcaPlotter(contigsList,readsDistributionMaxCoverage, barchart.normReadCounts);//plotter = new PloestPlotter(contigsList,maxWindows);
 		
 		if (RUN_SECOND_ROUND){//runs a second round with a new window length to solve smallests contigs
 			System.out.println("-*-*-*-*-*-*-RUN_SECOND_ROUND*-*-*-*-*-*-*-*-*-*-*");
@@ -120,7 +120,7 @@ public class SamParser {
 				newContigsList.put(myploter.unsolvedPloidyContigs.get(c).contigName, myploter.unsolvedPloidyContigs.get(c));
 			}
 			contigsList=newContigsList;
-			windowLength=Ploest.windowLength;
+			windowLength=Pedca.windowLength;
 			windowSlideContigList();
 			//barchart = new BarChart(readCounts);//We don't need to plot this again
 			readDistributionMaxY=barchart.maxY;
@@ -155,7 +155,7 @@ public class SamParser {
 
 	public SamParser(File fin, String outputfile)throws IOException {
 
-		this.windowLength=Ploest.windowLength;
+		this.windowLength=Pedca.windowLength;
 		List<String> listOfInputFiles=new ArrayList<String>();
 		List<SAMFileReader> listOfSAMreaders=new ArrayList<SAMFileReader>();
 		FileInputStream fis = new FileInputStream(fin);
@@ -224,7 +224,7 @@ public class SamParser {
 		}
 		windowSlideContigList();
 		barchart = new BarChart(readCounts);
-		plotter = new PloestPlotter(contigsList,readsDistributionMaxCoverage);
+		plotter = new PedcaPlotter(contigsList,readsDistributionMaxCoverage);
 	}
 
 

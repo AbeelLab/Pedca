@@ -145,8 +145,10 @@ public class Ploest {
 											// (in PloestPlotter.significantMin)
 	static int nbOfRuns = 100;// nb of runs of
 	static boolean MULTIRUN=false;
-	static double BIN_FACTOR=2.6;
+	static double BIN_FACTOR=2.0;
 	public static void main(String[] args) {
+		
+		
 		runPloest(args);		
 	}
 
@@ -266,7 +268,7 @@ public class Ploest {
 					System.out.println("outputFile :"+outputFile);
 					if (argsIndex[2] != 0)
 						SIGNIFICANT_MIN = Double.parseDouble(args[argsIndex[2]]);
-					System.out.print(" SIGNIFICANT_MIN="+SIGNIFICANT_MIN);
+					System.out.println(" SIGNIFICANT_MIN="+SIGNIFICANT_MIN);
 					if (argsIndex[3] != 0){
 						windowLength = Integer.parseInt(args[argsIndex[3]]);
 						if (windowLength<MIN_WIND_LENGTH)windowLength=MIN_WIND_LENGTH;

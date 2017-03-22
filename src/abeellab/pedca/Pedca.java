@@ -389,9 +389,9 @@ public class Pedca {
 		System.out.println("\n +++++++++++++++++++++++++++++++++++++++++++++++++++++++");
 		System.out.println("\nPedca -help:");
 		System.out.println(
-				"\nUSAGE:    java –jar Pedca.jar  -p <project name> -i < input sam/bam File> -o <output Folder> <<OPTIONAL PARAMETERS>> \n");
+				"\nUSAGE:    java -jar Pedca.jar  -p <project name> -i < input sam/bam File> -o <output Folder> <<OPTIONAL PARAMETERS>> \n");
 		System.out.println("REQUIRED PARAMETERS:");
-		System.out.println("-p (project name)          – (String)  Prefix used to generate the results file.");
+		System.out.println("-p (project name)          - (String)  Prefix used to generate the results file.");
 		System.out.println(
 				"-i (input file)            - (Pathway to .bam/.sam file)   Pathway (absolute if necessary) to the input file containing the alignment file. Must be a .bam or .sam file");
 		System.out.println(	"-o (output Folder)         - (String)   Pathway (absolute if necessary) to the auto-generated output folder that will contain the results('./' if the folder points to the current directory)");

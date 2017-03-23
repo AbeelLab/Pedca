@@ -1,5 +1,6 @@
-
 ***PEDCA Tutorial (Ploidy Estimation by Dynamic Coverage Analysis) ***
+
+You might find a pdf copy of this tutorial with useful images at [*https://github.com/AbeelLab/Pedca/Documents*](https://github.com/AbeelLab/Pedca/Documents)
 
 PEDCA is a ploidy estimation algorithm that infers copy number of the
 contigs submitted as input based on the read coverage that aligns to

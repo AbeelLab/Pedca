@@ -142,28 +142,29 @@ user. The output has the following structure:
 
 ./&lt;OutputFolderPath&gt;
 
-./BaseCall
+> ./BaseCall
 
-. BaseCallHistogramCluster\_1.jpg
+>> . BaseCallHistogramCluster\_1.jpg
+>>
+>> . BaseCallHistogramCluster\_2.jpg
+>>
+>> . Matrix1stCluster.vcf
+>>
+>> . Matrix2ndCluster.vcf
 
-> . BaseCallHistogramCluster\_2.jpg
->
-> . Matrix1stCluster.vcf
->
-> . Matrix2ndCluster.vcf
+> ./&lt;Project Name&lt;*wl&gt;&gt;*
 
-./&lt;Project Name&lt;*wl&gt;&gt;*
+>> *./Ploidy\_Estimation\_Charts*
+>>
+>> *.PEDCA*&lt;Project Name&lt;*wl&gt;&gt;PloidyEstimation.txt*
+>>
+>> *.PEDCA*&lt;Project Name&lt;*wl&gt;&gt;PloidyEstimation\_2nd\_Round\_.txt*
+>>
+>> *.* *readsDistribution.jpg*
+>>
+>> *.readsDistributionFittedFINALRESULT.jpg*
 
-*./Ploidy\_Estimation\_Charts*
 
-*.PEDCA*&lt;Project Name&lt;*wl&gt;&gt;PloidyEstimation.txt*
-
-*.PEDCA*&lt;Project
-Name&lt;*wl&gt;&gt;PloidyEstimation\_2nd\_Round\_.txt*
-
-*.* *readsDistribution.jpg*
-
-*.readsDistributionFittedFINALRESULT.jpg*
 **OPTIONAL PARAMETERS:**
 
 -w &lt;window length&gt;

@@ -1,5 +1,6 @@
 package abeellab.pedca;
 import java.awt.Color;
+import java.awt.Font;
 import java.awt.Shape;
 import java.awt.geom.Rectangle2D;
 import java.io.File;
@@ -92,7 +93,6 @@ public class NaivePedcaPlotter {
 
 		
 		try{
-			//displayScatterPlots();//Scatterplot containing the contig coverage (per slided window)		
 			createFitterDataset() ;
 			fitNaiveMixtureModel();	//approximate the distribution by naive smoother and infere max points				
 			displayPloidyAndCoveragePlotNaive(rt.writer);//Plot containng both the coverage and the ploidy estimation	
@@ -318,8 +318,6 @@ public void displayPloidyAndCoveragePlotNaive( PrintWriter writ)throws IOExcepti
 			
 			contigD=contigsList.get(contArrList.get(c));
 			
-//System.out.println(" CONTIG :"+contigD.contigName+" displayPloidyAndCoveragePlotNaive"+"  LENGTH_OF_CLUSTER_ONE_CONTIGS:"+LENGTH_OF_CLUSTER_ONE_CONTIGS+"  LENGTH_OF_CLUSTER_TWO_CONTIGS:"+LENGTH_OF_CLUSTER_TWO_CONTIGS);
-
 			XYPlot xyPlot = new XYPlot();
 
 			
@@ -327,7 +325,7 @@ public void displayPloidyAndCoveragePlotNaive( PrintWriter writ)throws IOExcepti
 			// Create the scatter data, renderer, and axis
 			XYDataset collection1 = createPlotDataset(contigD);
 			XYItemRenderer renderer1 = new XYLineAndShapeRenderer(false, true);   // Shapes only
-			ValueAxis domain1 = new NumberAxis("Genome Position (x " +(contigD.windLength/2)+" bp)");
+			ValueAxis domain1 = new NumberAxis("Genome Position bp)");
 			ValueAxis rangeAxis = new NumberAxis("Coverage");
 
 			// Set the scatter data, renderer, and axis into plot
@@ -335,26 +333,30 @@ public void displayPloidyAndCoveragePlotNaive( PrintWriter writ)throws IOExcepti
 			xyPlot.setRenderer(0, renderer1);
 			xyPlot.setDomainAxis(0, domain1);
 			xyPlot.setRangeAxis(0, rangeAxis);
-
-			if(contigD.maxY>0 && contigD.maxY>rt.candUnit*15){
-				rangeAxis.setRange(0.00,rt.candUnit*15);
-			}
-		
-			//THIS OPTION ON JUST FOR PRINTING OUT THESIS (REMOVE LATER)	
+			
+			//if(contigD.maxY>0 && contigD.maxY>rt.candUnit*15){rangeAxis.setRange(0.00,rt.candUnit*15);	}
+			//THIS OPTION ON JUST FOR PRINTING OUT THESIS (REMOVE LATER?)	
 			rangeAxis.setRange(0.00,rt.candUnit*MAX_NB_MIXTURES);
 			
 			
 			// Map the scatter to the first Domain and first Range
 			xyPlot.mapDatasetToDomainAxis(0, 0);
 			xyPlot.mapDatasetToRangeAxis(0, 0);
-//System.out.println(" CONTIG :"+contigD.contigName+" displayPloidyAndCoveragePlotNaive 2");
+			
 			// Create the line data, renderer, and axis
 			XYDataset collection2 = createPloidyEstimationDatasetNaive(contigD,writ);
+			
+			 Font font3 = new Font("Dialog", Font.PLAIN, 30); 
+			 Font font4 = new Font("Dialog", Font.PLAIN, 35); 
+			 xyPlot.getDomainAxis().setLabelFont(font3);
+			 xyPlot.getRangeAxis().setLabelFont(font3);
+			 xyPlot.getDomainAxis().setTickLabelFont(font3);
+			 xyPlot.getRangeAxis().setTickLabelFont(font3);
+			
 
 			if(!unsolvedPloidyContigs.contains(contigD)){//ploidy is solved for these contigs
-//System.out.println(" CONTIG :"+contigD.contigName+" displayPloidyAndCoveragePlotNaive-- ploidy is solved for these contigs");
 				XYItemRenderer renderer2 = new XYLineAndShapeRenderer(false , true);   // Lines only
-				ValueAxis domain2 = new NumberAxis("Genome Position (x " +(contigD.windLength/2)+" bp)");
+				ValueAxis domain2 = new NumberAxis("Genome Position");
 				ValueAxis range2 = new NumberAxis("Ploidy Estimation");
 				range2.setUpperBound(rangeAxis.getUpperBound()/rt.bestScore.candidateUnit);
 				domain2.setUpperBound(domain1.getUpperBound());
@@ -365,35 +367,39 @@ public void displayPloidyAndCoveragePlotNaive( PrintWriter writ)throws IOExcepti
 				xyPlot.setRenderer(1, renderer2);
 				xyPlot.setDomainAxis(1, domain2);
 				xyPlot.setRangeAxis(1, range2);
+				
 				// Map the line to the second Domain and second Range
 				xyPlot.mapDatasetToDomainAxis(1, 1);
 				xyPlot.mapDatasetToRangeAxis(1, 1);
 				xyPlot.setDatasetRenderingOrder( DatasetRenderingOrder.FORWARD );
 				
+				domain2.setLabel("");;
+				domain2.setTickLabelFont(font3);
+				range2.setLabelFont(font3);				
+				range2.setTickLabelFont(font3);
+			
+				
+				
 				// Create the chart with the plot and a legend of COVERAGE AND PLOIDY		
 				JFreeChart chart = new JFreeChart("Coverage and Ploidy Estimation :"+contigD.contigName, JFreeChart.DEFAULT_TITLE_FONT, xyPlot, true);
+				chart.getTitle().setFont(font4);
 				String correctedContigName = contigD.contigName.replaceAll("[^a-zA-Z0-9.-]", "_");
 				ChartUtilities.saveChartAsJPEG(new File(Pedca.outputFile + "//" + Pedca.projectName+ "//Ploidy_Estimation_Charts//Ploidy_Estimation_"+correctedContigName+"_"+SamParser.stringSecondRound+".jpg"),chart, 1500, 900);
 				
 			}
 			
 			if(unsolvedPloidyContigs.contains(contigD) && SamParser.stringSecondRound=="_2nd_Round_"){//ploidy is NOT solved for these contigs AND it is the SECOND RUN
-//System.out.println(" CONTIG :"+contigD.contigName+" displayPloidyAndCoveragePlotNaive collection2 size:"+collection2.getSeriesCount());	
 
 				// Create the chart with the plot and a legend OF ONLY THE COVERAGE!!			
 				JFreeChart chart = new JFreeChart("Coverage and Ploidy Estimation :"+contigD.contigName, JFreeChart.DEFAULT_TITLE_FONT, xyPlot, true);
 				String correctedContigName = contigD.contigName.replaceAll("[^a-zA-Z0-9.-]", "_");
 				ChartUtilities.saveChartAsJPEG(new File(Pedca.outputFile + "//" + Pedca.projectName+ "//Ploidy_Estimation_Charts//Ploidy_Estimation_"+correctedContigName+"_"+SamParser.stringSecondRound+".jpg"),chart, 1500, 900);
 			}
-//System.out.println(" CONTIG :"+contigD.contigName+" displayPloidyAndCoveragePlotNaive END");
-			
 		}
-//System.out.println(" displayPloidyAndCoveragePlotNaive Ploest.baseCallIsOn:"+Ploest.baseCallIsOn+" rt.bestScore.score(>0.1?):"+rt.bestScore.score);		
 			
 		if(Pedca.baseCallIsOn /*&& rt.bestScore.score>0.07*/){
 			
 			try {
-				//System.out.println("runBaseCallCheck() DEACTIVATED!!!!");
 				runBaseCallCheck();
 				Pedca.baseCallIsOn =false;
 			} catch (InterruptedException e) {
@@ -434,9 +440,7 @@ public void displayPloidyAndCoveragePlotNaive( PrintWriter writ)throws IOExcepti
 				unsolvedPloidyContigs.get(u).windLength=Pedca.windowLength;
 			}
 		}
-		
-		//SamParser.thisIsTheFirstRun=false;
-		
+				
 		writ.close();
 	}
 
@@ -497,17 +501,14 @@ public void displayPloidyAndCoveragePlotNaive( PrintWriter writ)throws IOExcepti
 		XYSeriesCollection result = new XYSeriesCollection();
 		XYSeries series = new XYSeries(" Coverage");
 
-		//PrintWriter writer = new PrintWriter(Ploest.outputFile + "//" + Ploest.projectName+ "//plotDataSet"+maxX+".txt", "UTF-8");
-
 		double x;
 		double y;
 		
 		//this first loop is for the PLOESTPLOTTER
 		int wInd=0;//writting index
 		
-//if(contigD.getContigName()==SamParser.debuggingTarget)System.out.println(" Create plot dataset for "+SamParser.debuggingTarget);	
 		for (int i = 0; i < (contigD.windPos.size()); i++) {
-			x = wInd++;  
+			x = (wInd++ *(contigD.windLength/2));  
 			if(contigD.windPos.get(i)!=null){						
 				y = contigD.windPos.get(i);
 			}else{			
@@ -515,7 +516,6 @@ public void displayPloidyAndCoveragePlotNaive( PrintWriter writ)throws IOExcepti
 			}
 			
 			if(y>contigD.maxY)contigD.maxY=(int)y;
-//if(contigD.getContigName()==SamParser.debuggingTarget)System.out.print(" "+x+","+y+";");
 			series.add(x, y);
 
 		}
@@ -547,18 +547,13 @@ public void displayPloidyAndCoveragePlotNaive( PrintWriter writ)throws IOExcepti
 
 			if(contigD.windPos.get(i)!=null){
 				yValues [wInd]= (int)Math.round(contigD.windPos.get(i)/RatioFindNaive.candUnit);
-//if(contigD.getContigName()==SamParser.debuggingTarget)System.out.print(" "+wInd+","+contigD.windPos.get(i)+";");
-			}else{//contigD.windPos.get(i)==null
+			}else{
 				yValues [wInd]=0;
-//if(contigD.getContigName()==SamParser.debuggingTarget)System.out.print(" "+wInd+",Z;");
 			}
-			xValues [wInd]= wInd;  	
+			xValues [wInd]= wInd * (contigD.windLength/2);  	
 
-		
-
-//System.out.print(" ("+wInd+","+yValues [wInd]+")");
 			if (!AVG_PLOIDY){	
-				series.add(wInd, yValues [wInd]);
+				series.add(xValues [wInd], yValues [wInd]);
 			}
 			wInd++;
 	}
@@ -572,9 +567,6 @@ if(contigD.getContigName()==SamParser.debuggingTarget){
 	System.out.println();
 }
 */
-		
-//System.out.println();		
-//System.out.println(contigD.contigName+" 1 createPloidyEstimationDatasetNaive getPointPloidyEstimationNaive size="+series.getItemCount()+" /"+contigD.windPos.size());
 
 		if (wInd>maxX){//--wInd
 			maxX=(int) wInd;
@@ -583,25 +575,12 @@ if(contigD.getContigName()==SamParser.debuggingTarget){
 		if(AVG_PLOIDY ){		//smooth the ploidy plot by averaging the values over a window of PLOIDY_SMOOTHER_WIDTH points
 			series=averagePloidyMode(contigD,series,wInd,xValues,yValues);//uses the mode over PLOIDY_SMOOTHER points
 		}
-//System.out.println(contigD.contigName+" 2 createPloidyEstimationDatasetNaive getPointPloidyEstimationNaive size="+series.getItemCount());
 
-		if(series.getItemCount()<5 /*&& !removedContigs.contains(contigD)*/){
-			unsolvedPloidyContigs.add(contigD);
-//System.err.println(" CONTIG :"+contigD.contigName+" added to list for new window length ploidy estimation. series.size="+series.getItemCount());
-			
+		if(series.getItemCount()<10 /*&& !removedContigs.contains(contigD)*/){
+			unsolvedPloidyContigs.add(contigD);			
 		}
 
 		result.addSeries(series);
-/*		
-if(contigD.getContigName()==SamParser.debuggingTarget){
-	System.out.println("Post Average createPloidyEstimationDatasetNaive "+SamParser.debuggingTarget+"   contigD.windPos.size():"+ contigD.windPos.size()+" xValues:"+xValues.length+" yvalues:"+yValues.length);
-		for (int j=0;j<xValues.length;j++){
-			System.out.print(xValues[j]+","+yValues[j]+" ");
-		}
-		System.out.println();
-	}		
-*/		
-	
 		
 		writeOutPloEstByFragment(writer, series,contigD );//writes out the ploidy estimation detailed by fragment
 

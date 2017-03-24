@@ -149,6 +149,21 @@ public class Pedca {
 	static double BIN_FACTOR=2.0;
 	public static void main(String[] args) {
 		
+		args = new String[8];
+		
+		args[0] = "-p";
+		args[1] = "PedcaBaseClear59bowtiePseudo" ;	
+		args[2] = "-w";
+		args[3] = "500";
+		args[4] = "-i";
+		args[5] = "C://Users//Mel//Documents//BIOINFORMATICS//DELFT_Research//Data//CBS_Baseclear//BAM//sorted_CBS_bowtie_pseudo_Baseclear.bam";
+		args[6] = "-o";
+		args[7] = "C://Users//Mel//Documents//BIOINFORMATICS//DELFT_Research//Data//CBS_Baseclear//CBSBowtiePseudo";
+
+		
+		
+		
+		
 		
 		runPloest(args);		
 	}

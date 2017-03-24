@@ -7,6 +7,7 @@ import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartUtilities;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.NumberAxis;
+import org.jfree.chart.axis.NumberTickUnit;
 import org.jfree.chart.axis.ValueAxis;
 import org.jfree.chart.labels.StandardXYToolTipGenerator;
 import org.jfree.chart.plot.DatasetRenderingOrder;
@@ -34,21 +35,46 @@ public class BarChart {
 	int maxX;
 	float maxY=0;
 	int NB_OF_BASECALL_BiNS=20;
-	
+	Font fontLabels = new Font("Dialog", Font.PLAIN, 25); 
+	Font fontTitle = new Font("Dialog", Font.PLAIN, 30); 
 
 	public BarChart (int [] readCounts) {
+		
 		normReadCounts=normalize(readCounts);
+		
 		// Create a simple Bar chart
-
+		final NumberAxis domainAxis = new NumberAxis("ReadsCounts");
 		histDataset = new DefaultCategoryDataset();
 		for (int r=0;r<normReadCounts.length;r++){			
-			histDataset.setValue(normReadCounts[r], "#Contigs",(Integer)r);
 			if(normReadCounts[r]>maxY)maxY=normReadCounts[r];
+			if(r >maxX)maxX=r;
 		}
-
-		histChart = ChartFactory.createBarChart("Read Count Distribution. Window length: "+Pedca.windowLength+" "+SamParser.stringSecondRound, "Reads Count", "%Contigs", histDataset,
+		int domainTick=maxX/15;
+		for (int r=0;r<normReadCounts.length;r++){			
+			histDataset.setValue(normReadCounts[r], "#Contigs",new DomainCategory(r,domainTick));
+		}
+		
+		
+		histChart = ChartFactory.createBarChart("Read Count Distribution. wl: "+Pedca.windowLength+" "+SamParser.stringSecondRound, "Reads Count", "%Contigs", histDataset,
 				PlotOrientation.VERTICAL, false, true, false);
 
+		
+		
+
+		
+		((NumberAxis)histChart.getCategoryPlot().getRangeAxis()).setTickUnit(new NumberTickUnit(maxY/20)); 
+		
+		histChart.getCategoryPlot().getRangeAxis().setRange(0.00, maxY);
+	
+	
+		
+		histChart.getCategoryPlot().getDomainAxis().setLabelFont(fontLabels);
+		histChart.getCategoryPlot().getRangeAxis().setLabelFont(fontLabels);
+		histChart.getCategoryPlot().getDomainAxis().setTickLabelFont(fontLabels);
+		histChart.getCategoryPlot().getRangeAxis().setTickLabelFont(fontLabels);
+		
+		histChart.getTitle().setFont(fontTitle);
+		
 		try {
 			ChartUtilities.saveChartAsJPEG(new File(Pedca.outputFile + "//" + Pedca.projectName+ "//readsDistribution"+SamParser.stringSecondRound+".jpg"), histChart, 2000, 1200);
 		} catch (IOException e) {
@@ -79,19 +105,19 @@ public class BarChart {
 			histDataset.setValue(bins[r], "Base Call %",perc);
 		}
 		
-		histChart = ChartFactory.createBarChart("BaseCall Distribution. Cluster nb:"+cluster+" ; depth>"+VCFManager.depthThreshold, "Base Call %", "Number of occurrences ", histDataset,
+		histChart = ChartFactory.createBarChart("BaseCall Distribution. Cluster nb:"+cluster, "Base Call %", "Number of occurrences ", histDataset,
 				PlotOrientation.VERTICAL, false, true, false);
 		
 		histChart.getCategoryPlot().getRangeAxis().setRange(0.00, maxY);
 		
         
-        Font font3 = new Font("Dialog", Font.PLAIN, 30); 
-        histChart.getCategoryPlot().getDomainAxis().setLabelFont(font3);
-        histChart.getCategoryPlot().getRangeAxis().setLabelFont(font3);
-        histChart.getCategoryPlot().getDomainAxis().setTickLabelFont(font3);
-        histChart.getCategoryPlot().getRangeAxis().setTickLabelFont(font3);
+        
+        histChart.getCategoryPlot().getDomainAxis().setLabelFont(fontLabels);
+        histChart.getCategoryPlot().getRangeAxis().setLabelFont(fontLabels);
+        histChart.getCategoryPlot().getDomainAxis().setTickLabelFont(fontLabels);
+        histChart.getCategoryPlot().getRangeAxis().setTickLabelFont(fontLabels);
   
-		
+        histChart.getTitle().setFont(fontTitle);
         
 		
 		try {
@@ -152,9 +178,6 @@ public void BarChartWithFit (NaivePDF naivePDF, String title) {
 		final XYDataset data1 = createHistDataset(naivePDF) ;//histogram of readCounts
 		final XYItemRenderer renderer1 = new StandardXYItemRenderer();
 		final NumberAxis domainAxis = new NumberAxis("ReadsCounts");
-		
-
-		//domainAxis.setTickMarkPosition(DateTickMarkPosition.MIDDLE);
 		final ValueAxis rangeAxis = new NumberAxis("%Contigs");
 		final XYPlot plot = new XYPlot  (data1, domainAxis, rangeAxis, renderer1);
 		
@@ -164,14 +187,16 @@ public void BarChartWithFit (NaivePDF naivePDF, String title) {
 
 		plot.setDataset(1, data2);
 		plot.setRenderer(1, renderer2);
-		Font font3 = new Font("Dialog", Font.PLAIN, 25); 
-		plot.getDomainAxis().setLabelFont(font3);
-		plot.getRangeAxis().setLabelFont(font3);
+	
+		plot.getDomainAxis().setLabelFont(fontLabels);
+		plot.getRangeAxis().setLabelFont(fontLabels);
+		plot.getDomainAxis().setTickLabelFont(fontLabels);
+		plot.getRangeAxis().setTickLabelFont(fontLabels);
 		
 		plot.setDatasetRenderingOrder(DatasetRenderingOrder.FORWARD);
 		// return a new chart containing the overlaid plot...
 		overlaidChart=new JFreeChart("Naive Smoothed Fit of Reads Distribution. Window length: "+Pedca.windowLength, JFreeChart.DEFAULT_TITLE_FONT, plot, true);
-
+		overlaidChart.getTitle().setFont(fontTitle);
 
 		try {
 			ChartUtilities.saveChartAsJPEG(new File(Pedca.outputFile + "//" + Pedca.projectName+ "//readsDistributionFitted"+title+".jpg"), overlaidChart, 1000, 600);
@@ -303,4 +328,16 @@ private XYDataset createHistDataset( GaussianMixturePDF gaussFit) {
 	}
 
 
+	class DomainCategory implements Comparable<DomainCategory> {
+		   Integer value;
+		   String stValue;
+
+		   DomainCategory(int val,int tick) {
+		      value = val; 
+		      stValue = val%tick==0?""+val:"";}
+
+		   public int compareTo(DomainCategory key) { return value.compareTo(key.value); }
+
+		   public String toString() { return stValue; }
+		}
 }

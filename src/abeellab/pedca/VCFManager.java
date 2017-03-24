@@ -13,7 +13,7 @@ public class VCFManager {
 	List<String> humanLines = new ArrayList<String>();
 	ArrayList<ArrayList<Double>> vcfMatrix1 = new ArrayList<ArrayList<Double>>();
 	ArrayList<ArrayList<Double>> vcfMatrix2 = new ArrayList<ArrayList<Double>>();
-	String outputFileRoot = Pedca.outputFile +  "\\BaseCall";//= Ploest.outputFile + "\\" + Ploest.projectName + "\\BaseCall";
+	String outputFileRoot = Pedca.outputFile +  "//BaseCall";//= Ploest.outputFile + "\\" + Ploest.projectName + "\\BaseCall";
 	String endFix = "";
 	String outputMatrixFile1 = "Matrix1stCluster.vcf";
 	String outputMatrixFile2 = "Matrix2ndCluster.vcf";
@@ -38,9 +38,9 @@ public class VCFManager {
 		int nbOfVarsCluster2 = 0;
 		
 		// solve the paths
-		outputMatrixFile1 = outputFileRoot + "\\" + outputMatrixFile1;
+		outputMatrixFile1 = outputFileRoot + "//" + outputMatrixFile1;
 		System.out.println("   outputMatrixFile1 " + outputMatrixFile1);
-		outputMatrixFile2 = outputFileRoot + "\\" + outputMatrixFile2;
+		outputMatrixFile2 = outputFileRoot + "//" + outputMatrixFile2;
 		System.out.println("   outputMatrixFile2 " + outputMatrixFile2);
 		// We are interested in the 6th column and the DEPTH column:
 		// 6th="Count of As, Cs, Gs, Ts at locus"

@@ -85,7 +85,7 @@ public class BarChart {
 		histChart.getCategoryPlot().getRangeAxis().setRange(0.00, maxY);
 		
         
-        Font font3 = new Font("Dialog", Font.PLAIN, 25); 
+        Font font3 = new Font("Dialog", Font.PLAIN, 30); 
         histChart.getCategoryPlot().getDomainAxis().setLabelFont(font3);
         histChart.getCategoryPlot().getRangeAxis().setLabelFont(font3);
         histChart.getCategoryPlot().getDomainAxis().setTickLabelFont(font3);

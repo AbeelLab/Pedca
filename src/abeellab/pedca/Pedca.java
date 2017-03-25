@@ -104,7 +104,7 @@ public class Pedca {
 				args[6] = "-o";
 				args[7] = "C://Users//Mel//Documents//BIOINFORMATICS//DELFT_Research//Data//CBS_Baseclear//CBSBowtiePseudo";
 				//args[8] = "-v";
-				//args[9] = "C://Users//Mel//Documents//BIOINFORMATICS//DELFT_Research//Data//CBS_Baseclear//VCF//PilonPastorianusCBS.vcf";
+				//args[9] = "C://Users//Mel//Documents//BIOINFORMATICS//DELFT_Research//Data//CBS_Baseclear//Pilon//PilonPastorianusCBS.vcf";
 	
 	 * 
 	 * CRUZI
@@ -149,7 +149,7 @@ public class Pedca {
 	static double BIN_FACTOR=2.0;
 	public static void main(String[] args) {
 		
-		args = new String[8];
+		args = new String[10];
 		
 		args[0] = "-p";
 		args[1] = "PedcaBaseClear59bowtiePseudo" ;	
@@ -159,6 +159,8 @@ public class Pedca {
 		args[5] = "C://Users//Mel//Documents//BIOINFORMATICS//DELFT_Research//Data//CBS_Baseclear//BAM//sorted_CBS_bowtie_pseudo_Baseclear.bam";
 		args[6] = "-o";
 		args[7] = "C://Users//Mel//Documents//BIOINFORMATICS//DELFT_Research//Data//CBS_Baseclear//CBSBowtiePseudo";
+		args[8] = "-v";
+		args[9] = "C://Users//Mel//Documents//BIOINFORMATICS//DELFT_Research//Data//CBS_Baseclear//Pilon//PilonPastorianusCBS.vcf";
 
 		
 		
@@ -187,7 +189,6 @@ public class Pedca {
 										//10:-b, bin factor per possible ploidy
 
 		if (args.length > 0) {
-			System.out.print(" Ploest args.length="+args.length+" :");
 			for (int i = 0; i < args.length; i++) {
 				System.out.print(" " + args[i] );
 			}
@@ -284,7 +285,7 @@ public class Pedca {
 					System.out.println("outputFile :"+outputFile);
 					if (argsIndex[2] != 0)
 						SIGNIFICANT_MIN = Double.parseDouble(args[argsIndex[2]]);
-					System.out.println(" SIGNIFICANT_MIN="+SIGNIFICANT_MIN);
+					System.out.println("SIGNIFICANT_MIN="+SIGNIFICANT_MIN);
 					if (argsIndex[3] != 0){
 						windowLength = Integer.parseInt(args[argsIndex[3]]);
 						if (windowLength<MIN_WIND_LENGTH)windowLength=MIN_WIND_LENGTH;
@@ -307,7 +308,7 @@ public class Pedca {
 					
 					
 					if (argsIndex[9] != 0) {
-						System.out.println("vcf arg9!=0");
+						System.out.println("ALLELE FREQUENCIES ANALYSIS CALLED");
 						vcfFile = new File(args[argsIndex[9]]);
 						baseCallIsOn = true;
 					}else baseCallIsOn=false;

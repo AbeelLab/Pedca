@@ -6,6 +6,9 @@ import java.io.IOException;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartUtilities;
 import org.jfree.chart.JFreeChart;
+import org.jfree.chart.axis.AxisSpace;
+import org.jfree.chart.axis.CategoryAxis;
+import org.jfree.chart.axis.CategoryLabelPositions;
 import org.jfree.chart.axis.NumberAxis;
 import org.jfree.chart.axis.NumberTickUnit;
 import org.jfree.chart.axis.ValueAxis;
@@ -37,54 +40,52 @@ public class BarChart {
 	int NB_OF_BASECALL_BiNS=20;
 	Font fontLabels = new Font("Dialog", Font.PLAIN, 25); 
 	Font fontTitle = new Font("Dialog", Font.PLAIN, 30); 
-
+	Font fontLegend = new Font("Dialog", Font.PLAIN, 20); 
+	
+	//Constructor for Read Count distribution
 	public BarChart (int [] readCounts) {
-		
 		normReadCounts=normalize(readCounts);
-		
 		// Create a simple Bar chart
-		final NumberAxis domainAxis = new NumberAxis("ReadsCounts");
 		histDataset = new DefaultCategoryDataset();
 		for (int r=0;r<normReadCounts.length;r++){			
 			if(normReadCounts[r]>maxY)maxY=normReadCounts[r];
 			if(r >maxX)maxX=r;
 		}
-		int domainTick=maxX/15;
+		int domainTick=maxX/20;
+
 		for (int r=0;r<normReadCounts.length;r++){			
 			histDataset.setValue(normReadCounts[r], "#Contigs",new DomainCategory(r,domainTick));
 		}
-		
-		
+
+		// Create a simple Bar chart
 		histChart = ChartFactory.createBarChart("Read Count Distribution. wl: "+Pedca.windowLength+" "+SamParser.stringSecondRound, "Reads Count", "%Contigs", histDataset,
 				PlotOrientation.VERTICAL, false, true, false);
 
-		
-		
-
-		
-		((NumberAxis)histChart.getCategoryPlot().getRangeAxis()).setTickUnit(new NumberTickUnit(maxY/20)); 
-		
-		histChart.getCategoryPlot().getRangeAxis().setRange(0.00, maxY);
-	
-	
-		
+		histChart.getCategoryPlot().getRangeAxis().setAutoRange(true);
+		histChart.getCategoryPlot().getDomainAxis().setCategoryLabelPositions(CategoryLabelPositions.UP_45);
 		histChart.getCategoryPlot().getDomainAxis().setLabelFont(fontLabels);
 		histChart.getCategoryPlot().getRangeAxis().setLabelFont(fontLabels);
 		histChart.getCategoryPlot().getDomainAxis().setTickLabelFont(fontLabels);
 		histChart.getCategoryPlot().getRangeAxis().setTickLabelFont(fontLabels);
-		
 		histChart.getTitle().setFont(fontTitle);
+	
 		
 		try {
-			ChartUtilities.saveChartAsJPEG(new File(Pedca.outputFile + "//" + Pedca.projectName+ "//readsDistribution"+SamParser.stringSecondRound+".jpg"), histChart, 2000, 1200);
+			ChartUtilities.saveChartAsJPEG(new File(Pedca.outputFile + "//" + Pedca.projectName+ "//readsDistribution"+SamParser.stringSecondRound+".jpg"), histChart, 1500, 900);
 		} catch (IOException e) {
 			System.err.println("Problem occurred creating chart.");
 		}
 		System.out.println("BarChar printed "+SamParser.stringSecondRound+". maxY="+maxY);
 	}
 	
-	public BarChart (double [] baseCalls,int cluster, int maxY) {//baseCall chart constructor
-		//System.out.println("BarChart call for cluster "+cluster);
+	
+	//baseCall chart constructor
+	public BarChart (double [] baseCalls,int cluster, int maxY) {
+		 
+		fontLabels = new Font("Dialog", Font.PLAIN, 25); 
+		fontTitle = new Font("Dialog", Font.PLAIN, 30); 
+		fontLegend = new Font("Dialog", Font.PLAIN, 20); 
+		 
 		int[] bins=new int [NB_OF_BASECALL_BiNS];
 		int bin;
 		Double product;
@@ -109,9 +110,6 @@ public class BarChart {
 				PlotOrientation.VERTICAL, false, true, false);
 		
 		histChart.getCategoryPlot().getRangeAxis().setRange(0.00, maxY);
-		
-        
-        
         histChart.getCategoryPlot().getDomainAxis().setLabelFont(fontLabels);
         histChart.getCategoryPlot().getRangeAxis().setLabelFont(fontLabels);
         histChart.getCategoryPlot().getDomainAxis().setTickLabelFont(fontLabels);
@@ -171,6 +169,11 @@ public class BarChart {
 
 public void BarChartWithFit (NaivePDF naivePDF, String title) {
 
+	 fontLabels = new Font("Dialog", Font.PLAIN, 20); 
+	 fontTitle = new Font("Dialog", Font.PLAIN, 25); 
+	 fontLegend = new Font("Dialog", Font.PLAIN, 18); 
+	
+	
 	if (naivePDF==null){
 		System.out.println("BarChartWithFit naive Fit==null");
 	}else{
@@ -193,11 +196,12 @@ public void BarChartWithFit (NaivePDF naivePDF, String title) {
 		plot.getDomainAxis().setTickLabelFont(fontLabels);
 		plot.getRangeAxis().setTickLabelFont(fontLabels);
 		
+				
 		plot.setDatasetRenderingOrder(DatasetRenderingOrder.FORWARD);
 		// return a new chart containing the overlaid plot...
-		overlaidChart=new JFreeChart("Naive Smoothed Fit of Reads Distribution. Window length: "+Pedca.windowLength, JFreeChart.DEFAULT_TITLE_FONT, plot, true);
+		overlaidChart=new JFreeChart("Read Distribution Fit. wl:"+Pedca.windowLength+" bp", JFreeChart.DEFAULT_TITLE_FONT, plot, true);
 		overlaidChart.getTitle().setFont(fontTitle);
-
+		overlaidChart.getLegend().setItemFont(fontLegend);
 		try {
 			ChartUtilities.saveChartAsJPEG(new File(Pedca.outputFile + "//" + Pedca.projectName+ "//readsDistributionFitted"+title+".jpg"), overlaidChart, 1000, 600);
 		} catch (IOException e) {

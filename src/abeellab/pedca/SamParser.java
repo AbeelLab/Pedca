@@ -262,8 +262,8 @@ public class SamParser {
 	public void windowSlideContigList() throws FileNotFoundException, UnsupportedEncodingException {
 		
 		findMaxWindows();
-
 		int nbZeroVals=0;
+		
 		//fill readCounts and count totalDataPoints substracting the zero values
 		for (int i = 0; i < contArrList.size(); i++) {//for each contig
 			ContigData currentContig = contigsList.get(contArrList.get(i));
@@ -327,7 +327,7 @@ public class SamParser {
 		int SAFE_RANGE=(int) Math.ceil(midPoint*1.2);
 		if((readCounts.length-midPoint)>SAFE_RANGE){
 
-			System.out.println("keeping original ReadCounts range? no, reaffecting ReadCounts range. Old:"+readCounts.length+ " new:"+SAFE_RANGE);
+			System.out.println("Reaffecting original ReadCounts range; Old:"+readCounts.length+ " new:"+SAFE_RANGE);
 			totalDataPoints=0;
 			readCounts = new int[(int)SAFE_RANGE];
 			int nbNullVals=0;
@@ -364,7 +364,7 @@ public class SamParser {
 
 
 
-		}else System.out.println("Keeping original ReadCounts range? yes, keeping:"+readCounts.length+ " instead of changing to mid point :"+SAFE_RANGE);
+		}else System.out.println("Keeping original ReadCounts range; keeping:"+readCounts.length+ " instead of changing to mid point :"+SAFE_RANGE);
 		//System.out.println("sum:"+sum+ " midPoint:"+midPoint+ " readCounts size:"+readCounts.length);
 	}
 
@@ -373,7 +373,6 @@ public class SamParser {
 
 		int currentMax=0;
 		contArrList = new ArrayList<String>(contigsList.keySet());
-		//int sumOfAllWindCoverages=0;
 
 		for (int i = 0; i < contArrList.size(); i++) {
 			try {
@@ -383,10 +382,9 @@ public class SamParser {
 			} catch (FileNotFoundException | UnsupportedEncodingException e) {
 				e.printStackTrace();
 			}
-			//totalDataPoints+=maxWindows+1;
 		}
 		readCounts = new int[(int)Math.ceil(readsDistributionMaxCoverage*1.05)];
-		System.out.println("findMaxWindows maxWindows:"+readsDistributionMaxCoverage);
+		//System.out.println("findMaxWindows maxWindows:"+readsDistributionMaxCoverage);
 	}
 
 

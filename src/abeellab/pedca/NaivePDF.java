@@ -68,16 +68,9 @@ public class NaivePDF {
 			p=p+smootherWing-1;//move p to next bin start point
 
 		}
-		//yRatioCorrection=maxYHISTOGRAMvalue/maxYFITvalue;
-		/*
-		System.out.println(" smootherLength:"+smootherLength);
-		System.out.print("naivepdf SOFT readcounts =[");
-		for (int p=0;p<readCounts.length;p++){//for each param extract mu and sigma
-			System.out.print(xDataPoints[p]+" "+yDataPoints[p]+" ;");
-		}System.out.println("]");
-		*/
+
 		
-		System.out.println("NEW NAivePDF constructed");
+		System.out.println("NEW NaivePDF constructed");
 	}
 	
 	

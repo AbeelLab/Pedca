@@ -320,7 +320,7 @@ public class SamParser {
 		int midPoint;
 		for (midPoint=0;midPoint<readCounts.length;midPoint++){
 			space-=readCounts[midPoint];
-			if (space<(sum*0.03))break;//select range that takes 95% of all datapoints in readcounts
+			if (space<(sum*(1-Pedca.USED_DATA)))break;//select range that takes 96% of all datapoints in readcounts
 		}
 
 		//redo readCounts with proper range if necesary

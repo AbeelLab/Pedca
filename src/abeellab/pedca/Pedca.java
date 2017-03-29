@@ -14,20 +14,14 @@ public class Pedca {
 	 *
 	 * SIMULATEDDATASET
 	 * 
-	 * -p PloestSim500All -i
-	 * C:\Users\Mel\Documents\BIOINFORMATICS\DELFT_Research\Data\Simulated\BAMs\
-	 * AllSimLibs.bam -o
-	 * C:\Users\Mel\Documents\BIOINFORMATICS\DELFT_Research\Data\Simulated\ -v
-	 * C:\Users\Mel\Documents\BIOINFORMATICS\DELFT_Research\Data\Simulated\
-	 * PhasingAndVCFs\AllChroms\Pilon200_500Sim.vcf
+	 * -p PedcaNovogene59bowtiePseudo   -i  C:\Users\Mel\Documents\BIOINFORMATICS\DELFT_Research\Data\CBS_Novogene\BAM\sorted_CBS_bowtie_pseudo_Novogene.bam  -o C:\Users\Mel\Documents\BIOINFORMATICS\DELFT_Research\Data\CBS_Novogene\CBSBowtiePseudo -m
+	 * -v  C:\Users\Mel\Documents\BIOINFORMATICS\DELFT_Research\Data\Simulated\PhasingAndVCFs\AllChroms\Pilon200_500Sim.vcf
 	 * 
 	 * 
-	 *  BASECLEAR -p PloestBaseClear2000 -i
-	 * C:\Users\Mel\Documents\BIOINFORMATICS\DELFT_Research\Data\
-	 * PastorianusCBS_1483\BAM\sorted_CBS1483Pastorianus.bam -o
-	 * C:\Users\Mel\Documents\BIOINFORMATICS\DELFT_Research\Data\
-	 * PastorianusCBS_1483 -v
-	 * C:\Users\Mel\Documents\BIOINFORMATICS\DELFT_Research\Data\
+	 *  BASECLEAR -p PedcaBaseClear59bowtiePseudo 
+	 *  -i  C:\Users\Mel\Documents\BIOINFORMATICS\DELFT_Research\Data\CBS_Baseclear\BAM\sorted_CBS_bowtie_pseudo_Baseclear.bam 
+	 *  -o C:\Users\Mel\Documents\BIOINFORMATICS\DELFT_Research\Data\CBS_Baseclear\CBSBowtiePseudo -m 
+	 *  -v  C:\Users\Mel\Documents\BIOINFORMATICS\DELFT_Research\Data\
 	 * PastorianusCBS_1483\VCF\PilonPastorianusCBS.vcf
 	 *
 	 * args[0] = "-p";
@@ -116,10 +110,10 @@ public class Pedca {
 				args[2] = "-w";
 				args[3] = winLengths[wlInd];
 				args[4] = "-i";
-				args[5] = "C://Users//Mel//Documents//BIOINFORMATICS//DELFT_Research//Data//TCruzi//Bams//sorted_CruziPacBioAssemblyCLB1.bam";
+				args[5] = "C:\Users\Mel\Documents\BIOINFORMATICS\DELFT_Research\Data\TCruzi\Bams\sorted_CruziPacBioAssemblyCLB1.bam";
 
 				args[6] = "-o";
-				args[7] = "C://Users//Mel//Documents//BIOINFORMATICS//DELFT_Research//Data//TCruzi//PEDCA_CLB_PacBioAssembly";
+				args[7] = "C:\Users\Mel\Documents\BIOINFORMATICS\DELFT_Research\Data\TCruzi\PEDCA_CLB_PacBioAssembly";
 				
 				args[8] = "-v";
 				args[9] = "C://Users//Mel//Documents//BIOINFORMATICS//DELFT_Research//Data//TCruzi//Pilon//PilonCruziPacBio.vcf";
@@ -146,9 +140,10 @@ public class Pedca {
 											// (in PloestPlotter.significantMin)
 	static int nbOfRuns = 100;// nb of runs of
 	static boolean MULTIRUN=false;
-	static double BIN_FACTOR=2.0;
+	static double BIN_FACTOR=2.5;
+	static double USED_DATA=0.95;//percentage of coverage data used. Top highest values will be rejected
 	public static void main(String[] args) {
-		
+		/*
 		args = new String[10];
 		
 		args[0] = "-p";
@@ -162,10 +157,7 @@ public class Pedca {
 		args[8] = "-v";
 		args[9] = "C://Users//Mel//Documents//BIOINFORMATICS//DELFT_Research//Data//CBS_Baseclear//Pilon//PilonPastorianusCBS.vcf";
 
-		
-		
-		
-		
+		*/
 		
 		runPloest(args);		
 	}
@@ -176,7 +168,7 @@ public class Pedca {
 		long startTime = System.currentTimeMillis();
 		baseCallIsOn = false;
 		// printHelp();
-		int argsIndex[] = new int[12]; // 0:-p,projectName
+		int argsIndex[] = new int[13]; // 0:-p,projectName
 										// 1:-i,inputFile (bam)
 										// 2:-s,SIGNIFICANT_MIN
 										// 3:-w,windowLength
@@ -187,7 +179,7 @@ public class Pedca {
 										// 8:-m,automatic multiple windows
 										// 9:-v, vcf input file
 										//10:-b, bin factor per possible ploidy
-
+										//11:-d, used coverage data
 		if (args.length > 0) {
 			for (int i = 0; i < args.length; i++) {
 				System.out.print(" " + args[i] );
@@ -239,6 +231,10 @@ public class Pedca {
 						argsIndex[10] = i + 1;
 						//System.out.println("case -v stored not supposed to happen:");
 						break;
+					case "-d":
+						argsIndex[11] = i + 1;
+						//System.out.println("case -v stored not supposed to happen:");
+						break;
 					default:
 						break;
 					}
@@ -280,6 +276,7 @@ public class Pedca {
 					// 8:-m,automatic multiple windows
 					// 9:-v, vcf input file
 					//10:-b, bin factor per possible ploidy
+					//11:-d, used coverage data
 					
 					outputFile = args[argsIndex[6]];
 					System.out.println("outputFile :"+outputFile);
@@ -293,8 +290,9 @@ public class Pedca {
 						
 					 
 					projectName = args[argsIndex[0]] + windowLength;
-					if (argsIndex[4] != 0)
+					if (argsIndex[4] != 0){
 						COV_RATE = Integer.parseInt(args[argsIndex[4]]);// bigger, more detail. Default= 100
+					}
 					if (argsIndex[5] != 0)
 						nbOfRuns = Integer.parseInt(args[argsIndex[5]]);
 					if (argsIndex[7] != 0)
@@ -318,6 +316,9 @@ public class Pedca {
 					}else if (argsIndex[10] != 0){
 						if (Double.parseDouble(args[argsIndex[10]])>4.0 || Double.parseDouble(args[argsIndex[10]])<1.0)System.err.println(" BIN_FACTOR value non accepted, must be >1.0 and <4.0. Will be run with default value "+BIN_FACTOR );
 					}
+					if (argsIndex[11] != 0){
+						USED_DATA = Double.parseDouble(args[argsIndex[11]]);
+					}
 						
 					
 					
@@ -336,7 +337,13 @@ public class Pedca {
 		
 		SamParser bp = null;
 		// COV_RATE=windowLength/5;
+		System.out.println("WIND_LENGTH=" + windowLength);
 		System.out.println("COV_RATE=" + COV_RATE);
+		System.out.println("MIN_WIND_LENGTH=" + MIN_WIND_LENGTH);
+		System.out.println("MODE SMOOTHER WINDOW=" + k);
+		System.out.println("BIN_FACTOR=" + BIN_FACTOR);
+		System.out.println("USED_DATA=" + USED_DATA * 100 + "%");
+		
 		try {
 			if (args.length > 0) {
 				if (argsIndex[8] == 0) {//one single input file
@@ -361,7 +368,7 @@ public class Pedca {
 
 		long endTime = System.currentTimeMillis();
 		long totalTime = endTime - startTime;
-		System.out.println("TOTAL TIME : ["+args[3]+"] :"+ totalTime / 1000);
+		System.out.println("TOTAL TIME : ["+windowLength+"] :"+ totalTime / 1000);
 	}
 	
 	
@@ -426,6 +433,9 @@ public class Pedca {
 				"-s (significant min)      - (double) Threshold to consider a cluster peak in the read count to be significant. Default 0.1");
 		System.out.println(
 				"-b (fitter bin factor)      - (double)  Affects the number of bins used to FIT the read count distribution. Default 2.5; Recommended between min=2.0 and max=4.0");
+		System.out.println(
+				"-d (% used data)          - (double) Percentage of coverage data that is used in the read count distribution to infer the different ploidies and their ratio. Default 0.97");
+
 		System.out.println(
 				"-v (allele frequencies)   - (Pathway to .vcf file)  Pathway (absolute if necessary) to the file containing the variant calling. Must be a .vcf file");
 

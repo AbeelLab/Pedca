@@ -82,9 +82,9 @@ public class BarChart {
 	//baseCall chart constructor
 	public BarChart (double [] baseCalls,int cluster, int maxY) {
 		 
-		fontLabels = new Font("Dialog", Font.PLAIN, 25); 
-		fontTitle = new Font("Dialog", Font.PLAIN, 30); 
-		fontLegend = new Font("Dialog", Font.PLAIN, 20); 
+		fontLabels = new Font("Dialog", Font.PLAIN, 30); 
+		fontTitle = new Font("Dialog", Font.PLAIN, 35); 
+		fontLegend = new Font("Dialog", Font.PLAIN, 25); 
 		 
 		int[] bins=new int [NB_OF_BASECALL_BiNS];
 		int bin;
@@ -119,7 +119,7 @@ public class BarChart {
         
 		
 		try {
-			ChartUtilities.saveChartAsJPEG(new File(Pedca.outputFile + "//BaseCall//BaseCallHistogramCluster_"+cluster+".jpg"), histChart, 3000, 1800);
+			ChartUtilities.saveChartAsJPEG(new File(Pedca.outputFile + "//BaseCall//BaseCallHistogramCluster_"+cluster+".jpg"), histChart, 1500, 900);
 		} catch (IOException e) {
 			System.err.println("Problem occurred creating base call chart.");
 		}

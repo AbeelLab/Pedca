@@ -14,7 +14,7 @@ public class Pedca {
 	 *
 	 * SIMULATEDDATASET
 	 * 
-	 * -p PedcaNovogene59bowtiePseudo   -i  C:\Users\Mel\Documents\BIOINFORMATICS\DELFT_Research\Data\CBS_Novogene\BAM\sorted_CBS_bowtie_pseudo_Novogene.bam  -o C:\Users\Mel\Documents\BIOINFORMATICS\DELFT_Research\Data\CBS_Novogene\CBSBowtiePseudo -m
+	 * 
 	 * -v  C:\Users\Mel\Documents\BIOINFORMATICS\DELFT_Research\Data\Simulated\PhasingAndVCFs\AllChroms\Pilon200_500Sim.vcf
 	 * 
 	 * 
@@ -37,7 +37,7 @@ public class Pedca {
 			
 	 * 
 	 * NOVOGENE
-	
+	-p PedcaNovogene59bowtiePseudo   -i  C:\Users\Mel\Documents\BIOINFORMATICS\DELFT_Research\Data\CBS_Novogene\BAM\sorted_CBS_bowtie_pseudo_Novogene.bam  -o C:\Users\Mel\Documents\BIOINFORMATICS\DELFT_Research\Data\CBS_Novogene\CBSBowtiePseudo
 	Novogene to CBS1483_59contigs
 	
 				SIGNIFICANT_MIN=0.03;
@@ -102,6 +102,8 @@ public class Pedca {
 	
 	 * 
 	 * CRUZI
+	 * 
+	 * -p PEDCA_CLB_PacBioAssembly -i C:\Users\Mel\Documents\BIOINFORMATICS\DELFT_Research\Data\TCruzi\Bams\sorted_CruziPacBioAssemblyCLB1.bam  -o C:\Users\Mel\Documents\BIOINFORMATICS\DELFT_Research\Data\TCruzi\PEDCA_CLB_PacBioAssembly -w 7700 -b 2.5 -d 0.90 -s 0.2 
 	 * 
 	  			SIGNIFICANT_MIN=0.05;
 				
@@ -434,7 +436,7 @@ public class Pedca {
 		System.out.println(
 				"-b (fitter bin factor)      - (double)  Affects the number of bins used to FIT the read count distribution. Default 2.5; Recommended between min=2.0 and max=4.0");
 		System.out.println(
-				"-d (% used data)          - (double) Percentage of coverage data that is used in the read count distribution to infer the different ploidies and their ratio. Default 0.97");
+				"-d (coverage data to use) - (double) Fraction of coverage data that to be used in the read count distribution to infer the different ploidies and their ratio. Default 0.97");
 
 		System.out.println(
 				"-v (allele frequencies)   - (Pathway to .vcf file)  Pathway (absolute if necessary) to the file containing the variant calling. Must be a .vcf file");

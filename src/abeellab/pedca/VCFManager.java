@@ -406,7 +406,7 @@ public class VCFManager {
 		for(int i=0;i<YbaseCalls2.length;i++){
 			if (YbaseCalls2[i]>maxYBaseCall)maxYBaseCall=YbaseCalls2[i];
 		}
-		
+		maxYBaseCall=(int) (maxYBaseCall*1.05);
 		new BarChart(baseCalls1,1,maxYBaseCall);
 		new BarChart(baseCalls2,2,maxYBaseCall);
 		

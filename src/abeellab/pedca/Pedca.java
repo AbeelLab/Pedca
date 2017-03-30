@@ -180,7 +180,7 @@ public class Pedca {
 										// 7:-k,mode average window
 										// 8:-m,automatic multiple windows
 										// 9:-v, vcf input file
-										//10:-b, bin factor per possible ploidy
+										//10:-b, number of fit bins
 										//11:-d, used coverage data
 		if (args.length > 0) {
 			for (int i = 0; i < args.length; i++) {
@@ -227,15 +227,12 @@ public class Pedca {
 						break;
 					case "-v":
 						argsIndex[9] = i + 1;
-						//System.out.println("case -v stored not supposed to happen:");
 						break;
 					case "-b":
 						argsIndex[10] = i + 1;
-						//System.out.println("case -v stored not supposed to happen:");
 						break;
 					case "-d":
 						argsIndex[11] = i + 1;
-						//System.out.println("case -v stored not supposed to happen:");
 						break;
 					default:
 						break;
@@ -277,7 +274,7 @@ public class Pedca {
 					// 7:-k,mode average window
 					// 8:-m,automatic multiple windows
 					// 9:-v, vcf input file
-					//10:-b, bin factor per possible ploidy
+					//10:-b, number of fit bins
 					//11:-d, used coverage data
 					
 					outputFile = args[argsIndex[6]];
@@ -314,9 +311,13 @@ public class Pedca {
 					}else baseCallIsOn=false;
 					
 					if (argsIndex[10] != 0 && Double.parseDouble(args[argsIndex[10]])<4.0 && Double.parseDouble(args[argsIndex[10]])>1.0){
-						BIN_FACTOR = Double.parseDouble(args[argsIndex[10]]);
+						BIN_FACTOR = Double.parseDouble(args[argsIndex[10]])/10;
 					}else if (argsIndex[10] != 0){
-						if (Double.parseDouble(args[argsIndex[10]])>4.0 || Double.parseDouble(args[argsIndex[10]])<1.0)System.err.println(" BIN_FACTOR value non accepted, must be >1.0 and <4.0. Will be run with default value "+BIN_FACTOR );
+						BIN_FACTOR = Double.parseDouble(args[argsIndex[10]])/10;
+						if (BIN_FACTOR>4.0 || BIN_FACTOR <1.0){
+							System.err.println(" BIN_FACTOR value non accepted, must be >1.0 and <4.0. Will be run with default value "+BIN_FACTOR );
+							BIN_FACTOR=2.5;
+						}
 					}
 					if (argsIndex[11] != 0){
 						USED_DATA = Double.parseDouble(args[argsIndex[11]]);
@@ -324,9 +325,9 @@ public class Pedca {
 						
 					
 					
-				} catch (Error e) {
+				} catch (Error | Exception e ) {
 
-					System.out.println("Could not read input arguments");
+					System.err.println("Could not read input arguments");
 					printHelp();
 					e.printStackTrace();
 				}
@@ -343,7 +344,7 @@ public class Pedca {
 		System.out.println("COV_RATE=" + COV_RATE);
 		System.out.println("MIN_WIND_LENGTH=" + MIN_WIND_LENGTH);
 		System.out.println("MODE SMOOTHER WINDOW=" + k);
-		System.out.println("BIN_FACTOR=" + BIN_FACTOR);
+		System.out.println("NUMBER_OF_FIT_BINS=" + BIN_FACTOR*10);
 		System.out.println("USED_DATA=" + USED_DATA * 100 + "%");
 		
 		try {

@@ -110,7 +110,7 @@ public class SamParser {
 		barchart = new BarChart(readCounts);
 		readDistributionMaxY=barchart.maxY;
 		
-		myploter = new NaivePedcaPlotter(contigsList,readsDistributionMaxCoverage, barchart.normReadCounts);//plotter = new PloestPlotter(contigsList,maxWindows);
+		myploter = new NaivePedcaPlotter(contigsList,readsDistributionMaxCoverage, barchart.normReadCounts, this);//plotter = new PloestPlotter(contigsList,maxWindows);
 		
 		if (RUN_SECOND_ROUND){//runs a second round with a new window length to solve smallests contigs
 			System.out.println("-*-*-*-*-*-*-RUN_SECOND_ROUND*-*-*-*-*-*-*-*-*-*-*");

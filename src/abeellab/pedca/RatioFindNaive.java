@@ -112,18 +112,7 @@ public class RatioFindNaive
 			bestMinDistances[0]=0.0;
 			candidateUnit=ds[0]/ratio;
 			computeScore(cnvi,md);
-			/*
-		System.out.print(" cnv[");
-		for(int i=0;i<md.length;i++){
-			System.out.print(cnvi[i]+"   ");
-		}
-		System.out.println("]");
-		System.out.print("  md[");
-		for(int i=0;i<md.length;i++){
-			System.out.print(df.format(md[i])+" ");
-		}
-		System.out.println("]");
-			 */
+			
 
 		}
 

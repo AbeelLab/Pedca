@@ -41,7 +41,7 @@ public class BarChart {
 	Font fontLabels = new Font("Dialog", Font.PLAIN, 25); 
 	Font fontTitle = new Font("Dialog", Font.PLAIN, 30); 
 	Font fontLegend = new Font("Dialog", Font.PLAIN, 20); 
-	
+	int sumOfReadCounts=0;
 	//Constructor for Read Count distribution
 	public BarChart (int [] readCounts) {
 		normReadCounts=normalize(readCounts);
@@ -320,13 +320,13 @@ private XYDataset createHistDataset( GaussianMixturePDF gaussFit) {
 
 	private float[] normalize(int[] readCounts) {
 		float[] normalizedReadCounts=new float[readCounts.length];
-		int sum=0;
+		
 		for (int i=0;i<readCounts.length;i++){
-			sum+=readCounts[i];
+			sumOfReadCounts+=readCounts[i];
 		}
 		//System.out.println("SUM:"+sum);
 		for (int i=0;i<readCounts.length;i++){
-			normalizedReadCounts[i]=100*(float)readCounts[i]/sum;
+			normalizedReadCounts[i]=100*(float)readCounts[i]/sumOfReadCounts;
 		}
 		return normalizedReadCounts;
 	}

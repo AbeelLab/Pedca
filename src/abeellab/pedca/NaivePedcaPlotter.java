@@ -48,9 +48,10 @@ public class NaivePedcaPlotter {
 	Map<String,ContigData> contigsList;
 	List<String> contArrList;
 	static double[] clusterMus;//final result of the MEANS (mus) of the clusters in the mixture model fitting
-	
+	int sumOfReadCounts=0;
 	//variables for the naive smooth
 	static NaivePDF npdf;//Naive Smoothed Density Function
+	
 	//PVector[] fitPoints;
 	int[] intFitPoints;
 	JFreeChart chart;
@@ -74,7 +75,7 @@ public class NaivePedcaPlotter {
 	 public int LENGTH_OF_CLUSTER_TWO_CONTIGS;	
 	
 	
-	public NaivePedcaPlotter(Map<String,ContigData> contList,int maxWindows, float[] rc) {
+	public NaivePedcaPlotter(Map<String,ContigData> contList,int maxWindows, float[] rc, SamParser samP) {
 		
 		//reset static variables
 		clusterMus=null;
@@ -90,7 +91,7 @@ public class NaivePedcaPlotter {
 		readCounts=rc;
 		contigsList=contList;
 		contArrList = new ArrayList<String>(contigsList.keySet());
-
+		sumOfReadCounts=samP.barchart.sumOfReadCounts;
 		
 		try{
 			createFitterDataset() ;
@@ -736,8 +737,10 @@ if(contigD.getContigName()==SamParser.debuggingTarget){
 
 	private int significantMaxsInPDF(NaivePDF naivePDF) {
 		int sigMaxs = 0;//nb of significant maximums
-		double ReadCountThreshold = SamParser.readDistributionMaxY * Pedca.SIGNIFICANT_MIN;// discards the values that are below this threshold in the original readCount Distribution
+		double ReadCountThreshold = Pedca.SIGNIFICANT_MIN;// discards the values that are below this threshold in the original readCount Distribution
 		//int FITthreshold
+		System.out.println(" sumOfReadCounts:"+sumOfReadCounts+" Pedca.SIGNIFICANT_MIN:"+Pedca.SIGNIFICANT_MIN+"; maxY :" + SamParser.readDistributionMaxY + " Y min ReadCountThreshold:" + ReadCountThreshold);
+
 		System.out.println(" sigificantMax in PDF; maxY :" + SamParser.readDistributionMaxY + " Y min ReadCountThreshold:" + ReadCountThreshold);
 		//System.out.println(" naivePDF.maxYFITvalue:" + naivePDF.maxYFITvalue+ " Y min FITthreshold:" + FITthreshold);
 

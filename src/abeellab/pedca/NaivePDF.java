@@ -66,11 +66,7 @@ public class NaivePDF {
 				}
 			}
 			p=p+smootherWing-1;//move p to next bin start point
-
 		}
-
-		
-		System.out.println("NEW NaivePDF constructed");
 	}
 	
 	

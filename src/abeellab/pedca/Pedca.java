@@ -144,6 +144,7 @@ public class Pedca {
 	static boolean MULTIRUN=false;
 	static double BIN_FACTOR=2.5;
 	static double USED_DATA=0.95;//percentage of coverage data used. Top highest values will be rejected
+	static String currentProjectName="";
 	public static void main(String[] args) {
 		/*
 		args = new String[10];
@@ -287,8 +288,8 @@ public class Pedca {
 						if (windowLength<MIN_WIND_LENGTH)windowLength=MIN_WIND_LENGTH;
 					}
 						
-					 
-					projectName = args[argsIndex[0]] + windowLength;
+					currentProjectName = args[argsIndex[0]] + windowLength;
+					projectName = currentProjectName;
 					if (argsIndex[4] != 0){
 						COV_RATE = Integer.parseInt(args[argsIndex[4]]);// bigger, more detail. Default= 100
 					}
@@ -321,9 +322,7 @@ public class Pedca {
 					}
 					if (argsIndex[11] != 0){
 						USED_DATA = Double.parseDouble(args[argsIndex[11]]);
-					}
-						
-					
+					}	
 					
 				} catch (Error | Exception e ) {
 
@@ -371,7 +370,7 @@ public class Pedca {
 
 		long endTime = System.currentTimeMillis();
 		long totalTime = endTime - startTime;
-		System.out.println("TOTAL TIME : ["+windowLength+"] :"+ totalTime / 1000);
+		System.out.println("TOTAL TIME : ["+currentProjectName+"] :"+ totalTime / 1000);
 	}
 	
 	

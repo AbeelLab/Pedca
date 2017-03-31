@@ -139,7 +139,6 @@ public class RatioFindNaive
 						bestCNVIndexes[d]=cnv;//store its index
 					}
 				}
-
 			}
 			//compute score
 			for(int d=0;d<ds.length;d++){
@@ -204,27 +203,22 @@ public class RatioFindNaive
 			writer.println("#\n");
 			writer.println("#>CLUSTER CENTERS AT READ COUNTS:");
 			writer.println("CLUSTER_CENTERS=");
-//System.out.println("CLUSTER_CENTERS=");
 			for (int g=0;g<NaivePedcaPlotter.clusterMus.length;g++){
 				writer.println(NaivePedcaPlotter.clusterMus[g]);	
-//System.out.println(NaivePloestPlotter.clusterMus[g]);
 			}
 			writer.println("#\n");
 			writer.println("#>WINDOW LENGTH USED FOR PLOIDY ESTIMATION:");
 			writer.println("WINDOW_LENGTH="+ Pedca.windowLength);
 			writer.println("#> CLUSTER_NUMBER \tCOPY_NUMBER_ESTIMATION \t DISTANCE_ERROR (% MAX reads counts) ");
 			writer.println("CLUSTERS=");
-//System.out.println("CLUSTERs=");
 			if(bestScore!=null){
 				for(int d=0;d<ds.length;d++){
 					writer.println(d+"\t"+bestScore.bestCNVIndexes[d]+" \t"+bestScore.bestMinDistances[d]);
-//System.out.println(d+"\t"+bestScore.bestCNVIndexes[d]+" \t"+bestScore.bestMinDistances[d]);
 				}
 				writer.println("#\n");
 				writer.println("ESTIMATION_DISTANCE_SCORE="+bestScore.score);
-//System.out.println("ESTIMATION_DISTANCE_SCORE="+bestScore.score);
 				writer.println("#>Maximum Nb Of Mixtures respected = "+bestScore.respectsMaxNbOfMixtures);
-System.out.println("#>Maximum Nb Of Mixtures respected = "+bestScore.respectsMaxNbOfMixtures);
+				System.out.println("#>Maximum Nb Of Mixtures respected = "+bestScore.respectsMaxNbOfMixtures);
 				writer.println("#");
 
 			}else{
@@ -263,27 +257,23 @@ System.out.println("#>Maximum Nb Of Mixtures respected = "+bestScore.respectsMax
 			writer2ndRun.println("#\n");
 			writer2ndRun.println("#>CLUSTER CENTERS AT READ COUNTS:");
 			writer2ndRun.println("CLUSTER_CENTERS=");
-System.out.println("CLUSTER_CENTERS=");
+			System.out.println("CLUSTER_CENTERS=");
 			for (int g=0;g<NaivePedcaPlotter.clusterMus.length;g++){
 				writer2ndRun.println(NaivePedcaPlotter.clusterMus[g]);	
-//System.out.println(NaivePloestPlotter.clusterMus[g]);
 			}
 			writer2ndRun.println("#\n");
 			writer2ndRun.println("#>WINDOW LENGTH USED FOR PLOIDY ESTIMATION:");
 			writer2ndRun.println("WINDOW_LENGTH="+ Pedca.windowLength);
 			writer2ndRun.println("#> CLUSTER_NUMBER \tCOPY_NUMBER_ESTIMATION \t DISTANCE_ERROR (% MAX reads counts) ");
 			writer2ndRun.println("CLUSTERS=");
-//System.out.println("CLUSTERs=");
 			if(bestScore!=null){
 				for(int d=0;d<ds.length;d++){
 					writer2ndRun.println(d+"\t"+bestScore.bestCNVIndexes[d]+" \t"+bestScore.bestMinDistances[d]);
-//System.out.println(d+"\t"+bestScore.bestCNVIndexes[d]+" \t"+bestScore.bestMinDistances[d]);
 				}
 				writer2ndRun.println("#\n");
 				writer2ndRun.println("ESTIMATION_DISTANCE_SCORE="+bestScore.score);
-//System.out.println("ESTIMATION_DISTANCE_SCORE="+bestScore.score);
 				writer2ndRun.println("#>Maximum Nb Of Mixtures respected = "+bestScore.respectsMaxNbOfMixtures);
-System.out.println("#>Maximum Nb Of Mixtures respected = "+bestScore.respectsMaxNbOfMixtures);
+				System.out.println("#>Maximum Nb Of Mixtures respected = "+bestScore.respectsMaxNbOfMixtures);
 				writer2ndRun.println("#");
 
 			}else{

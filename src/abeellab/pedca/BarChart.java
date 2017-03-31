@@ -160,7 +160,6 @@ public class BarChart {
 			} catch (IOException e) {
 				System.err.println("Problem occurred creating chart.");
 			}
-			//System.out.println("BarChar printed");
 		}
 	}
 
@@ -278,7 +277,7 @@ private XYDataset createHistDataset( GaussianMixturePDF gaussFit) {
 		//correction for overlapping the 2 datasets
 		int xOffSet=naiveFit.smootherWing/2;//to correct for the bins width
 		naiveFit.yRatioCorrection=naiveFit.maxYHISTOGRAMvalue/naiveFit.maxYFITvalue;//to correct the y data normalization ratio
-		System.out.println("createFitCurveDataset naiveFit.maxy="+naiveFit.maxYFITvalue+" ");
+		//System.out.println("createFitCurveDataset naiveFit.maxy="+naiveFit.maxYFITvalue+" ");
 		//add to series
 		for (int i = 0; i<naiveFit.yDataPoints.length; i++) {
 			series.add(naiveFit.xDataPoints[i]+xOffSet, naiveFit.yDataPoints[i]*naiveFit.yRatioCorrection);

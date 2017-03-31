@@ -86,7 +86,7 @@ public class SamParser {
 		SAMRecordIterator iter = inputSam.iterator();
 
 		int i = 1;
-		System.out.println("Analyzing "+contigsList.size()+" contigs");
+		System.out.println("Analyzing "+contigsList.size()+" contigs...");
 		String refName = "";// for debugging a bad line in the .sam file
 		int alStart;
 

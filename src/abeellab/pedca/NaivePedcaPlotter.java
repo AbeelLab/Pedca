@@ -567,14 +567,12 @@ if(contigD.getContigName()==SamParser.debuggingTarget){
 	
 	public XYSeries averagePloidyMode(ContigData contigD,XYSeries series, int valuesSize,double [] xValues,int [] yValues){
 		String contigname=contigD.contigName;
-//if(contigD.getContigName()==SamParser.debuggingTarget)System.out.println("averagePloidyMode "+SamParser.debuggingTarget+" xValues:"+xValues.length+" yvalues:"+yValues.length+" wInd:"+valuesSize);
 
 		int currentMode=0;//the most observed ploidy value over the PLOIDY_SMOOTHER_WIDTH
 		int PLOIDY_SMOOTHER_WING=PLOIDY_SMOOTHER_WIDTH/2; //length of each of the sides of the PLOIDY_SMOOTHER window before and after the position being evaluated
 		int [] ploidyCounter=new int[MAX_NB_MIXTURES+1];//over the PLOIDY_SMOOTHER_WIDTH, this vector keeps track of how many times each ploidy is observed
 		int modeThresholdRate=3;//the currentMode needs to have a minimal threshold
 		int nbZeroValues=0;//neglects the zero values when calculating the mode
-//if(contigD.getContigName()==SamParser.debuggingTarget)System.out.println("PLOIDY_SMOOTHER");
 
 		if (valuesSize > PLOIDY_SMOOTHER_WIDTH) {//we need a minimum of points to average the ploidy
 			
@@ -591,7 +589,6 @@ if(contigD.getContigName()==SamParser.debuggingTarget){
 			for (int v = 0; v < PLOIDY_SMOOTHER_WING; v++) {
 				if (currentMode!=0 && ploidyCounter[currentMode]>((PLOIDY_SMOOTHER_WIDTH-(nbZeroValues/8))/modeThresholdRate)){
 					series.add(xValues[v], currentMode);
-//if(contigD.getContigName()==SamParser.debuggingTarget)System.out.print(xValues[v]+"/"+currentMode+" ");
 				}
 			}
 			
@@ -618,15 +615,12 @@ if(contigD.getContigName()==SamParser.debuggingTarget){
 						for(int pc=1;pc<ploidyCounter.length;pc++){
 							if(ploidyCounter[pc]>ploidyCounter[currentMode])currentMode=pc;
 						}//else the mode is the same
-						//if(contigD.getContigName()=="cerevisiaeS288cchromosomeIII")System.out.print(xValues[v]+"/"+currentMode+" ");
 
 					}
 					
-//if(contigD.getContigName()==SamParser.debuggingTarget)System.out.print("("+currentMode+"-"+ploidyCounter[currentMode]+") ");
 
 					if (currentMode!=0 && ploidyCounter[currentMode]>((PLOIDY_SMOOTHER_WIDTH-(nbZeroValues/8))/modeThresholdRate)){
 						series.add(xValues[v], currentMode);
-//if(contigD.getContigName()==SamParser.debuggingTarget)System.out.print(xValues[v]+";"+currentMode+" ");
 					}
 				}
 			}
@@ -647,12 +641,10 @@ if(contigD.getContigName()==SamParser.debuggingTarget){
 
 					if (currentMode!=0 && ploidyCounter[currentMode]>((PLOIDY_SMOOTHER_WIDTH-(nbZeroValues/8))/modeThresholdRate) ){
 						series.add(xValues[v], currentMode);
-//if(contigD.getContigName()==SamParser.debuggingTarget)System.out.print(xValues[v]+"/"+currentMode+" ");
 					}
 				}
 				
 			}
-//if(contigD.getContigName()==SamParser.debuggingTarget)System.out.println();
 		}else{//not enough points, simply average over the available points
 			for (int v = 0; v < valuesSize; v++) {
 				if(yValues[v]<=MAX_NB_MIXTURES ){
@@ -662,21 +654,16 @@ if(contigD.getContigName()==SamParser.debuggingTarget){
 					}
 					if (currentMode!=0 && ploidyCounter[currentMode]>((PLOIDY_SMOOTHER_WIDTH-(nbZeroValues/8))/modeThresholdRate)){
 						series.add(xValues[v], currentMode);
-//if(contigD.getContigName()==SamParser.debuggingTarget)System.out.print(xValues[v]+"#"+currentMode+" ");
-
 					}
 				}
 			}
-//if(contigD.getContigName()==SamParser.debuggingTarget)System.out.println();
 		}
 
 		if(series.getItemCount()>0){
-			//System.out.println("SIZE OF pre checkContinuity in average WINDPOS contig "+contigD.contigName+" = "+(series.getItemCount())*contigD.windLength/2);	
-
 			return checkContinuity(series,CONTINUITY_POINTS,contigD);
 		}else{
 			removedContigs.add(contigD);
-			System.err.println("Error in contig :"+contigname+". This series have 0 values!!! averagePloidyMode");
+			System.err.println("Error in contig :"+contigname+". This series have 0 values!!!");
 			return series;
 		}
 
@@ -737,12 +724,9 @@ if(contigD.getContigName()==SamParser.debuggingTarget){
 
 	private int significantMaxsInPDF(NaivePDF naivePDF) {
 		int sigMaxs = 0;//nb of significant maximums
-		double ReadCountThreshold = Pedca.SIGNIFICANT_MIN;// discards the values that are below this threshold in the original readCount Distribution
+		//double ReadCountThreshold = Pedca.SIGNIFICANT_MIN;// discards the values that are below this threshold in the original readCount Distribution
 		//int FITthreshold
-		System.out.println(" sumOfReadCounts:"+sumOfReadCounts+" Pedca.SIGNIFICANT_MIN:"+Pedca.SIGNIFICANT_MIN+"; maxY :" + SamParser.readDistributionMaxY + " Y min ReadCountThreshold:" + ReadCountThreshold);
-
-		System.out.println(" sigificantMax in PDF; maxY :" + SamParser.readDistributionMaxY + " Y min ReadCountThreshold:" + ReadCountThreshold);
-		//System.out.println(" naivePDF.maxYFITvalue:" + naivePDF.maxYFITvalue+ " Y min FITthreshold:" + FITthreshold);
+		System.out.println(" Sum of all ReadCounts:"+sumOfReadCounts+" Pedca.SIGNIFICANT_MIN:"+Pedca.SIGNIFICANT_MIN+"; maxY :" + SamParser.readDistributionMaxY );
 
 		ArrayList<Double> yMinList = new ArrayList<Double>();
 		ArrayList<Double> xMinList = new ArrayList<Double>();
@@ -756,8 +740,6 @@ if(contigD.getContigName()==SamParser.debuggingTarget){
 		int lastMidIndex = 0;
 		int lastRightIndex = 0;
 
-		//System.out.println(" pmf.yDataPoints.length :" + naivePDF.yDataPoints.length + " Y min FITthreshold:" + FITthreshold+ " \nSignificant maxima in NaivePDF:");
-
 		while (ind < naivePDF.yDataPoints.length) {
 
 			if (naivePDF.yDataPoints[ind] != right) {
@@ -768,7 +750,6 @@ if(contigD.getContigName()==SamParser.debuggingTarget){
 				lastLeftIndex = lastMidIndex;
 				lastMidIndex = lastRightIndex;
 				lastRightIndex = ind;
-	//System.out.println(" .     ind :" + ind + " = " + mid + "  l:" + left + " m:" + mid+ " r:" + right );
 
 				if (right < mid && mid > left /*&& mid > FITthreshold*/) {// we count maxs only above threshold (deactivated here, threshold is checked below) 
 					
@@ -780,29 +761,22 @@ if(contigD.getContigName()==SamParser.debuggingTarget){
 					int endscaningIndex=lastRightIndex + naivePDF.smootherLength/2;
 					if(endscaningIndex>readCounts.length-1)endscaningIndex=readCounts.length-1;
 
-	//System.out.println(" ....    max in :" + lastRightIndex + " = " + mid + "  l:" + left + " m:" + mid+ " r:" + right + "  between leftIn:" + lastLeftIndex + " midInd:" + lastMidIndex+ " rightInd:" + lastRightIndex + " \nSCANING from lastLeftIndex:" + lastLeftIndex+ " to  :" + endscaningIndex+" readCounts.length="+readCounts.length);
-
 					for (int ib = lastLeftIndex ; ib < endscaningIndex; ib++) {
-
 						if (readCounts[ib] > maxVal) {
 							maxVal = readCounts[ib];
 							Xindex = ib;
 						}
-						//System.out.println("     ib:" + ib + " Xindex:" + Xindex + " maxval:" + maxVal+ " readCounts[ib]:" + readCounts[ib]);
-
 					}
 					
 					
-					if(!xMinList.contains(naivePDF.xDataPoints[Xindex]) && maxVal>ReadCountThreshold ){// we count maxs only above threshold
+					if(!xMinList.contains(naivePDF.xDataPoints[Xindex]) && maxVal>Pedca.SIGNIFICANT_MIN ){// we count maxs only above threshold
 						yMinList.add(maxVal);
 						xMinList.add(naivePDF.xDataPoints[Xindex]);
-						System.out.println(" ****    max in :" + naivePDF.xDataPoints[Xindex] + " = " + maxVal+ " lastLeftIndex:"+lastLeftIndex+" lastRightIndex:"+lastRightIndex+" (+ "+naivePDF.smootherLength/2+" = "+endscaningIndex+") mid="+mid);
-						//System.out.println(" ++++    max in :" + naivePDF.xDataPoints[Xindex] + " mid = " + mid);
-
+						System.out.println(" ****    max in :" + naivePDF.xDataPoints[Xindex] + " = " + maxVal+ " lastLeftIndex:"+lastLeftIndex+" lastRightIndex:"+endscaningIndex);
 						sigMaxs++;
 					}else {
 						System.out.print(" REPEATED max in :" + naivePDF.xDataPoints[Xindex] + " = " + maxVal+"  ...VALUE DISCARDED...!");
-						if (maxVal<=ReadCountThreshold ){
+						if (maxVal<=Pedca.SIGNIFICANT_MIN ){
 							System.out.print( " VALUE BELOW THRESHOLD");
 						}System.out.println();
 					

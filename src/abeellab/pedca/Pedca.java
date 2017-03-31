@@ -118,7 +118,7 @@ public class Pedca {
 				args[7] = "C:\Users\Mel\Documents\BIOINFORMATICS\DELFT_Research\Data\TCruzi\PEDCA_CLB_PacBioAssembly";
 				
 				args[8] = "-v";
-				args[9] = "C://Users//Mel//Documents//BIOINFORMATICS//DELFT_Research//Data//TCruzi//Pilon//PilonCruziPacBio.vcf";
+				args[9] = "C:\Users\Mel\Documents\BIOINFORMATICS\DELFT_Research\Data\TCruzi\Pilon\PilonCruziPacBio.vcf";
 
 	 * 
 	 */

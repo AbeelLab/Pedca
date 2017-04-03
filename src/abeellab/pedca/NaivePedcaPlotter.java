@@ -309,7 +309,6 @@ public void displayPloidyAndCoveragePlotNaive( PrintWriter writ)throws IOExcepti
 			//THIS OPTION ON JUST FOR PRINTING OUT THESIS (REMOVE LATER?)	
 			rangeAxis.setRange(0.00,rt.candUnit*MAX_NB_MIXTURES);
 			
-			
 			// Map the scatter to the first Domain and first Range
 			xyPlot.mapDatasetToDomainAxis(0, 0);
 			xyPlot.mapDatasetToRangeAxis(0, 0);
@@ -350,15 +349,11 @@ public void displayPloidyAndCoveragePlotNaive( PrintWriter writ)throws IOExcepti
 				domain2.setVisible(false);
 				range2.setLabelFont(fontLabel);				
 				range2.setTickLabelFont(fontLabel);
-			
-			
-				
 				
 				// Create the chart with the plot and a legend of COVERAGE AND PLOIDY		
 				JFreeChart chart = new JFreeChart("Coverage and Ploidy Estimation :"+contigD.contigName, JFreeChart.DEFAULT_TITLE_FONT, xyPlot, true);
 				chart.getTitle().setFont(fontTitle);
 				chart.getLegend().setItemFont(fontLegend);
-				
 				
 				String correctedContigName = contigD.contigName.replaceAll("[^a-zA-Z0-9.-]", "_");
 				ChartUtilities.saveChartAsJPEG(new File(Pedca.outputFile + "//" + Pedca.projectName+ "//Ploidy_Estimation_Charts//Ploidy_Estimation_"+correctedContigName+"_"+SamParser.stringSecondRound+".jpg"),chart, 1500, 900);
@@ -671,9 +666,7 @@ if(contigD.getContigName()==SamParser.debuggingTarget){
 	}
 	
 	private XYSeries checkContinuity(XYSeries series, int continuityLength,ContigData contigD) {
-		//check that at least continuityLength points have the same copy number estimation before deciding if a fragment has a certain ploidy
-//if(contigD.getContigName()==debuggingTarget)System.out.println("checkContinuity series.getItemCount() "+debuggingTarget+" :"+series.getItemCount());
-		
+		//check that at least continuityLength points have the same copy number estimation before deciding if a fragment has a certain ploidy		
 		int ctr=0;
 		XYSeries result=new XYSeries(" Ploidy Estimation");
 		int [] yvalues=new int[series.getItemCount()];
@@ -681,16 +674,13 @@ if(contigD.getContigName()==SamParser.debuggingTarget){
 		int continousCurrents=0;//nb of contiguous observed values of the current Y value
 
 		for (int i=0;i<series.getItemCount();i++){
-//if(contigD.getContigName()==debuggingTarget)System.out.print(" "+series.getX(i)+","+currentPloidY);
 			if( currentPloidY.equals(series.getY(i)) && (series.getY(i).intValue()!=0)){//if PloidY value is currently being observed
 				continousCurrents++;
 				if (continousCurrents>continuityLength){//if the continuity length is respected
 					result.add(series.getX(i),currentPloidY);//add to series
-//if(contigD.getContigName()==debuggingTarget)System.out.print("*");					
 				}else if (continousCurrents==continuityLength){//the following 2 'else if' allows the first continuityLength observed values to be taken into account 
 					for (int j=0;j<continuityLength;j++){//add the stored first continuityLength observed values
 						result.add((series.getX(i).intValue()-continuityLength+j+1),currentPloidY);//add to series	
-//if(contigD.getContigName()==debuggingTarget)System.out.print("#");						
 						}
 				}
 				
@@ -700,9 +690,7 @@ if(contigD.getContigName()==SamParser.debuggingTarget){
 					for (int j=0;j<continousCurrents;j++){//add the  first continousCurrents  values
 						if (currentPloidY.intValue()!=0){
 							result.add((series.getX(i-1).intValue()-continousCurrents+j+1),currentPloidY);//add to series	
-//if(contigD.getContigName()==debuggingTarget)System.out.print("-");								
 						}
-						
 					}
 				}
 				continousCurrents=0;//reset counter

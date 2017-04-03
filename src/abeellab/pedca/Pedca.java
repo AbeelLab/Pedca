@@ -15,7 +15,7 @@ public class Pedca {
 	 * SIMULATEDDATASET
 	 * 
 	 * 
-	 * -v  C:\Users\Mel\Documents\BIOINFORMATICS\DELFT_Research\Data\Simulated\PhasingAndVCFs\AllChroms\Pilon200_500Sim.vcf
+	 * -p PloestSim  -i C:\Users\Mel\Documents\BIOINFORMATICS\DELFT_Research\Data\Simulated\BAMs\AllSimLibs.bam -o C:\Users\Mel\Documents\BIOINFORMATICS\DELFT_Research\Data\Simulated -v  C:\Users\Mel\Documents\BIOINFORMATICS\DELFT_Research\Data\Simulated\PhasingAndVCFs\AllChroms\Pilon200_500Sim.vcf -w 3000
 	 * 
 	 * 
 	 *  BASECLEAR -p PedcaBaseClear59bowtiePseudo 
@@ -88,18 +88,19 @@ public class Pedca {
 				args[8] = "-v";
 				args[9] = "C://Users//Mel//Documents//BIOINFORMATICS//DELFT_Research//Data//CBS_Baseclear//Pilon//PilonBaseclearVdBNew2anc.vcf";
 			      							
-	 			args[0] = "-p";
-				args[1] = "PedcaBaseClear59bowtiePseudo" ;	
-				args[2] = "-w";
-				args[3] = winLengths[wlInd];
-				args[4] = "-i";
-				//args[5] = "C://Users//Mel//Documents//BIOINFORMATICS//DELFT_Research//Data//CBS_Baseclear//BAM//sorted_BaseVdBNewMap2anc.bam";
-				args[5] = "C://Users//Mel//Documents//BIOINFORMATICS//DELFT_Research//Data//CBS_Baseclear//BAM//sorted_CBS_bowtie_pseudo_Baseclear.bam";
-				args[6] = "-o";
-				args[7] = "C://Users//Mel//Documents//BIOINFORMATICS//DELFT_Research//Data//CBS_Baseclear//CBSBowtiePseudo";
-				//args[8] = "-v";
-				//args[9] = "C://Users//Mel//Documents//BIOINFORMATICS//DELFT_Research//Data//CBS_Baseclear//Pilon//PilonPastorianusCBS.vcf";
-	
+	 			args = new String[10];
+		
+		args[0] = "-p";
+		args[1] = "PedcaBaseClear59bowtiePseudo" ;	
+		args[2] = "-w";
+		args[3] = "500";
+		args[4] = "-i";
+		args[5] = "C://Users//Mel//Documents//BIOINFORMATICS//DELFT_Research//Data//CBS_Baseclear//BAM//sorted_CBS_bowtie_pseudo_Baseclear.bam";
+		args[6] = "-o";
+		args[7] = "C://Users//Mel//Documents//BIOINFORMATICS//DELFT_Research//Data//CBS_Baseclear//CBSBowtiePseudo";
+		args[8] = "-v";
+		args[9] = "C://Users//Mel//Documents//BIOINFORMATICS//DELFT_Research//Data//CBS_Baseclear//Pilon//PilonPastorianusCBS.vcf";
+
 	 * 
 	 * CRUZI
 	 * 
@@ -125,7 +126,6 @@ public class Pedca {
 	static String projectName = "";
 	static String inputFile = "";
 	static String outputFile = "";
-	//static File fin = new File("C://Users//Mel//Documents//BIOINFORMATICS//DELFT_Research//Data//CBS_1483//sorted_CBS1483.bam");
 
 	static File vcfFile;
 	static boolean baseCallIsOn = false;

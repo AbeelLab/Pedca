@@ -103,7 +103,7 @@ public class Pedca {
 
 	 * 
 	 * CRUZI
-	 * 
+	 *
 	 * -p PEDCA_CLB_PacBioAssembly -i C:\Users\Mel\Documents\BIOINFORMATICS\DELFT_Research\Data\TCruzi\Bams\sorted_CruziPacBioAssemblyCLB1.bam  -o C:\Users\Mel\Documents\BIOINFORMATICS\DELFT_Research\Data\TCruzi\PEDCA_CLB_PacBioAssembly -w 7700 -b 2.5 -d 0.90 -s 0.2 
 	 * 
 	  			SIGNIFICANT_MIN=0.05;

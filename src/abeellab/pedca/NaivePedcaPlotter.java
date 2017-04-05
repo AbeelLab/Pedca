@@ -44,7 +44,7 @@ public class NaivePedcaPlotter {
 	
 	//variable for the read count distribution
 	static float[] readCounts;
-	static final int MAX_NB_MIXTURES=10;
+	static final int MAX_PLOIDY=Pedca.MAX_PLOIDY;
 	Map<String,ContigData> contigsList;
 	List<String> contArrList;
 	static double[] clusterMus;//final result of the MEANS (mus) of the clusters in the mixture model fitting
@@ -275,7 +275,7 @@ public void displayPloidyAndCoveragePlotNaive( PrintWriter writ)throws IOExcepti
 		
 		                                                                      
 		writ.println("#**************************************************************************************");
-		writ.println("#*Ploidy estimation detailed by fragments.  Precision: +/-"+(PLOIDY_SMOOTHER_WIDTH*SamParser.windowLength/(2*MAX_NB_MIXTURES))+" bp                      *");
+		writ.println("#*Ploidy estimation detailed by fragments.  Precision: +/-"+(PLOIDY_SMOOTHER_WIDTH*SamParser.windowLength/(2*MAX_PLOIDY))+" bp                      *");
 		writ.println("#*Only detects fragments with continuous ploidy over a sequence >"+(CONTINUITY_POINTS*(SamParser.windowLength/2) )+" bp *");
 		writ.println("#***************************************************************************************");
 		writ.println("#");
@@ -307,7 +307,7 @@ public void displayPloidyAndCoveragePlotNaive( PrintWriter writ)throws IOExcepti
 			
 			//if(contigD.maxY>0 && contigD.maxY>rt.candUnit*15){rangeAxis.setRange(0.00,rt.candUnit*15);	}
 			//THIS OPTION ON JUST FOR PRINTING OUT THESIS (REMOVE LATER?)	
-			rangeAxis.setRange(0.00,rt.candUnit*MAX_NB_MIXTURES);
+			rangeAxis.setRange(0.00,rt.candUnit*MAX_PLOIDY);
 			
 			// Map the scatter to the first Domain and first Range
 			xyPlot.mapDatasetToDomainAxis(0, 0);
@@ -565,7 +565,7 @@ if(contigD.getContigName()==SamParser.debuggingTarget){
 
 		int currentMode=0;//the most observed ploidy value over the PLOIDY_SMOOTHER_WIDTH
 		int PLOIDY_SMOOTHER_WING=PLOIDY_SMOOTHER_WIDTH/2; //length of each of the sides of the PLOIDY_SMOOTHER window before and after the position being evaluated
-		int [] ploidyCounter=new int[MAX_NB_MIXTURES+1];//over the PLOIDY_SMOOTHER_WIDTH, this vector keeps track of how many times each ploidy is observed
+		int [] ploidyCounter=new int[MAX_PLOIDY+1];//over the PLOIDY_SMOOTHER_WIDTH, this vector keeps track of how many times each ploidy is observed
 		int modeThresholdRate=3;//the currentMode needs to have a minimal threshold
 		int nbZeroValues=0;//neglects the zero values when calculating the mode
 
@@ -573,7 +573,7 @@ if(contigD.getContigName()==SamParser.debuggingTarget){
 			
 			// solve the first  positions of the plot
 			for (int v = 0; v < PLOIDY_SMOOTHER_WIDTH; v++) {
-				if(yValues[v]<=MAX_NB_MIXTURES && yValues[v]>0){
+				if(yValues[v]<=MAX_PLOIDY && yValues[v]>0){
 					ploidyCounter[yValues[v]]++;
 					if (ploidyCounter[currentMode]<ploidyCounter[yValues[v]]){
 						currentMode=yValues[v];
@@ -593,16 +593,16 @@ if(contigD.getContigName()==SamParser.debuggingTarget){
 			
 			for(int v=PLOIDY_SMOOTHER_WING;v<(valuesSize-PLOIDY_SMOOTHER_WING);v++){
 				
-				if(yValues[v]<=MAX_NB_MIXTURES ){
+				if(yValues[v]<=MAX_PLOIDY ){
 					mostLeftValue=yValues[v-PLOIDY_SMOOTHER_WING];
 					mostRightValue=yValues[v+PLOIDY_SMOOTHER_WING];
 					
 					if(mostLeftValue!=mostRightValue){//if the removed and the added are different, update the mode
-						if(mostLeftValue>0 && mostLeftValue<=MAX_NB_MIXTURES ){	
+						if(mostLeftValue>0 && mostLeftValue<=MAX_PLOIDY ){	
 							ploidyCounter[mostLeftValue]--;	//remove mostleft value of window
 							}else if (mostLeftValue==0)nbZeroValues--;
 						
-						if (mostRightValue>0 && mostRightValue<=MAX_NB_MIXTURES ){
+						if (mostRightValue>0 && mostRightValue<=MAX_PLOIDY ){
 							ploidyCounter[mostRightValue]++;//add mostright value of window
 						}else if (mostRightValue==0)nbZeroValues++;
 						
@@ -621,10 +621,10 @@ if(contigD.getContigName()==SamParser.debuggingTarget){
 			}
 			//solve the very last positions PLOIDY_SMOOTHER_WIDTH/2
 			for(int v=(valuesSize-(PLOIDY_SMOOTHER_WIDTH/2));v<valuesSize;v++){
-				if(yValues[v]<=MAX_NB_MIXTURES ){
+				if(yValues[v]<=MAX_PLOIDY ){
 					mostLeftValue=yValues[v-(PLOIDY_SMOOTHER_WIDTH/2)];
 
-					if(mostLeftValue>0 && mostLeftValue<=MAX_NB_MIXTURES && ploidyCounter[mostLeftValue]>0 ){	
+					if(mostLeftValue>0 && mostLeftValue<=MAX_PLOIDY && ploidyCounter[mostLeftValue]>0 ){	
 						ploidyCounter[mostLeftValue]--;	//remove mostleft value of window
 					}else if (mostLeftValue==0)nbZeroValues--;
 
@@ -642,7 +642,7 @@ if(contigD.getContigName()==SamParser.debuggingTarget){
 			}
 		}else{//not enough points, simply average over the available points
 			for (int v = 0; v < valuesSize; v++) {
-				if(yValues[v]<=MAX_NB_MIXTURES ){
+				if(yValues[v]<=MAX_PLOIDY ){
 					ploidyCounter[yValues[v]]++;
 					if (ploidyCounter[currentMode]<ploidyCounter[yValues[v]]){
 						currentMode=yValues[v];

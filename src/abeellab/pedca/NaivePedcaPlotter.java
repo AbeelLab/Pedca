@@ -529,16 +529,7 @@ public void displayPloidyAndCoveragePlotNaive( PrintWriter writ)throws IOExcepti
 			}
 			wInd++;
 	}
-/*		
-//if(contigD.getContigName()==SamParser.debuggingTarget)System.out.println();			
-if(contigD.getContigName()==SamParser.debuggingTarget){
-	System.out.println("createPloidyEstimationDatasetNaive %"+SamParser.debuggingTarget+"   contigD.windPos.size():"+ contigD.windPos.size()+" xValues:"+xValues.length+" yvalues:"+yValues.length);
-	for (int j=0;j<xValues.length;j++){
-		System.out.print(xValues[j]+"%"+yValues[j]+" ");
-	}
-	System.out.println();
-}
-*/
+
 
 		if (wInd>maxX){//--wInd
 			maxX=(int) wInd;

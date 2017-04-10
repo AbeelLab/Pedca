@@ -33,6 +33,7 @@ public class NaivePDF {
 		maxXvalue=readCounts.length;
 		
 		smootherLength=(int) (maxXvalue/(Math.round(Pedca.BIN_FACTOR*NaivePedcaPlotter.MAX_PLOIDY)));//the window of our smoother must be able to discretize over at least 10 different clusters (MAX_NB_MIXTURES). The minimum length should be 2X. We go for a safer 3X
+		System.out.println("smootherLength:"+smootherLength);
 		if((smootherLength & 1) == 0   ){//if even number
 			smootherLength++;//must be odd number
 		}

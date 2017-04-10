@@ -145,7 +145,7 @@ public class Pedca {
 	static double BIN_FACTOR=2.5;
 	static double USED_DATA=0.95;//percentage of coverage data used. Top highest values will be rejected
 	static String currentProjectName="";
-	static int MAX_PLOIDY=10;
+	static int MAX_PLOIDY=20;
 	public static void main(String[] args) {
 		/*
 		args = new String[10];
@@ -281,6 +281,7 @@ public class Pedca {
 					
 					outputFile = args[argsIndex[6]];
 					System.out.println("outputFile :"+outputFile);
+					System.out.println("MAX_PLOIDY :"+MAX_PLOIDY);
 					if (argsIndex[2] != 0)
 						SIGNIFICANT_MIN = Double.parseDouble(args[argsIndex[2]]);
 					System.out.println("SIGNIFICANT_MIN="+SIGNIFICANT_MIN);
@@ -312,15 +313,15 @@ public class Pedca {
 						baseCallIsOn = true;
 					}else baseCallIsOn=false;
 					
-					if (argsIndex[10] != 0 && Double.parseDouble(args[argsIndex[10]])<4.0 && Double.parseDouble(args[argsIndex[10]])>1.0){
-						BIN_FACTOR = Double.parseDouble(args[argsIndex[10]])/10;
+					if (argsIndex[10] != 0 && Double.parseDouble(args[argsIndex[10]])<8.0 && Double.parseDouble(args[argsIndex[10]])>1.0){
+						BIN_FACTOR = Double.parseDouble(args[argsIndex[10]])/MAX_PLOIDY;
 					}else if (argsIndex[10] != 0){
-						BIN_FACTOR = Double.parseDouble(args[argsIndex[10]])/10;
+						BIN_FACTOR = Double.parseDouble(args[argsIndex[10]])/MAX_PLOIDY;
 						if (BIN_FACTOR>4.0 || BIN_FACTOR <1.0){
 							System.err.println(" BIN_FACTOR value non accepted, must be >1.0 and <4.0. Will be run with default value "+BIN_FACTOR );
 							BIN_FACTOR=2.5;
 						}
-					}
+					}BIN_FACTOR=BIN_FACTOR*10/MAX_PLOIDY;//to normalize for the original MAX_PLOIDY value of 10
 					if (argsIndex[11] != 0){
 						USED_DATA = Double.parseDouble(args[argsIndex[11]]);
 					}	

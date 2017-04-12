@@ -372,6 +372,9 @@ public class Pedca {
 
 		long endTime = System.currentTimeMillis();
 		long totalTime = endTime - startTime;
+		
+		System.out.println(" The current bug is on check continuity. Extra x values are added affecting the write out by fragments, when ploidy is fragmented");
+
 		System.out.println("TOTAL TIME : ["+currentProjectName+"] :"+ totalTime / 1000);
 	}
 	

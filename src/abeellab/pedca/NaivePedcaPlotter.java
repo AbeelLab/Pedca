@@ -124,20 +124,21 @@ public class NaivePedcaPlotter {
 	}
 	
 	private void writeOutPloEstByFragment(PrintWriter writer , XYSeries series, ContigData contigD ) {
-
-
+		
 		String contigname =contigD.contigName;
 		
+
 		Number prevPloidy=0;
 		Number newPloidy=0;
 		int ItemsSize=0;
+		int winFrac=4;//fraction by which divide the window length to compute the real position
 		int firstPloidyPos=0;
 		
 		//get first valid ploidy point
 		if(series.getItemCount()>0){
 			ItemsSize=series.getItems().size();
 			prevPloidy=series.getY(firstPloidyPos);//series.getMinY();
-
+			System.out.println(contigname+" ItemsSize:"+ItemsSize+" contig size:"+contigD.maxLength+" PEDCA ws:"+Pedca.windowLength+ " SamParser.windowLength:"+SamParser.windowLength);
 
 			while(prevPloidy.intValue()==0 && firstPloidyPos<ItemsSize-1){
 				prevPloidy=series.getY(++firstPloidyPos);
@@ -157,7 +158,7 @@ public class NaivePedcaPlotter {
 					contigD.thisContigHasContinousPloidy=false;
 					if(/*prevPloidy!=null && */prevPloidy.intValue()!=0){
 						
-						writer.println(contigname+"\t"+((int)prevPos*SamParser.windowLength/2)+"\t"+(yv*SamParser.windowLength/2)+"\t"+prevPloidy);
+						writer.println(contigname+"\ts "+((int)prevPos*SamParser.windowLength/winFrac)+"\t"+(yv*SamParser.windowLength/winFrac)+"\t"+prevPloidy);
 						prevPloidy=newPloidy;						
 						prevPos=yv;
 					}else{
@@ -169,17 +170,17 @@ public class NaivePedcaPlotter {
 			}
 			
 			if (contigD.thisContigHasContinousPloidy && (prevPloidy.intValue()!=0) ){//coninuous contig with valid ploidy
-				writer.println(contigname+"\t"+((int)prevPos*SamParser.windowLength/2)+"\t"+contigD.maxLength+"\t"+prevPloidy);
+				writer.println(contigname+"\tc "+((int)prevPos*SamParser.windowLength/winFrac)+"\t"+contigD.maxLength+"\t"+prevPloidy);
 			}else{//fragmented ploidy... writeout last fragment 
 				
 				if(!series.getY(ItemsSize-1).equals(0)){//last frag has valid ploidy
-					writer.println(contigname+"\t"+((int)prevPos*SamParser.windowLength/2)+"\t"+(ItemsSize*SamParser.windowLength/2)+"\t"+prevPloidy);
+					writer.println(contigname+"\tf "+((int)prevPos*SamParser.windowLength/winFrac)+"\t"+(ItemsSize*SamParser.windowLength/winFrac)+"\t"+prevPloidy);
 
 				}else 	if(series.getY(ItemsSize-1).equals(0)){//last frag has invalid ploidy
-						writer.println(contigname+"\t"+((int)prevPos*SamParser.windowLength/2)+"\t"+(ItemsSize*SamParser.windowLength/2)+"\t"+prevPloidy);
+						writer.println(contigname+"\tf "+((int)prevPos*SamParser.windowLength/winFrac)+"\t"+(ItemsSize*SamParser.windowLength/winFrac)+"\t"+prevPloidy);
 			
 				}else {
-					writer.println(contigname+"\t"+((int)prevPos*SamParser.windowLength/2)+"\t"+(ItemsSize*SamParser.windowLength/2)+"\t"+prevPloidy);
+					writer.println(contigname+"\tf "+((int)prevPos*SamParser.windowLength/winFrac)+"\t"+(ItemsSize*SamParser.windowLength/winFrac)+"\t"+prevPloidy);
 				}
 			}
 			//store all contigs with ploidy belonging to cluster 1 or 2
@@ -505,7 +506,6 @@ public void displayPloidyAndCoveragePlotNaive( PrintWriter writ)throws IOExcepti
 
 	
 	private  XYDataset createPloidyEstimationDatasetNaive(ContigData contigD, PrintWriter writer ) {
-//System.out.println(" CONTIG :"+contigD.contigName+" createPloidyEstimationDatasetNaive");
 		XYSeriesCollection result = new XYSeriesCollection();
 		XYSeries series = new XYSeries(" Ploidy Estimation 1");
 		
@@ -529,6 +529,7 @@ public void displayPloidyAndCoveragePlotNaive( PrintWriter writ)throws IOExcepti
 			}
 			wInd++;
 	}
+System.out.println(contigD.contigName+"1St loop Number of values:"+contigD.windPos.size()+" contig size:"+contigD.maxLength+"  series.getItems().size():"+series.getItems().size()+" series.getItemCount():"+series.getItemCount());
 
 
 		if (wInd>maxX){//--wInd
@@ -544,7 +545,8 @@ public void displayPloidyAndCoveragePlotNaive( PrintWriter writ)throws IOExcepti
 		}
 
 		result.addSeries(series);
-		
+System.out.println(contigD.contigName+" AV      Number of values:"+contigD.windPos.size()+" contig size:"+contigD.maxLength+"  series.getItems().size():"+series.getItems().size()+" series.getItemCount():"+series.getItemCount());
+
 		writeOutPloEstByFragment(writer, series,contigD );//writes out the ploidy estimation detailed by fragment
 
 		return result;
@@ -559,6 +561,7 @@ public void displayPloidyAndCoveragePlotNaive( PrintWriter writ)throws IOExcepti
 		int [] ploidyCounter=new int[MAX_PLOIDY+1];//over the PLOIDY_SMOOTHER_WIDTH, this vector keeps track of how many times each ploidy is observed
 		int modeThresholdRate=3;//the currentMode needs to have a minimal threshold
 		int nbZeroValues=0;//neglects the zero values when calculating the mode
+System.out.println(contigD.contigName+" AV1           valuesSize:"+valuesSize+"  series.getItems().size():"+series.getItems().size());
 
 		if (valuesSize > PLOIDY_SMOOTHER_WIDTH) {//we need a minimum of points to average the ploidy
 			
@@ -577,6 +580,7 @@ public void displayPloidyAndCoveragePlotNaive( PrintWriter writ)throws IOExcepti
 					series.add(xValues[v], currentMode);
 				}
 			}
+System.out.println(contigD.contigName+" AV2           valSize-wing:"+(valuesSize-PLOIDY_SMOOTHER_WING)+"  series.getItems().size():"+series.getItems().size());
 			
 			//solve the core of the genome until the last positions-PLOIDY_SMOOTHER_WIDTH/2
 			int mostRightValue;//value at the right end of the ploidy-smoother window
@@ -610,6 +614,8 @@ public void displayPloidyAndCoveragePlotNaive( PrintWriter writ)throws IOExcepti
 					}
 				}
 			}
+System.out.println(contigD.contigName+" AV3           valuesSize:"+valuesSize+"  series.getItems().size():"+series.getItems().size());
+
 			//solve the very last positions PLOIDY_SMOOTHER_WIDTH/2
 			for(int v=(valuesSize-(PLOIDY_SMOOTHER_WIDTH/2));v<valuesSize;v++){
 				if(yValues[v]<=MAX_PLOIDY ){
@@ -644,6 +650,7 @@ public void displayPloidyAndCoveragePlotNaive( PrintWriter writ)throws IOExcepti
 				}
 			}
 		}
+System.out.println(contigD.contigName+" AV4           valuesSize:"+valuesSize+"  series.getItems().size():"+series.getItems().size());
 
 		if(series.getItemCount()>0){
 			return checkContinuity(series,CONTINUITY_POINTS,contigD);

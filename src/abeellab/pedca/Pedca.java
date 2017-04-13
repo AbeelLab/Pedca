@@ -145,7 +145,7 @@ public class Pedca {
 	static double BIN_FACTOR=2.5;
 	static double USED_DATA=0.95;//percentage of coverage data used. Top highest values will be rejected
 	static String currentProjectName="";
-	static int MAX_PLOIDY=10;
+	static int MAX_PLOIDY=20;
 	public static void main(String[] args) {
 		/*
 		args = new String[10];

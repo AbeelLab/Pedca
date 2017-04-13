@@ -158,7 +158,7 @@ public class NaivePedcaPlotter {
 					contigD.thisContigHasContinousPloidy=false;
 					if(/*prevPloidy!=null && */prevPloidy.intValue()!=0){
 						
-						writer.println(contigname+"\ts "+((int)prevPos*SamParser.windowLength/winFrac)+"\t"+(yv*SamParser.windowLength/winFrac)+"\t"+prevPloidy);
+						writer.println(contigname+"\t "+((int)prevPos*SamParser.windowLength/winFrac)+"\t"+(yv*SamParser.windowLength/winFrac)+"\t"+prevPloidy);
 						prevPloidy=newPloidy;						
 						prevPos=yv;
 					}else{
@@ -170,17 +170,17 @@ public class NaivePedcaPlotter {
 			}
 			
 			if (contigD.thisContigHasContinousPloidy && (prevPloidy.intValue()!=0) ){//coninuous contig with valid ploidy
-				writer.println(contigname+"\tc "+((int)prevPos*SamParser.windowLength/winFrac)+"\t"+contigD.maxLength+"\t"+prevPloidy);
+				writer.println(contigname+"\t "+((int)prevPos*SamParser.windowLength/winFrac)+"\t"+contigD.maxLength+"\t"+prevPloidy);
 			}else{//fragmented ploidy... writeout last fragment 
 				
 				if(!series.getY(ItemsSize-1).equals(0)){//last frag has valid ploidy
-					writer.println(contigname+"\tf "+((int)prevPos*SamParser.windowLength/winFrac)+"\t"+(ItemsSize*SamParser.windowLength/winFrac)+"\t"+prevPloidy);
+					writer.println(contigname+"\t "+((int)prevPos*SamParser.windowLength/winFrac)+"\t"+(ItemsSize*SamParser.windowLength/winFrac)+"\t"+prevPloidy);
 
 				}else 	if(series.getY(ItemsSize-1).equals(0)){//last frag has invalid ploidy
-						writer.println(contigname+"\tf "+((int)prevPos*SamParser.windowLength/winFrac)+"\t"+(ItemsSize*SamParser.windowLength/winFrac)+"\t"+prevPloidy);
+						writer.println(contigname+"\t "+((int)prevPos*SamParser.windowLength/winFrac)+"\t"+(ItemsSize*SamParser.windowLength/winFrac)+"\t"+prevPloidy);
 			
 				}else {
-					writer.println(contigname+"\tf "+((int)prevPos*SamParser.windowLength/winFrac)+"\t"+(ItemsSize*SamParser.windowLength/winFrac)+"\t"+prevPloidy);
+					writer.println(contigname+"\t "+((int)prevPos*SamParser.windowLength/winFrac)+"\t"+(ItemsSize*SamParser.windowLength/winFrac)+"\t"+prevPloidy);
 				}
 			}
 			//store all contigs with ploidy belonging to cluster 1 or 2

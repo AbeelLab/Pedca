@@ -131,14 +131,14 @@ public class NaivePedcaPlotter {
 		Number prevPloidy=0;
 		Number newPloidy=0;
 		int ItemsSize=0;
-		int winFrac=4;//fraction by which divide the window length to compute the real position
+		int winFrac=2;//fraction by which divide the window length to compute the real position. The slidding windows steps over 1/winFrac windows for coverage sampling
 		int firstPloidyPos=0;
 		
 		//get first valid ploidy point
 		if(series.getItemCount()>0){
 			ItemsSize=series.getItems().size();
 			prevPloidy=series.getY(firstPloidyPos);//series.getMinY();
-			System.out.println(contigname+" ItemsSize:"+ItemsSize+" contig size:"+contigD.maxLength+" PEDCA ws:"+Pedca.windowLength+ " SamParser.windowLength:"+SamParser.windowLength);
+//System.out.println(contigname+" ItemsSize:"+ItemsSize+" contig size:"+contigD.maxLength+" PEDCA ws:"+Pedca.windowLength+ " SamParser.windowLength:"+SamParser.windowLength);
 
 			while(prevPloidy.intValue()==0 && firstPloidyPos<ItemsSize-1){
 				prevPloidy=series.getY(++firstPloidyPos);
@@ -529,7 +529,6 @@ public void displayPloidyAndCoveragePlotNaive( PrintWriter writ)throws IOExcepti
 			}
 			wInd++;
 	}
-System.out.println(contigD.contigName+"1St loop Number of values:"+contigD.windPos.size()+" contig size:"+contigD.maxLength+"  series.getItems().size():"+series.getItems().size()+" series.getItemCount():"+series.getItemCount());
 
 
 		if (wInd>maxX){//--wInd
@@ -545,7 +544,7 @@ System.out.println(contigD.contigName+"1St loop Number of values:"+contigD.windP
 		}
 
 		result.addSeries(series);
-System.out.println(contigD.contigName+" AV      Number of values:"+contigD.windPos.size()+" contig size:"+contigD.maxLength+"  series.getItems().size():"+series.getItems().size()+" series.getItemCount():"+series.getItemCount());
+//System.out.println(contigD.contigName+" post-AV      Number of values:"+contigD.windPos.size()+" contig size:"+contigD.maxLength+"  series.getItems().size():"+series.getItems().size()+" series.getItemCount():"+series.getItemCount());
 
 		writeOutPloEstByFragment(writer, series,contigD );//writes out the ploidy estimation detailed by fragment
 
@@ -561,7 +560,6 @@ System.out.println(contigD.contigName+" AV      Number of values:"+contigD.windP
 		int [] ploidyCounter=new int[MAX_PLOIDY+1];//over the PLOIDY_SMOOTHER_WIDTH, this vector keeps track of how many times each ploidy is observed
 		int modeThresholdRate=3;//the currentMode needs to have a minimal threshold
 		int nbZeroValues=0;//neglects the zero values when calculating the mode
-System.out.println(contigD.contigName+" AV1           valuesSize:"+valuesSize+"  series.getItems().size():"+series.getItems().size());
 
 		if (valuesSize > PLOIDY_SMOOTHER_WIDTH) {//we need a minimum of points to average the ploidy
 			
@@ -580,7 +578,6 @@ System.out.println(contigD.contigName+" AV1           valuesSize:"+valuesSize+" 
 					series.add(xValues[v], currentMode);
 				}
 			}
-System.out.println(contigD.contigName+" AV2           valSize-wing:"+(valuesSize-PLOIDY_SMOOTHER_WING)+"  series.getItems().size():"+series.getItems().size());
 			
 			//solve the core of the genome until the last positions-PLOIDY_SMOOTHER_WIDTH/2
 			int mostRightValue;//value at the right end of the ploidy-smoother window
@@ -614,7 +611,6 @@ System.out.println(contigD.contigName+" AV2           valSize-wing:"+(valuesSize
 					}
 				}
 			}
-System.out.println(contigD.contigName+" AV3           valuesSize:"+valuesSize+"  series.getItems().size():"+series.getItems().size());
 
 			//solve the very last positions PLOIDY_SMOOTHER_WIDTH/2
 			for(int v=(valuesSize-(PLOIDY_SMOOTHER_WIDTH/2));v<valuesSize;v++){
@@ -650,7 +646,6 @@ System.out.println(contigD.contigName+" AV3           valuesSize:"+valuesSize+" 
 				}
 			}
 		}
-System.out.println(contigD.contigName+" AV4           valuesSize:"+valuesSize+"  series.getItems().size():"+series.getItems().size());
 
 		if(series.getItemCount()>0){
 			return checkContinuity(series,CONTINUITY_POINTS,contigD);
@@ -683,14 +678,22 @@ System.out.println(contigD.contigName+" AV4           valuesSize:"+valuesSize+" 
 				}
 				
 			}else /*if(series.getY(i).intValue()!=0)*/{//new Y values observed
-				
+				/*
 				if (continousCurrents>=continuityLength){
 					for (int j=0;j<continousCurrents;j++){//add the  first continousCurrents  values
 						if (currentPloidY.intValue()!=0){
 							result.add((series.getX(i-1).intValue()-continousCurrents+j+1),currentPloidY);//add to series	
 						}
 					}
-				}
+				}*/
+				if (continousCurrents>continuityLength){//if the continuity length is respected
+					result.add(series.getX(i),currentPloidY);//add to series
+				}else if (continousCurrents==continuityLength){//the following 2 'else if' allows the first continuityLength observed values to be taken into account 
+					for (int j=0;j<continuityLength;j++){//add the stored first continuityLength observed values
+						result.add((series.getX(i).intValue()-continuityLength+j+1),currentPloidY);//add to series	
+						}
+				}				
+				
 				continousCurrents=0;//reset counter
 				currentPloidY=series.getY(i);//reset observed Y (ploidy)
 			}

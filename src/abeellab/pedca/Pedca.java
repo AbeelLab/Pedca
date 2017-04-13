@@ -145,7 +145,7 @@ public class Pedca {
 	static double BIN_FACTOR=2.5;
 	static double USED_DATA=0.95;//percentage of coverage data used. Top highest values will be rejected
 	static String currentProjectName="";
-	static int MAX_PLOIDY=20;
+	static int MAX_PLOIDY=10;
 	public static void main(String[] args) {
 		/*
 		args = new String[10];
@@ -373,9 +373,7 @@ public class Pedca {
 		long endTime = System.currentTimeMillis();
 		long totalTime = endTime - startTime;
 		
-		System.out.println(" The current bug is on check continuity. Extra x values are added affecting the write out by fragments, when ploidy is fragmented");
-
-		System.out.println("TOTAL TIME : ["+currentProjectName+"] :"+ totalTime / 1000);
+		System.out.println("TOTAL TIME : ["+currentProjectName+"] :"+ totalTime / 1000 + " seconds");
 	}
 	
 	

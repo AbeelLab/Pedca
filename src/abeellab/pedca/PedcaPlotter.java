@@ -34,6 +34,18 @@ import dataFitters.*;
 import jMEF.MixtureModel;
 import jMEF.PVector;
 
+//******************************************************************
+//
+//
+//DEPRECATED.
+//(Was used to fit the read distribution with a Gaussian or a Poisson mixture)
+//
+//HAS BEEN REPLACED BY NaivePedcaPlotter
+//
+//
+//
+//******************************************************************
+
 public class PedcaPlotter {
 	static final int MAX_NB_MIXTURES=10;
 	//static final double SIGMA_FACTOR=2;//accepted factor for standard variation criterion of a point belonging to a gaussian  
@@ -159,11 +171,7 @@ public class PedcaPlotter {
 				indofmin=findIndexOfMin(bicsEM);//find index of poisson mixture with min EM value
 				System.out.println("   bestEMGuess --"+bestEMGuess[indofmin]);
 				bestEMGuess[indofmin]++;
-		//indofmin=findIndexOfMin(bicsBSC);//find index of poisson mixture with min BIC value			
-		//System.out.println("   bestBSCGuess --"+bestBSCGuess[indofmin]);
-		//bestBSCGuess[indofmin]++;//
-		//System.out.println(indofmin+" MM  BSC params:"+bscMMs[indofmin].printParams());
-				//bscMMs[indofmin].printParams();
+		
 				System.out.println("     fitPOISSONMixtureModel indofmin --"+indofmin+ "mixt model params:"+emMMs[indofmin].printParams());
 				
 				pmPDF[r]=new PoissonMixturePDF(emMMs[indofmin],0.0,(double)SamParser.readCounts.length);
@@ -215,7 +223,6 @@ public class PedcaPlotter {
 		
 		pmPDFResult=new PoissonMixturePDF(pdfResult.getBSCModel(),0.0,(double)SamParser.readCounts.length);
 		System.out.println("Ready to print FINALRESULT");
-//SamParser.barchart.BarChartWithFit(pmPDFResult,finalNumberOfMixtures,"FINALRESULT");
 
 		rt=new RatioFind(gMMmus,100*correctedResults[finalNumberOfMixtures]/NbOfRuns);
 		
@@ -361,13 +368,10 @@ public class PedcaPlotter {
 		}
 	
 		//now order the otherGMM
-		//double[]newgMMsigmas=new double[pdfResult.getBSCModel().param.length];//newly order sigmas
 		double[]newgMMweights=new double[pdfResult.getBSCModel().param.length];//newly order weights
 		for (int o=0;o<order.length;o++){
-			//newgMMsigmas[o]=gMMsigmas[order[o]];
 			newgMMweights[o]=gMMweights[order[o]];
 		}
-		//gMMsigmas=newgMMsigmas;
 		gMMweights=newgMMweights;
 
 	}

@@ -14,113 +14,27 @@ public class Pedca {
 	 *
 	 * SIMULATEDDATASET
 	 * 
-	 * 
 	 * -p PloestSim  -i C:\Users\Mel\Documents\BIOINFORMATICS\DELFT_Research\Data\Simulated\BAMs\AllSimLibs.bam -o C:\Users\Mel\Documents\BIOINFORMATICS\DELFT_Research\Data\Simulated -v  C:\Users\Mel\Documents\BIOINFORMATICS\DELFT_Research\Data\Simulated\PhasingAndVCFs\AllChroms\Pilon200_500Sim.vcf -w 3000
 	 * 
-	 * 
-	 *  BASECLEAR -p PedcaBaseClear59bowtiePseudo 
-	 *  -i  C:\Users\Mel\Documents\BIOINFORMATICS\DELFT_Research\Data\CBS_Baseclear\BAM\sorted_CBS_bowtie_pseudo_Baseclear.bam 
-	 *  -o C:\Users\Mel\Documents\BIOINFORMATICS\DELFT_Research\Data\CBS_Baseclear\CBSBowtiePseudo -m 
-	 *  -v  C:\Users\Mel\Documents\BIOINFORMATICS\DELFT_Research\Data\
-	 * PastorianusCBS_1483\VCF\PilonPastorianusCBS.vcf
-	 *
-	 * args[0] = "-p";
-				args[1] = "PloestBaseClear" ;	
-				args[2] = "-w";
-				args[3] = winLengths[wlInd];
-				args[4] = "-i";
-				args[5] = "C://Users//Mel//Documents//BIOINFORMATICS//DELFT_Research//Data//PastorianusCBS_1483//BAM//sorted_CBS1483Pastorianus.bam";
-				args[6] = "-o";
-				args[7] = "C://Users//Mel//Documents//BIOINFORMATICS//DELFT_Research//Data//PastorianusCBS_1483";
-				args[8] = "-v";
-				args[9] = "C://Users//Mel//Documents//BIOINFORMATICS//DELFT_Research//Data//PastorianusCBS_1483//VCF//PilonPastorianusCBS.vcf";
-			
+	 *  BASECLEAR 
+	 *  
+	 *  (To 59 contigs -VdB 2015 scaffold-)
+	 *  -p PedcaBaseClear59bowtiePseudo -i  C:\Users\Mel\Documents\BIOINFORMATICS\DELFT_Research\Data\CBS_Baseclear\BAM\sorted_CBS_bowtie_pseudo_Baseclear.bam -o C:\Users\Mel\Documents\BIOINFORMATICS\DELFT_Research\Data\CBS_Baseclear\CBSBowtiePseudo -m 
+	 *  -v  C:\Users\Mel\Documents\BIOINFORMATICS\DELFT_Research\Data\PastorianusCBS_1483\VCF\PilonPastorianusCBS.vcf
 	 * 
 	 * NOVOGENE
+	 * 
+	 *  (To 59 contigs -VdB 2015 scaffold-)
 	-p PedcaNovogene59bowtiePseudo   -i  C:\Users\Mel\Documents\BIOINFORMATICS\DELFT_Research\Data\CBS_Novogene\BAM\sorted_CBS_bowtie_pseudo_Novogene.bam  -o C:\Users\Mel\Documents\BIOINFORMATICS\DELFT_Research\Data\CBS_Novogene\CBSBowtiePseudo
-	Novogene to CBS1483_59contigs
-	
-				SIGNIFICANT_MIN=0.03;
-				args[0] = "-p";
-				args[1] = "PloestNovogene" ;////args[1] = "NovogeneVdB2anc" ;
-				//args[1] = "PedcaNovogene2ancestors" ;	
-				
-				args[2] = "-w";
-				args[3] = winLengths[wlInd];
-				args[4] = "-i";
-				//args[5] = "C://Users//Mel//Documents//BIOINFORMATICS//DELFT_Research//Data//CBS_Novogene//BAM//sorted_nov2anc.bam";
-				//args[5] = "C://Users//Mel//Documents//BIOINFORMATICS//DELFT_Research//Data//CBS_Novogene//BAM//sorted_NovoVdBNewMap2anc.bam";
-				args[5] = "C://Users//Mel//Documents//BIOINFORMATICS//DELFT_Research//Data//CBS_Novogene//BAM//sorted_CBSNovogene.bam";
-
-				args[6] = "-o";
-				//args[7] = "C://Users//Mel//Documents//BIOINFORMATICS//DELFT_Research//Data//CBS_Novogene//PedcaNovogene2ancestors";
-				args[7] = "C://Users//Mel//Documents//BIOINFORMATICS//DELFT_Research//Data//CBS_Novogene//PedcaNovogene";
-				args[8] = "-v";
-				args[9] = "C://Users//Mel//Documents//BIOINFORMATICS//DELFT_Research//Data//CBS_Novogene//Pilon//PilonCBSNovogene.vcf";
+	 *
+ 	 * (to bothAncestors(eubayanus+cerevisiae))
+		-p PedcaNovogene2ancestors -i C://Users//Mel//Documents//BIOINFORMATICS//DELFT_Research//Data//CBS_Novogene//BAM//sorted_nov2anc.bam  -oC://Users//Mel//Documents//BIOINFORMATICS//DELFT_Research//Data//CBS_Novogene
 	 * 
-	Novogene to bothAncestors(eubayanus+cerevisiae)
-	
-				sigMinRate=0.1;
-				args[0] = "-p";
-				//args[1] = "PloestNovogene" ;////args[1] = "NovogeneVdB2anc" ;
-				args[1] = "PedcaNovogene2ancestors" ;	
-				args[2] = "-w";
-				args[3] = winLengths[wlInd];
-				args[4] = "-i";
-				args[5] = "C://Users//Mel//Documents//BIOINFORMATICS//DELFT_Research//Data//CBS_Novogene//BAM//sorted_nov2anc.bam";
-				//args[5] = "C://Users//Mel//Documents//BIOINFORMATICS//DELFT_Research//Data//CBS_Novogene//BAM//sorted_NovoVdBNewMap2anc.bam";
-
-				args[6] = "-o";
-				args[7] = "C://Users//Mel//Documents//BIOINFORMATICS//DELFT_Research//Data//CBS_Novogene";
-	
-	 * 
-	 * BASECLEAR
-	 * -p PedcaBaseClear59bowtiePseudo -w  10000 -c 15 -b 3.5 -i C:\Users\Mel\Documents\BIOINFORMATICS\DELFT_Research\Data\CBS_Baseclear\BAM\sorted_CBS_bowtie_pseudo_Baseclear.bam
--o C:\Users\Mel\Documents\BIOINFORMATICS\DELFT_Research\Data\CBS_Baseclear\CBSBowtiePseudo  -v C:\Users\Mel\Documents\BIOINFORMATICS\DELFT_Research\Data\CBS_Baseclear\Pilon\PilonBaseclearVdBNew2anc.vcf
-	 * 			args[0] = "-p";
-				args[1] = "PedcaBaseclear" ;	
-				args[2] = "-w";
-				args[3] = winLengths[wlInd];
-				args[4] = "-i";
-				args[5] = "C://Users//Mel//Documents//BIOINFORMATICS//DELFT_Research//Data//CBS_Baseclear//BAM//sorted_BaseVdBNewMap2anc.bam";
-				args[6] = "-o";
-				args[7] = "C://Users//Mel//Documents//BIOINFORMATICS//DELFT_Research//Data//CBS_Baseclear//VdBNewMap2anc";
-				args[8] = "-v";
-				args[9] = "C://Users//Mel//Documents//BIOINFORMATICS//DELFT_Research//Data//CBS_Baseclear//Pilon//PilonBaseclearVdBNew2anc.vcf";
-			      							
-	 			args = new String[10];
-		
-		args[0] = "-p";
-		args[1] = "PedcaBaseClear59bowtiePseudo" ;	
-		args[2] = "-w";
-		args[3] = "500";
-		args[4] = "-i";
-		args[5] = "C://Users//Mel//Documents//BIOINFORMATICS//DELFT_Research//Data//CBS_Baseclear//BAM//sorted_CBS_bowtie_pseudo_Baseclear.bam";
-		args[6] = "-o";
-		args[7] = "C://Users//Mel//Documents//BIOINFORMATICS//DELFT_Research//Data//CBS_Baseclear//CBSBowtiePseudo";
-		args[8] = "-v";
-		args[9] = "C://Users//Mel//Documents//BIOINFORMATICS//DELFT_Research//Data//CBS_Baseclear//Pilon//PilonPastorianusCBS.vcf";
-
-	 * 
-	 * CRUZI
+	 * T.CRUZI
 	 *
 	 * -p PEDCA_CLB_PacBioAssembly -i C:\Users\Mel\Documents\BIOINFORMATICS\DELFT_Research\Data\TCruzi\Bams\sorted_CruziPacBioAssemblyCLB1.bam  -o C:\Users\Mel\Documents\BIOINFORMATICS\DELFT_Research\Data\TCruzi\PEDCA_CLB_PacBioAssembly -w 7700 -b 2.5 -d 0.90 -s 0.2 
-	 * 
-	  			SIGNIFICANT_MIN=0.05;
-				
-				args[0] = "-p";
-				args[1] = "PedcaTCruzi_CLB_PacBio_Assembly" ;	
-				args[2] = "-w";
-				args[3] = winLengths[wlInd];
-				args[4] = "-i";
-				args[5] = "C:\Users\Mel\Documents\BIOINFORMATICS\DELFT_Research\Data\TCruzi\Bams\sorted_CruziPacBioAssemblyCLB1.bam";
-
-				args[6] = "-o";
-				args[7] = "C:\Users\Mel\Documents\BIOINFORMATICS\DELFT_Research\Data\TCruzi\PEDCA_CLB_PacBioAssembly";
-				
-				args[8] = "-v";
-				args[9] = "C:\Users\Mel\Documents\BIOINFORMATICS\DELFT_Research\Data\TCruzi\Pilon\PilonCruziPacBio.vcf";
-
+	 * -s 0.05
+	  -v C:\Users\Mel\Documents\BIOINFORMATICS\DELFT_Research\Data\TCruzi\Pilon\PilonCruziPacBio.vcf
 	 * 
 	 */
 	static String projectName = "";
@@ -145,14 +59,14 @@ public class Pedca {
 	static double BIN_FACTOR=2.5;
 	static double USED_DATA=0.95;//percentage of coverage data used. Top highest values will be rejected
 	static String currentProjectName="";
-	static int MAX_PLOIDY=10;
-	public static void main(String[] args) {
-				
-		runPloest(args);		
+	static int MAX_PLOIDY=10;//can be extended to 20, but estimation are expeted to be less reliable
+	
+	public static void main(String[] args) {		
+		runPedca(args);		
 	}
 
-
-	public static void runPloest(String[] args) {
+	//reads input arguments and runs Pedca
+	public static void runPedca(String[] args) {
 		
 		long startTime = System.currentTimeMillis();
 		baseCallIsOn = false;
@@ -325,7 +239,8 @@ public class Pedca {
 		currentFolder.mkdirs();
 		
 		SamParser bp = null;
-		// COV_RATE=windowLength/5;
+		
+		//Print out current parameters to console
 		System.out.println("WIND_LENGTH=" + windowLength);
 		System.out.println("COV_RATE=" + COV_RATE);
 		System.out.println("MIN_WIND_LENGTH=" + MIN_WIND_LENGTH);
@@ -339,10 +254,10 @@ public class Pedca {
 					bp = new SamParser(inputFile, outputFile);
 
 				} else {
-					System.out.println("The multiple file options is not yet implemeted. Try Plpoest again running one file at a time " );
+					System.out.println("The multiple file options is not yet implemeted. Try runningPedca again  one file at a time or previously merging the bam files" );
 					//TO DO
 				}
-			} else  bp = new SamParser(inputFile, outputFile);// IS THIS RIGHT??? (AFTER THE ELSE)
+			} else  bp = new SamParser(inputFile, outputFile);
 
 		} catch (FileNotFoundException e) {
 			System.out.println("FileNotFoundException");
@@ -361,7 +276,7 @@ public class Pedca {
 		System.out.println("TOTAL TIME : ["+currentProjectName+"] :"+ totalTime / 1000 + " seconds");
 	}
 	
-	
+	//runs multiple window lengthswith default values: "500","750","1000","2000","3000" 
 	public static void runMultipleWindows(String[] args){
 		String[] newArgs=new String[args.length+2];
 		long startTimeGeneral = System.currentTimeMillis();
@@ -381,7 +296,7 @@ public class Pedca {
 				}
 				System.out.println( " ");
 				
-				runPloest(newArgs);
+				runPedca(newArgs);
 				
 
 			} catch (Exception e) {
@@ -397,7 +312,7 @@ public class Pedca {
 	
 	
 	
-	
+	//print help to console. Works with '-h' '-help' or 'help'
 	public static void printHelp() {
 		System.out.println("\n +++++++++++++++++++++++++++++++++++++++++++++++++++++++");
 		System.out.println("\nPedca -help:");

@@ -33,9 +33,8 @@ import dataFitters.PoissonDataFitter;
 import jMEF.MixtureModel;
 import jMEF.PVector;
 
+//This class fits a naive smoother to the read count distribution
 public class NaivePedcaPlotter {
-	
-	
 	
 	//static variable for smoothing the ploidy estimation
 	static boolean AVG_PLOIDY=true;//smooths the ploidy estimation by averaging over a window of length: PLOIDY_SMOOTHER_WIDTH
@@ -49,10 +48,10 @@ public class NaivePedcaPlotter {
 	List<String> contArrList;
 	static double[] clusterMus;//final result of the MEANS (mus) of the clusters in the mixture model fitting
 	int sumOfReadCounts=0;
+	
 	//variables for the naive smooth
 	static NaivePDF npdf;//Naive Smoothed Density Function
 	
-	//PVector[] fitPoints;
 	int[] intFitPoints;
 	JFreeChart chart;
 	static int maxX;
@@ -77,7 +76,7 @@ public class NaivePedcaPlotter {
 	
 	public NaivePedcaPlotter(Map<String,ContigData> contList,int maxWindows, float[] rc, SamParser samP) {
 		
-		//reset static variables
+		//reset static variables. Needed for Multirun option
 		clusterMus=null;
 		npdf=null;
 		maxX=0;
@@ -104,10 +103,10 @@ public class NaivePedcaPlotter {
 	}
 	
 	private  void createFitterDataset() {
-		
 		intFitPoints=SamParser.intFitPoints;
-
 	}
+	
+	//Try to infer the contigs unsolved in the first round, with a window adapted to the smallest size
 	public void naivePloestPlotter2ndRound(Map<String,ContigData> contList,int maxWindows, float[] rc) {
 		readCounts=rc;
 		contigsList=contList;
@@ -120,13 +119,13 @@ public class NaivePedcaPlotter {
 		}catch (Exception e){
 			System.err.println("Error in PloestPlotter constructor");
 		}
-		
 	}
 	
+	//Computes and prints out to output .txt file the contigs estimations by fragment/
+	//If necesary, the allele frequencies analysis is run.
 	private void writeOutPloEstByFragment(PrintWriter writer , XYSeries series, ContigData contigD ) {
 		
 		String contigname =contigD.contigName;
-		
 
 		Number prevPloidy=0;
 		Number newPloidy=0;
@@ -138,7 +137,7 @@ public class NaivePedcaPlotter {
 		if(series.getItemCount()>0){
 			ItemsSize=series.getItems().size();
 			prevPloidy=series.getY(firstPloidyPos);//series.getMinY();
-//System.out.println(contigname+" ItemsSize:"+ItemsSize+" contig size:"+contigD.maxLength+" PEDCA ws:"+Pedca.windowLength+ " SamParser.windowLength:"+SamParser.windowLength);
+			//System.out.println(contigname+" ItemsSize:"+ItemsSize+" contig size:"+contigD.maxLength+" PEDCA ws:"+Pedca.windowLength+ " SamParser.windowLength:"+SamParser.windowLength);
 
 			while(prevPloidy.intValue()==0 && firstPloidyPos<ItemsSize-1){
 				prevPloidy=series.getY(++firstPloidyPos);
@@ -417,7 +416,7 @@ public void displayPloidyAndCoveragePlotNaive( PrintWriter writ)throws IOExcepti
 		writ.close();
 	}
 
-
+	//prints to output .txt file the ist of unsolved contigs
 	private void printRemovedContigs(PrintWriter writer){
 		
 		writer.println("#");
@@ -430,7 +429,7 @@ public void displayPloidyAndCoveragePlotNaive( PrintWriter writ)throws IOExcepti
 		
 }
 
-
+	// runs an allele frequencies analysis and output the result to a plot
 	private void runBaseCallCheck() throws FileNotFoundException, InterruptedException {
 		
 		try{
@@ -457,7 +456,7 @@ public void displayPloidyAndCoveragePlotNaive( PrintWriter writ)throws IOExcepti
 	
     }
 
-
+	//returns the index of the minimum value in a vector of doubles
 	public int findIndexOfMin(double[] bicVector){
 		double min=bicVector[1] ;
 		int minIndex=1;
@@ -499,11 +498,6 @@ public void displayPloidyAndCoveragePlotNaive( PrintWriter writ)throws IOExcepti
 		return result;
 	}
 
-
-
-
-
-
 	
 	private  XYDataset createPloidyEstimationDatasetNaive(ContigData contigD, PrintWriter writer ) {
 		XYSeriesCollection result = new XYSeriesCollection();
@@ -544,14 +538,14 @@ public void displayPloidyAndCoveragePlotNaive( PrintWriter writ)throws IOExcepti
 		}
 
 		result.addSeries(series);
-//System.out.println(contigD.contigName+" post-AV      Number of values:"+contigD.windPos.size()+" contig size:"+contigD.maxLength+"  series.getItems().size():"+series.getItems().size()+" series.getItemCount():"+series.getItemCount());
+		//System.out.println(contigD.contigName+" post-AV      Number of values:"+contigD.windPos.size()+" contig size:"+contigD.maxLength+"  series.getItems().size():"+series.getItems().size()+" series.getItemCount():"+series.getItemCount());
 
 		writeOutPloEstByFragment(writer, series,contigD );//writes out the ploidy estimation detailed by fragment
 
 		return result;
 	}
 
-	
+	//average the ploidy estimation by finding the mode over a window of PLOIDY_SMOOTHER_WIDTH
 	public XYSeries averagePloidyMode(ContigData contigD,XYSeries series, int valuesSize,double [] xValues,int [] yValues){
 		String contigname=contigD.contigName;
 
@@ -658,8 +652,9 @@ public void displayPloidyAndCoveragePlotNaive( PrintWriter writ)throws IOExcepti
 		
 	}
 	
+	
+	//check that at least continuityLength points have the same copy number estimation before deciding if a fragment has a certain ploidy
 	private XYSeries checkContinuity(XYSeries series, int continuityLength,ContigData contigD) {
-		//check that at least continuityLength points have the same copy number estimation before deciding if a fragment has a certain ploidy		
 		int ctr=0;
 		XYSeries result=new XYSeries(" Ploidy Estimation");
 		int [] yvalues=new int[series.getItemCount()];
@@ -702,27 +697,21 @@ public void displayPloidyAndCoveragePlotNaive( PrintWriter writ)throws IOExcepti
 		return result;
 	}
 
-
-
-
-	static int getFinalNumberOfMixtures(){
-		return finalNumberOfMixtures;
-	}
-
-	
-
+	//Find the peaks of the fitted histogram in the read count distribution
+	// Discards the values that are below this threshold (Pedca.SIGNIFICANT_MIN) in the original readCount Distribution
 	private int significantMaxsInPDF(NaivePDF naivePDF) {
 		int sigMaxs = 0;//nb of significant maximums
-		//double ReadCountThreshold = Pedca.SIGNIFICANT_MIN;// discards the values that are below this threshold in the original readCount Distribution
-		//int FITthreshold
+
 		System.out.println(" Sum of all ReadCounts:"+sumOfReadCounts+" Pedca.SIGNIFICANT_MIN:"+Pedca.SIGNIFICANT_MIN+"; maxY :" + SamParser.readDistributionMaxY );
 
 		ArrayList<Double> yMinList = new ArrayList<Double>();
 		ArrayList<Double> xMinList = new ArrayList<Double>();
+		
 		//pointers to the y values
 		double left = 0;
 		double mid = 0;
 		double right = 0;
+		
 		//pointers to the x values
 		int ind = 0;
 		int lastLeftIndex = 0;
@@ -768,10 +757,7 @@ public void displayPloidyAndCoveragePlotNaive( PrintWriter writ)throws IOExcepti
 						if (maxVal<=Pedca.SIGNIFICANT_MIN ){
 							System.out.print( " VALUE BELOW THRESHOLD");
 						}System.out.println();
-					
 					}
-
-					
 
 				}
 			} else {

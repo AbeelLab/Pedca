@@ -23,23 +23,23 @@ import org.jfree.data.xy.XYDataset;
 import jMEF.PVector;
 
 public class SamParser {
-	static String debuggingTarget="cerevisiaeS288cchromosomeI";
+	static String debuggingTarget="cerevisiaeS288cchromosomeI";//for debug purpouses. Identifies a particulr contig.
 	
 	
 	int nbSeq=0;// nb of sequences in the FileHeader
 	Map<String, ContigData> contigsList;// Map of ContigDatas(value) and their  name (key)
 	static int[] readCounts;
 	
-	static PVector[] fitPoints;	//remains for ploestpotter but it is not longer used
+	static PVector[] fitPoints;	//DEPRECATTED Remains for ploestpotter but it is not longer used
 	static int[] intFitPoints;//all the points of all windows positions (coverages) in all contigs. Used to fit the read counts distribution chart
 
 	static boolean RUN_SECOND_ROUND=false;
 	static String stringSecondRound="";
 	static int windowLength ;
-	List<String> contArrList;
+	List<String> contArrList;//Contig array list
 	static int readsDistributionMaxCoverage;//max coverage found in all contigs (to be used in x axis reads counts)
     static float readDistributionMaxY=0;//max normalized value in the y axis (to be used in y axis reads counts)
-	PedcaPlotter plotter;//ploidy estimation  plott and pdf gaussian fit data
+	PedcaPlotter plotter;//DEPRECATERD. Ploidy estimation  plott and pdf gaussian fit data
 	NaivePedcaPlotter myploter;
 	static BarChart barchart;
 	
@@ -50,7 +50,7 @@ public class SamParser {
 			throws FileNotFoundException, UnsupportedEncodingException {
 		
 		
-		//reset all static variables
+		//reset all static variables. Needed for Multirun.
 		readCounts=null;
 		intFitPoints=null;
 		RUN_SECOND_ROUND=false;
@@ -71,6 +71,7 @@ public class SamParser {
 		int[] contigLengths = new int[nbSeq];//length of all contigs
 		int contigLength=0;
 		String contigName="";
+		
 		// fill the contigsList
 		for (int i = 0; i < nbSeq; i++) {
 			contigLength=inputSam.getFileHeader().getSequenceDictionary().getSequence(i).getSequenceLength();
@@ -87,7 +88,7 @@ public class SamParser {
 
 		int i = 1;
 		System.out.println("Analyzing "+contigsList.size()+" contigs...");
-		String refName = "";// for debugging a bad line in the .sam file
+		String refName = "";
 		int alStart;
 
 		while (iter.hasNext()) {//iterates the sam file
@@ -106,11 +107,11 @@ public class SamParser {
 		iter.close();
 		inputSam.close();
 
-		windowSlideContigList();
-		barchart = new BarChart(readCounts);
+		windowSlideContigList();//slide the window along all contigs and get the read count values
+		barchart = new BarChart(readCounts);//print read count distribution
 		readDistributionMaxY=barchart.maxY;
 		
-		myploter = new NaivePedcaPlotter(contigsList,readsDistributionMaxCoverage, barchart.normReadCounts, this);//plotter = new PloestPlotter(contigsList,maxWindows);
+		myploter = new NaivePedcaPlotter(contigsList,readsDistributionMaxCoverage, barchart.normReadCounts, this);
 		
 		if (RUN_SECOND_ROUND){//runs a second round with a new window length to solve smallests contigs
 			System.out.println("-*-*-*-*-*-*-RUN_SECOND_ROUND*-*-*-*-*-*-*-*-*-*-*");

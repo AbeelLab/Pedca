@@ -11,6 +11,10 @@ import dataFitters.GaussianDataFitter;
 
 public class Pedca {
 	/*
+	 *SacDEL
+	 *-p PedcaSacDel -i C:\Users\Mel\Documents\BIOINFORMATICS\DELFT_Research\Data\SacDeletion\Bams\sacdel.bam  -o C:\Users\Mel\Documents\BIOINFORMATICS\DELFT_Research\Data\SacDeletion\SacDel
+	 *
+	 *
 	 *
 	 * SIMULATEDDATASET
 	 * 
@@ -33,9 +37,9 @@ public class Pedca {
 	 * T.CRUZI
 	 *
 	 * -p PEDCA_CLB_PacBioAssembly -i C:\Users\Mel\Documents\BIOINFORMATICS\DELFT_Research\Data\TCruzi\Bams\sorted_CruziPacBioAssemblyCLB1.bam  -o C:\Users\Mel\Documents\BIOINFORMATICS\DELFT_Research\Data\TCruzi\PEDCA_CLB_PacBioAssembly -w 7700 -b 2.5 -d 0.90 -s 0.2 
-	 * -s 0.05
-	  -v C:\Users\Mel\Documents\BIOINFORMATICS\DELFT_Research\Data\TCruzi\Pilon\PilonCruziPacBio.vcf
+	 * -s 0.05  -v C:\Users\Mel\Documents\BIOINFORMATICS\DELFT_Research\Data\TCruzi\Pilon\PilonCruziPacBio.vcf
 	 * 
+	 * -p PedcaTCruzi_EsmeraldoLike -i C:\Users\Mel\Documents\BIOINFORMATICS\DELFT_Research\Data\TCruzi\Bams\sorted_CruziEsmeraldoLikeIllumina_full.bam  -o C:\Users\Mel\Documents\BIOINFORMATICS\DELFT_Research\Data\TCruzi\PEDCA_EsmeraldoLikeIllumina -w 750  -d 0.92 -s 0.2 -w 2000 -v C:\Users\Mel\Documents\BIOINFORMATICS\DELFT_Research\Data\TCruzi\Pilon\PilonCruziEsmLike.vcf
 	 */
 	static String projectName = "";
 	static String inputFile = "";
@@ -213,9 +217,9 @@ public class Pedca {
 					}else baseCallIsOn=false;
 					
 					if (argsIndex[10] != 0 && Double.parseDouble(args[argsIndex[10]])<8.0 && Double.parseDouble(args[argsIndex[10]])>1.0){
-						BIN_FACTOR = Double.parseDouble(args[argsIndex[10]])/MAX_PLOIDY;
+						BIN_FACTOR = Double.parseDouble(args[argsIndex[10]]);//   BIN_FACTOR = Double.parseDouble(args[argsIndex[10]])/MAX_PLOIDY;
 					}else if (argsIndex[10] != 0){
-						BIN_FACTOR = Double.parseDouble(args[argsIndex[10]])/MAX_PLOIDY;
+						BIN_FACTOR = Double.parseDouble(args[argsIndex[10]]);//BIN_FACTOR = Double.parseDouble(args[argsIndex[10]])/MAX_PLOIDY;
 						if (BIN_FACTOR>4.0 || BIN_FACTOR <1.0){
 							System.err.println(" BIN_FACTOR value non accepted, must be >1.0 and <4.0. Will be run with default value "+BIN_FACTOR );
 							BIN_FACTOR=2.5;

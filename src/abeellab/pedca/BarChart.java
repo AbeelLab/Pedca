@@ -240,7 +240,7 @@ private XYDataset createHistDataset( GaussianMixturePDF gaussFit) {
 
 		for (int i = 0; i<normReadCounts.length; i++) {
 			while (ind<i+0.5){
-				//System.out.println("|ind:"+ind+" i:"+i+" x:"+normReadCounts[i]+" y:"+normReadCounts[i]);
+				//System.out.println("|ind:"+ind+" i:"+i+" x:"+normReadCounts[i]+" y:"+normReadCounts[i]+" naiveFit.step:"+naiveFit.step);
 				series.add(ind, normReadCounts[i]);
 				ind+=naiveFit.step;
 				if(normReadCounts[i]>naiveFit.maxYHISTOGRAMvalue)naiveFit.maxYHISTOGRAMvalue=normReadCounts[i];
